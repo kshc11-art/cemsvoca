@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f172a">
 <meta name="description" content="TOEFL & 일상회화 어휘 학습 - FSRS 알고리즘 기반 스마트 복습">
-<title>CEMS Vocab Pro v7.0</title>
+<title>CEMS Vocab Pro v7.1</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
@@ -78,7 +78,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </style>
 </head>
 <body>
-<div id="splash"><div class="splash-icon">📚</div><div class="splash-title">CEMS Vocab Pro</div><div class="splash-sub">v7.0 - Expression Tags</div><div class="splash-loader"></div></div>
+<div id="splash"><div class="splash-icon">📚</div><div class="splash-title">CEMS Vocab Pro</div><div class="splash-sub">v7.1 - PWA Fix</div><div class="splash-loader"></div></div>
 <div class="app">
 <!-- 홈 -->
 <div id="page-home" class="page active">
@@ -417,7 +417,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="background:var(--bg);padding:12px;border-radius:12px;text-align:center"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">💬 표현 일일목표</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><button onclick="adjustGoal('expr',-5)" style="width:28px;height:28px;border:none;background:var(--card);color:var(--text);border-radius:6px;cursor:pointer">−</button><input type="number" class="form-input" id="setting-expr-goal" value="10" min="1" max="100" style="width:50px;text-align:center;padding:4px;font-size:16px;font-weight:600" onchange="saveSetting('exprGoal',this.value)"><button onclick="adjustGoal('expr',5)" style="width:28px;height:28px;border:none;background:var(--card);color:var(--text);border-radius:6px;cursor:pointer">+</button></div></div>
 <div style="background:var(--bg);padding:12px;border-radius:12px;text-align:center"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">📝 기본 학습분량</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><button onclick="adjustGoal('count',-5)" style="width:28px;height:28px;border:none;background:var(--card);color:var(--text);border-radius:6px;cursor:pointer">−</button><input type="number" class="form-input" id="setting-count" value="20" min="5" max="100" style="width:50px;text-align:center;padding:4px;font-size:16px;font-weight:600" onchange="saveSetting('defaultCount',this.value)"><button onclick="adjustGoal('count',5)" style="width:28px;height:28px;border:none;background:var(--card);color:var(--text);border-radius:6px;cursor:pointer">+</button></div></div>
 </div></div>
-<div class="card"><div class="card-title">ℹ️ 버전 정보</div><p style="font-size:13px;color:var(--muted);line-height:1.8"><strong>CEMS Vocab Pro v7.0</strong><br>• 🏷️ 표현 태그 시스템<br>• 🎯 타입별 일일 목표<br>• 📝 표현 쓰기 연습<br>• ⚡ 동형이의어 지원</p></div>
+<div class="card"><div class="card-title">ℹ️ 버전 정보</div><p style="font-size:13px;color:var(--muted);line-height:1.8"><strong>CEMS Vocab Pro v6.5</strong><br>• 🏷️ 표현 태그 시스템<br>• 🎯 타입별 일일 목표<br>• 📝 표현 쓰기 연습<br>• ⚡ 동형이의어 지원</p></div>
 </div>
 </div>
 <!-- 네비게이션 -->
@@ -709,10 +709,47 @@ let collocState={words:[],allWords:[],idx:0,correct:0,wrong:0,answered:false,sta
 let exprState={words:[],allWords:[],idx:0,correct:0,wrong:0,answered:false,start:null,flipped:false,transitioning:false,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,timer:null,stats:{again:0,hard:0,good:0,easy:0}};
 
 // === DB ===
-function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,DB_VER);req.onerror=()=>rej(req.error);req.onsuccess=()=>{db=req.result;res(db);};req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('words'))d.createObjectStore('words',{keyPath:'word'});if(!d.objectStoreNames.contains('phrasal_verbs'))d.createObjectStore('phrasal_verbs',{keyPath:'Phrasal_Verb'});if(!d.objectStoreNames.contains('expressions'))d.createObjectStore('expressions',{keyPath:'Expression'});if(!d.objectStoreNames.contains('sessions'))d.createObjectStore('sessions',{keyPath:'id',autoIncrement:true});};})}
-async function getAllWords(){return new Promise(r=>{const req=db.transaction('words','readonly').objectStore('words').getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);})}
-async function getAllPV(){return new Promise(r=>{const req=db.transaction('phrasal_verbs','readonly').objectStore('phrasal_verbs').getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);})}
-async function getAllExpr(){return new Promise(r=>{try{const req=db.transaction('expressions','readonly').objectStore('expressions').getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);}catch(e){r([]);}})}
+function openDB(){return new Promise((res,rej)=>{
+try{
+if(!window.indexedDB){rej(new Error('IndexedDB not supported'));return;}
+const req=indexedDB.open(DB_NAME,DB_VER);
+req.onerror=()=>rej(req.error);
+req.onsuccess=()=>{db=req.result;console.log('IndexedDB opened successfully');res(db);};
+req.onupgradeneeded=e=>{
+const d=e.target.result;
+if(!d.objectStoreNames.contains('words'))d.createObjectStore('words',{keyPath:'word'});
+if(!d.objectStoreNames.contains('phrasal_verbs'))d.createObjectStore('phrasal_verbs',{keyPath:'Phrasal_Verb'});
+if(!d.objectStoreNames.contains('expressions'))d.createObjectStore('expressions',{keyPath:'Expression'});
+if(!d.objectStoreNames.contains('sessions'))d.createObjectStore('sessions',{keyPath:'id',autoIncrement:true});
+console.log('IndexedDB upgraded');
+};
+}catch(e){rej(e);}
+})}
+async function getAllWords(){
+return new Promise(r=>{
+try{
+if(!db){console.error('getAllWords: db is null');r([]);return;}
+const req=db.transaction('words','readonly').objectStore('words').getAll();
+req.onsuccess=()=>{
+const result=req.result||[];
+console.log('getAllWords: loaded',result.length,'items');
+r(result);
+};
+req.onerror=(e)=>{console.error('getAllWords error:',e);r([]);};
+}catch(e){console.error('getAllWords exception:',e);r([]);}
+});
+}
+async function getAllPV(){
+return new Promise(r=>{
+try{
+if(!db){console.error('getAllPV: db is null');r([]);return;}
+const req=db.transaction('phrasal_verbs','readonly').objectStore('phrasal_verbs').getAll();
+req.onsuccess=()=>r(req.result||[]);
+req.onerror=()=>r([]);
+}catch(e){console.error('getAllPV exception:',e);r([]);}
+});
+}
+async function getAllExpr(){return new Promise(r=>{try{if(!db){r([]);return;}const req=db.transaction('expressions','readonly').objectStore('expressions').getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);}catch(e){r([]);}})}
 async function saveWord(w){return new Promise(r=>{const tx=db.transaction('words','readwrite');tx.objectStore('words').put(w);tx.oncomplete=r;})}
 async function savePV(p){return new Promise(r=>{const tx=db.transaction('phrasal_verbs','readwrite');tx.objectStore('phrasal_verbs').put(p);tx.oncomplete=r;})}
 async function saveExpr(e){return new Promise(r=>{const tx=db.transaction('expressions','readwrite');tx.objectStore('expressions').put(e);tx.oncomplete=r;})}
@@ -1023,15 +1060,36 @@ else if(mode==='cloze')startCloze(sel,words);
 else if(mode==='collocation')startColloc(sel,words);
 }
 async function startQuickStudy(t){
+try{
+console.log('startQuickStudy called:',t);
 const now=new Date();
-if(t==='phrasal'){const p=await getAllPV();if(!p.length){showToast('📤 먼저 구동사 DB를 업로드하세요');return;}
+if(t==='phrasal'){
+const p=await getAllPV();
+console.log('PV loaded:',p?.length);
+if(!p||!p.length){showToast('📤 먼저 구동사 DB를 업로드하세요');return;}
 const avail=p.filter(x=>!x.reviewCount||(x.nextReview&&new Date(x.nextReview)<=now));
+console.log('PV available:',avail?.length);
 if(!avail.length){showToast('✅ 오늘 복습할 구동사가 없습니다!');return;}
-startFC(shuffle(avail).slice(0,15),p,'phrasal');return;}
-const w=await getAllWords();if(!w.length){showToast('📤 먼저 DB를 업로드하세요');showPage('data');return;}
+startFC(shuffle(avail).slice(0,15),p,'phrasal');return;
+}
+const w=await getAllWords();
+console.log('Words loaded:',w?.length,'first item:',w?.[0]);
+if(!w||!w.length){
+showToast('📤 먼저 DB를 업로드하세요');
+showPage('data');
+return;
+}
 const avail=w.filter(x=>!x.reviewCount||(x.nextReview&&new Date(x.nextReview)<=now));
+console.log('Words available:',avail?.length,'first avail:',avail?.[0]);
 if(!avail.length){showToast('✅ 오늘 복습할 단어가 없습니다!');return;}
-startFC(shuffle(avail).slice(0,parseInt(localStorage.getItem('defaultCount')||'20')),w,'vocab');
+const count=parseInt(localStorage.getItem('defaultCount')||'20');
+const selected=shuffle(avail).slice(0,count);
+console.log('Selected for study:',selected?.length,'first selected:',selected?.[0]);
+startFC(selected,w,'vocab');
+}catch(e){
+console.error('startQuickStudy error:',e);
+showToast('❌ 학습 시작 오류: '+e.message);
+}
 }
 async function startQuickQuiz(t){
 const now=new Date();
@@ -1074,21 +1132,47 @@ async function startWeakStudy(){const items=currentWeakType==='phrasal'?await ge
 
 // === 플래시카드 (핵심) ===
 function startFC(items,all,type){
-console.log('startFC called:', {itemsCount: items.length, type, firstItem: items[0]});
+try{
+console.log('startFC called:', {itemsCount: items?.length, type, firstItem: items?.[0]});
+// 데이터 검증
+if(!items||!Array.isArray(items)||items.length===0){
+  console.error('startFC: No items provided',items);
+  showToast('❌ 학습할 단어가 없습니다');
+  return;
+}
+// 유효한 데이터인지 확인
+const validItems=items.filter(item=>{
+  if(type==='phrasal')return item&&item.Phrasal_Verb;
+  return item&&item.word;
+});
+if(validItems.length===0){
+  console.error('startFC: No valid items after filtering',items);
+  showToast('❌ 유효한 단어 데이터가 없습니다');
+  return;
+}
 if(fcState.timer)clearInterval(fcState.timer);
-fcState={words:[...items],idx:0,flipped:false,start:Date.now(),timer:null,stats:{again:0,hard:0,good:0,easy:0},transitioning:false,retryQueue:[],phase:'normal',type,savedToWrong:0,allWords:all};
-console.log('fcState.words[0]:', fcState.words[0]);
-document.getElementById('fc-total').textContent=items.length;
+fcState={words:[...validItems],idx:0,flipped:false,start:Date.now(),timer:null,stats:{again:0,hard:0,good:0,easy:0},transitioning:false,retryQueue:[],phase:'normal',type,savedToWrong:0,allWords:all||validItems};
+console.log('fcState initialized:', {wordsCount:fcState.words.length, firstWord:fcState.words[0]});
+document.getElementById('fc-total').textContent=validItems.length;
 document.getElementById('fc-current').textContent='1';
 document.getElementById('fc-progress').style.width='0%';
 document.getElementById('fc-retry-banner').classList.add('hidden');
 document.getElementById('fc-progress').classList.toggle('phrasal',type==='phrasal');
-showPage('flashcard');showCard();startTimer();updateStreak();
+showPage('flashcard');
+// 약간의 딜레이 후 showCard 호출 (DOM 업데이트 보장)
+setTimeout(()=>showCard(),50);
+startTimer();updateStreak();
+}catch(e){
+console.error('startFC error:',e);
+showToast('❌ 플래시카드 시작 오류: '+e.message);
+}
 }
 
 function showCard(){
+try{
 const item=fcState.words[fcState.idx];
-console.log('showCard item:',item); // 디버깅
+console.log('showCard item:',item);
+// 데이터 없음 처리
 if(!item){
   if(fcState.retryQueue.length>0){
     fcState.words=[...fcState.retryQueue];fcState.retryQueue=[];fcState.idx=0;fcState.phase='retry';
@@ -1099,37 +1183,60 @@ if(!item){
     showCard();return;
   }else{endFC();return;}
 }
+// 데이터 유효성 검사
+if(fcState.type!=='phrasal'&&!item.word){
+  console.error('Invalid item - no word field:',item);
+  document.getElementById('fc-word').textContent='[데이터 오류]';
+  showToast('❌ 단어 데이터 오류');
+  return;
+}
 const fc=document.getElementById('flashcard');
+if(!fc){console.error('flashcard element not found');return;}
 // 1. 뒷면 내용 즉시 숨김
-document.getElementById('fc-back-inner').classList.remove('visible');
-document.getElementById('fc-meaning-ko').textContent='';
-document.getElementById('fc-meaning-en').textContent='';
-document.getElementById('fc-example').textContent='';
-document.getElementById('fc-example').style.display='none';
-document.getElementById('fc-collocation').textContent='';
+document.getElementById('fc-back-inner')?.classList.remove('visible');
+const fcMeaningKo=document.getElementById('fc-meaning-ko');
+const fcMeaningEn=document.getElementById('fc-meaning-en');
+const fcExample=document.getElementById('fc-example');
+const fcColloc=document.getElementById('fc-collocation');
+if(fcMeaningKo)fcMeaningKo.textContent='';
+if(fcMeaningEn)fcMeaningEn.textContent='';
+if(fcExample){fcExample.textContent='';fcExample.style.display='none';}
+if(fcColloc)fcColloc.textContent='';
 // 2. 카드 리셋
 fcState.flipped=false;fcState.transitioning=false;
 fc.classList.remove('flipped','swipe-left','swipe-right');
 setRating(false);
 // 3. 진행률
-document.getElementById('fc-progress').style.width=(fcState.idx/fcState.words.length)*100+'%';
-document.getElementById('fc-current').textContent=fcState.idx+1;
-if(fcState.phase==='retry')document.getElementById('fc-retry-count').textContent=fcState.words.length-fcState.idx;
-// 4. 앞면
+const progressEl=document.getElementById('fc-progress');
+const currentEl=document.getElementById('fc-current');
+if(progressEl)progressEl.style.width=(fcState.idx/fcState.words.length)*100+'%';
+if(currentEl)currentEl.textContent=fcState.idx+1;
+if(fcState.phase==='retry'){
+  const retryCount=document.getElementById('fc-retry-count');
+  if(retryCount)retryCount.textContent=fcState.words.length-fcState.idx;
+}
+// 4. 앞면 표시
+const fcWord=document.getElementById('fc-word');
+const fcTags=document.getElementById('fc-tags');
 if(fcState.type==='phrasal'){
-  document.getElementById('fc-word').textContent=item.Phrasal_Verb||'(구동사)';
-  document.getElementById('fc-tags').innerHTML=`<span class="tag tag-phrasal">${item.Particle||''}</span><span class="tag tag-cat">${item.Category||''}</span>`;
+  if(fcWord)fcWord.textContent=item.Phrasal_Verb||'(구동사)';
+  if(fcTags)fcTags.innerHTML=`<span class="tag tag-phrasal">${item.Particle||''}</span><span class="tag tag-cat">${item.Category||''}</span>`;
 }else{
   const wordText=displayWord(item.word)||item.word||'(단어 없음)';
-  console.log('Displaying word:',wordText); // 디버깅
-  document.getElementById('fc-word').textContent=wordText;
-  document.getElementById('fc-tags').innerHTML=`<span class="tag tag-pos">${item.POS||'n/a'}</span><span class="tag tag-level">Lv.${item.Difficulty||2}</span><span class="tag tag-cat">${item.L1||'General'}</span>`;
+  console.log('Displaying word:',wordText);
+  if(fcWord)fcWord.textContent=wordText;
+  if(fcTags)fcTags.innerHTML=`<span class="tag tag-pos">${item.POS||'n/a'}</span><span class="tag tag-level">Lv.${item.Difficulty||2}</span><span class="tag tag-cat">${item.L1||'General'}</span>`;
 }
 if(document.getElementById('setting-tts')?.checked)setTimeout(()=>speakWord(),300);
 updateFCBookmarkBtn();
 updateFCProductionBtn();
 updateFCTagBtn();
 updateFCPrevBtn();
+}catch(e){
+console.error('showCard error:',e);
+document.getElementById('fc-word').textContent='[오류: '+e.message+']';
+showToast('❌ 카드 표시 오류');
+}
 }
 // 이전 카드로 돌아가기
 function prevCard(){
@@ -1219,13 +1326,34 @@ setTimeout(()=>{fcState.transitioning=false;showCard();},200);
 
 // 터치 이벤트
 let touchX=0,touchY=0,swiping=false;
-document.getElementById('fc-container')?.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;swiping=false;},{passive:true});
-document.getElementById('fc-container')?.addEventListener('touchmove',e=>{if(!fcState.flipped)return;const dx=e.touches[0].clientX-touchX,dy=e.touches[0].clientY-touchY;if(Math.abs(dx)>30&&Math.abs(dx)>Math.abs(dy)){swiping=true;document.getElementById(dx>0?'swipe-right':'swipe-left').classList.add('show');document.getElementById(dx>0?'swipe-left':'swipe-right').classList.remove('show');}else{document.getElementById('swipe-left').classList.remove('show');document.getElementById('swipe-right').classList.remove('show');}},{passive:true});
-document.getElementById('fc-container')?.addEventListener('touchend',e=>{document.getElementById('swipe-left').classList.remove('show');document.getElementById('swipe-right').classList.remove('show');if(!fcState.flipped)return;const dx=e.changedTouches[0].clientX-touchX,dy=e.changedTouches[0].clientY-touchY;if(Math.abs(dx)>100&&Math.abs(dx)>Math.abs(dy)*2){document.getElementById('flashcard').classList.add(dx>0?'swipe-right':'swipe-left');setTimeout(()=>rateCard(dx>0?2:0),300);}});
-document.getElementById('flashcard')?.addEventListener('click',()=>{if(!swiping)flipCard();swiping=false;});
 
-// 표현 플래시카드 이벤트
-document.getElementById('expr-fc-card')?.addEventListener('click',flipExprCard);
+// 이벤트 리스너 등록 함수 (init에서 호출)
+function setupFlashcardEvents(){
+const fcContainer=document.getElementById('fc-container');
+const flashcard=document.getElementById('flashcard');
+const exprFcCard=document.getElementById('expr-fc-card');
+
+if(fcContainer){
+fcContainer.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;swiping=false;},{passive:true});
+fcContainer.addEventListener('touchmove',e=>{if(!fcState.flipped)return;const dx=e.touches[0].clientX-touchX,dy=e.touches[0].clientY-touchY;if(Math.abs(dx)>30&&Math.abs(dx)>Math.abs(dy)){swiping=true;document.getElementById(dx>0?'swipe-right':'swipe-left').classList.add('show');document.getElementById(dx>0?'swipe-left':'swipe-right').classList.remove('show');}else{document.getElementById('swipe-left').classList.remove('show');document.getElementById('swipe-right').classList.remove('show');}},{passive:true});
+fcContainer.addEventListener('touchend',e=>{document.getElementById('swipe-left').classList.remove('show');document.getElementById('swipe-right').classList.remove('show');if(!fcState.flipped)return;const dx=e.changedTouches[0].clientX-touchX,dy=e.changedTouches[0].clientY-touchY;if(Math.abs(dx)>100&&Math.abs(dx)>Math.abs(dy)*2){document.getElementById('flashcard').classList.add(dx>0?'swipe-right':'swipe-left');setTimeout(()=>rateCard(dx>0?2:0),300);}});
+console.log('fc-container events registered');
+}else{
+console.warn('fc-container not found for event registration');
+}
+
+if(flashcard){
+flashcard.addEventListener('click',()=>{if(!swiping)flipCard();swiping=false;});
+console.log('flashcard click event registered');
+}else{
+console.warn('flashcard element not found for event registration');
+}
+
+if(exprFcCard){
+exprFcCard.addEventListener('click',flipExprCard);
+console.log('expr-fc-card click event registered');
+}
+}
 
 function startTimer(){const el=document.getElementById('fc-timer'),s=Date.now();if(fcState.timer)clearInterval(fcState.timer);fcState.timer=setInterval(()=>{const sec=Math.floor((Date.now()-s)/1000);el.textContent=Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0');},1000);}
 function confirmEndFC(){const ev=fcState.stats.again+fcState.stats.hard+fcState.stats.good+fcState.stats.easy;if(ev===0)showConfirm('학습 종료','아직 평가한 단어가 없습니다. 종료할까요?',()=>endFC(true));else if(fcState.idx<fcState.words.length||fcState.retryQueue.length>0)showConfirm('학습 종료','남은 단어가 있습니다. 종료할까요?',endFC);else endFC();}
@@ -1386,7 +1514,7 @@ const exT=getEx(w);if(exT){document.getElementById('typing-example').textContent
 // 자동 진행 (2초 후)
 setTimeout(()=>nextTyping(),2000);
 }
-document.getElementById('typing-input')?.addEventListener('keypress',e=>{if(e.key==='Enter')checkTyping();});
+// 타이핑 이벤트는 setupTypingEvents()에서 등록됨
 function nextTyping(){typingState.idx++;showTypingQ();}
 function confirmEndTyping(){if(typingState.idx<typingState.words.length||typingState.retryQueue.length>0||typingState.finalQueue.length>0)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endTyping);else endTyping();}
 async function endTyping(){
@@ -3715,6 +3843,7 @@ console.log('Persistent storage:',granted?'granted':'denied');
 }
 
 async function init(){
+try{
 // iOS Safari 데이터 보호 요청
 await requestPersistentStorage();
 const theme=localStorage.getItem('theme')||'dark';
@@ -3750,9 +3879,35 @@ document.getElementById('setting-wrong-auto').checked=wa!=='false';
 const wl=localStorage.getItem('wrongLimit')||'5';
 document.getElementById('setting-wrong-limit').value=wl;
 document.getElementById('wrong-limit-val').textContent=wl;
-try{await openDB();await updateHomeStats();}catch(e){console.error('Init error:',e);showToast('❌ 초기화 오류: '+e.message);}
+
+// ★ 이벤트 리스너 등록 (DOM 준비 후)
+setupFlashcardEvents();
+setupTypingEvents();
+
+// DB 초기화
+try{
+await openDB();
+console.log('DB opened successfully');
+await updateHomeStats();
+}catch(dbError){
+console.error('DB init error:',dbError);
+showToast('❌ DB 초기화 오류: '+dbError.message);
+}
+}catch(e){
+console.error('Init error:',e);
+showToast('❌ 초기화 오류: '+e.message);
+}
 setTimeout(()=>document.getElementById('splash').classList.add('hidden'),800);
 }
+
+// 타이핑 이벤트 등록 함수
+function setupTypingEvents(){
+const typingInput=document.getElementById('typing-input');
+if(typingInput){
+typingInput.addEventListener('keypress',e=>{if(e.key==='Enter')checkTyping();});
+}
+}
+
 init();
 </script>
 </body>
