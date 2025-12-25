@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f172a">
 <meta name="description" content="TOEFL & 일상회화 어휘 학습 - FSRS 알고리즘 기반 스마트 복습">
-<title>CEMS Vocab Pro v7.2</title>
+<title>CEMS Vocab Pro v7.3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
@@ -78,7 +78,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </style>
 </head>
 <body>
-<div id="splash"><div class="splash-icon">📚</div><div class="splash-title">CEMS Vocab Pro</div><div class="splash-sub">v7.2 - Date Fix</div><div class="splash-loader"></div></div>
+<div id="splash"><div class="splash-icon">📚</div><div class="splash-title">CEMS Vocab Pro</div><div class="splash-sub">v7.3 - Mobile Fix</div><div class="splash-loader"></div></div>
 <div class="app">
 <!-- 홈 -->
 <div id="page-home" class="page active">
@@ -757,10 +757,54 @@ req.onerror=()=>r([]);
 });
 }
 async function getAllExpr(){return new Promise(r=>{try{if(!db){r([]);return;}const req=db.transaction('expressions','readonly').objectStore('expressions').getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);}catch(e){r([]);}})}
-async function saveWord(w){return new Promise(r=>{const tx=db.transaction('words','readwrite');tx.objectStore('words').put(w);tx.oncomplete=r;})}
-async function savePV(p){return new Promise(r=>{const tx=db.transaction('phrasal_verbs','readwrite');tx.objectStore('phrasal_verbs').put(p);tx.oncomplete=r;})}
-async function saveExpr(e){return new Promise(r=>{const tx=db.transaction('expressions','readwrite');tx.objectStore('expressions').put(e);tx.oncomplete=r;})}
-async function saveSession(s){lastStudyType=s.type||'vocab';return new Promise(r=>{const tx=db.transaction('sessions','readwrite');s.date=new Date().toISOString();tx.objectStore('sessions').add(s);tx.oncomplete=r;})}
+async function saveWord(w){
+return new Promise((res,rej)=>{
+try{
+if(!db){console.error('saveWord: db is null');rej(new Error('DB not ready'));return;}
+const tx=db.transaction('words','readwrite');
+tx.objectStore('words').put(w);
+tx.oncomplete=()=>res();
+tx.onerror=(e)=>{console.error('saveWord tx error:',e);rej(e);};
+tx.onabort=(e)=>{console.error('saveWord tx abort:',e);rej(e);};
+}catch(e){console.error('saveWord exception:',e);rej(e);}
+});
+}
+async function savePV(p){
+return new Promise((res,rej)=>{
+try{
+if(!db){console.error('savePV: db is null');rej(new Error('DB not ready'));return;}
+const tx=db.transaction('phrasal_verbs','readwrite');
+tx.objectStore('phrasal_verbs').put(p);
+tx.oncomplete=()=>res();
+tx.onerror=(e)=>{console.error('savePV tx error:',e);rej(e);};
+tx.onabort=(e)=>{console.error('savePV tx abort:',e);rej(e);};
+}catch(e){console.error('savePV exception:',e);rej(e);}
+});
+}
+async function saveExpr(e){
+return new Promise((res,rej)=>{
+try{
+if(!db){rej(new Error('DB not ready'));return;}
+const tx=db.transaction('expressions','readwrite');
+tx.objectStore('expressions').put(e);
+tx.oncomplete=()=>res();
+tx.onerror=(err)=>{console.error('saveExpr error:',err);rej(err);};
+}catch(err){rej(err);}
+});
+}
+async function saveSession(s){
+lastStudyType=s.type||'vocab';
+return new Promise((res,rej)=>{
+try{
+if(!db){rej(new Error('DB not ready'));return;}
+const tx=db.transaction('sessions','readwrite');
+s.date=new Date().toISOString();
+tx.objectStore('sessions').add(s);
+tx.oncomplete=()=>res();
+tx.onerror=(e)=>{console.error('saveSession error:',e);rej(e);};
+}catch(e){rej(e);}
+});
+}
 async function getSessions(){return new Promise(r=>{const req=db.transaction('sessions','readonly').objectStore('sessions').getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);})}
 async function getWord(w){return new Promise(r=>{try{const req=db.transaction('words','readonly').objectStore('words').get(w);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);}catch(e){r(null);}})}
 async function getPV(p){return new Promise(r=>{try{const req=db.transaction('phrasal_verbs','readonly').objectStore('phrasal_verbs').get(p);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);}catch(e){r(null);}})}
@@ -1329,9 +1373,13 @@ console.error('setRating error:',e);
 }
 
 async function rateCard(r){
-if(fcState.transitioning)return;
+console.log('rateCard called:',r);
+if(fcState.transitioning){console.log('rateCard blocked: transitioning');return;}
 fcState.transitioning=true;
-const item=fcState.words[fcState.idx];if(!item){fcState.transitioning=false;return;}
+try{
+const item=fcState.words[fcState.idx];
+if(!item){console.error('rateCard: no item');fcState.transitioning=false;return;}
+console.log('rateCard item:',item?.word||item?.Phrasal_Verb);
 if(r===0)fcState.stats.again++;else if(r===1)fcState.stats.hard++;else if(r===2)fcState.stats.good++;else fcState.stats.easy++;
 // 6. Hard/Again 시 needsProduction 자동 설정
 if(r<=1)item.needsProduction=true;
@@ -1347,10 +1395,30 @@ else if(r>=2)updateWrong(item,true);
 item.reviewCount=(item.reviewCount||0)+1;if(r>=2)item.correctCount=(item.correctCount||0)+1;
 updateMastery(item,r>=2);
 // FSRS 계산 (lastReview는 calcNext 내부에서 설정)
-Object.assign(item,calcNext(item,r));
+try{
+const nextData=calcNext(item,r);
+Object.assign(item,nextData);
+}catch(calcErr){
+console.error('calcNext error in rateCard:',calcErr);
+// 기본값으로 설정
+item.lastReview=new Date().toISOString();
+}
+// DB 저장
+try{
 if(fcState.type==='phrasal')await savePV(item);else await saveWord(item);
-vibrate(r>=2?10:[50,30,50]);fcState.idx++;
+console.log('rateCard: saved to DB');
+}catch(saveErr){
+console.error('DB save error:',saveErr);
+}
+vibrate(r>=2?10:[50,30,50]);
+fcState.idx++;
+console.log('rateCard: moving to next, idx=',fcState.idx);
 setTimeout(()=>{fcState.transitioning=false;showCard();},200);
+}catch(e){
+console.error('rateCard error:',e);
+showToast('❌ 평가 오류: '+e.message);
+fcState.transitioning=false; // ★ 에러 시 반드시 해제
+}
 }
 
 // 터치 이벤트
