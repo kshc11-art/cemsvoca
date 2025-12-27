@@ -675,12 +675,18 @@ function safeSkipInvalid(state, renderFn, endFn, maxSkips = 5) {
 // 참조: https://github.com/open-spaced-repetition/fsrs4anki
 // 웹앱용으로 초기 stability 조정 (w[0]~w[3])
 const FSRS = {
-  // ★ FSRS-4.5 기본 파라미터 (17개)
-  // [S0(1), S0(2), S0(3), S0(4), D0(3), w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, w16]
-  w: [0.4872, 1.4003, 3.7145, 13.8206, 5.1618, 1.2298, 0.8975, 0.031, 1.6474, 0.1367, 1.0461, 2.1072, 0.0793, 0.3246, 1.587, 0.2272, 2.8755],
-  DECAY: -0.5,
-  FACTOR: 19/81, // = 0.9^(1/DECAY) - 1
+  // ★ FSRS-6 기본 파라미터 (21개) - 공식 문서 기준
+  // [S0(1), S0(2), S0(3), S0(4), w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, w16, w17, w18, w19, w20]
+  w: [0.212, 1.2931, 2.3065, 8.2956, 6.4133, 0.8334, 3.0194, 0.001,
+      1.8722, 0.1666, 0.796, 1.4835, 0.0614, 0.2629, 1.6483, 0.6014,
+      1.8729, 0.5425, 0.0912, 0.0658, 0.1542],
   requestRetention: 0.9, // 목표 기억률 90%
+  
+  // ★ FSRS-6 factor: R(S,S)=90%가 되도록 정의
+  factor() {
+    const w20 = this.w[20];
+    return Math.pow(0.9, -1 / w20) - 1;
+  },
   
   // 초기 Stability (새 카드 첫 복습 시)
   // S0(G) = w[G-1] (G: 1=Again, 2=Hard, 3=Good, 4=Easy)
@@ -689,40 +695,47 @@ const FSRS = {
     return Math.max(0.1, this.w[grade]);
   },
   
-  // 초기 Difficulty
-  // D0(G) = w[4] - (G-3) * w[5]
+  // ★ FSRS-5/6 초기 Difficulty
+  // D0(G) = w[4] - e^(w[5]*(G-1)) + 1
   initDifficulty(grade) {
-    // grade 0-3 → G 1-4 변환: (grade+1) - 3 = grade - 2
-    const d = this.w[4] - (grade - 2) * this.w[5];
+    const G = grade + 1; // 0-indexed → 1-indexed (1~4)
+    const d = this.w[4] - Math.exp(this.w[5] * (G - 1)) + 1;
     return Math.min(10, Math.max(1, d));
   },
   
-  // ★ Retrievability (기억 확률) - FSRS-4.5 정식
-  // R(t,S) = (1 + FACTOR * t/S)^DECAY
+  // ★ FSRS-6 Retrievability (기억 확률)
+  // R(t,S) = (1 + factor * t/S)^(-w20)
   retrievability(elapsedDays, stability) {
-    if (stability <= 0) return 0;
-    return Math.pow(1 + this.FACTOR * elapsedDays / stability, this.DECAY);
+    if (!stability || stability <= 0) return 0;
+    const f = this.factor();
+    const w20 = this.w[20];
+    return Math.pow(1 + f * (elapsedDays / stability), -w20);
   },
   
-  // ★ 다음 복습 간격 - FSRS-4.5 정식
-  // I(r,S) = (S/FACTOR) * (r^(1/DECAY) - 1)
+  // ★ FSRS-6 다음 복습 간격
+  // I(r,S) = (S/factor) * (r^(-1/w20) - 1)
   nextInterval(stability) {
-    const interval = (stability / this.FACTOR) * (Math.pow(this.requestRetention, 1/this.DECAY) - 1);
+    const f = this.factor();
+    const w20 = this.w[20];
+    const interval = (stability / f) * (Math.pow(this.requestRetention, -1 / w20) - 1);
     return Math.min(365, Math.max(1, Math.round(interval))); // 최대 365일 제한
   },
   
-  // Difficulty 업데이트 (mean reversion 적용)
-  // D' = w[7] * D0(3) + (1 - w[7]) * (D - w[6] * (G-3))
+  // ★ FSRS-5/6 Difficulty 업데이트 (Linear Damping + Mean Reversion to D0(4))
+  // ΔD(G) = -w[6] * (G-3)
+  // D' = D + ΔD * (10-D)/9  (linear damping)
+  // D'' = w[7] * D0(4) + (1-w[7]) * D'  (mean reversion)
   updateDifficulty(D, grade) {
-    const G = grade + 1; // 0-indexed → 1-indexed
-    const d0_3 = this.w[4]; // D0(3) = w[4]
+    const G = grade + 1;
+    // D0(4) = w[4] - e^(w[5]*(4-1)) + 1
+    const D0_easy = this.w[4] - Math.exp(this.w[5] * (4 - 1)) + 1;
     const deltaD = -this.w[6] * (G - 3);
-    const newD_raw = D + deltaD;
-    const newD = this.w[7] * d0_3 + (1 - this.w[7]) * newD_raw;
-    return Math.min(10, Math.max(1, newD));
+    const D1 = D + deltaD * (10 - D) / 9; // linear damping
+    const D2 = this.w[7] * D0_easy + (1 - this.w[7]) * D1; // mean reversion
+    return Math.min(10, Math.max(1, D2));
   },
   
-  // ★ Stability 업데이트 (성공: grade 1,2,3 = Hard,Good,Easy)
+  // ★ Stability 업데이트 (성공: grade 1,2,3 = Hard,Good,Easy) - FSRS v4 공식 유지
   // S'r = S * (e^w[8] * (11-D) * S^-w[9] * (e^(w[10]*(1-R)) - 1) * hardPenalty * easyBonus + 1)
   updateStabilitySuccess(D, S, R, grade) {
     const G = grade + 1;
@@ -739,6 +752,21 @@ const FSRS = {
     const newS = this.w[11] * Math.pow(D, -this.w[12]) * 
                  (Math.pow(S + 1, this.w[13]) - 1) * Math.exp(this.w[14] * (1 - R));
     return Math.min(Math.max(0.1, newS), S); // 실패 시 stability는 기존보다 작아야 함
+  },
+  
+  // ★ FSRS-6 Same-day Stability 업데이트
+  // S'(S,G) = S * e^(w[17] * (G-3+w[18]) * S^(-w[19]))
+  // G>=3일 때 S'>=S 보장 필요
+  updateStabilitySameDay(S, grade) {
+    const G = grade + 1;
+    const w17 = this.w[17], w18 = this.w[18], w19 = this.w[19];
+    const exponent = w17 * (G - 3 + w18) * Math.pow(S, -w19);
+    const SInc = Math.exp(exponent);
+    // G>=3 (Good/Easy)일 때 S가 감소하지 않도록 보장
+    if (G >= 3) {
+      return Math.max(S, S * SInc);
+    }
+    return Math.max(0.1, S * SInc);
   },
   
   // SM-2/Leitner 데이터를 FSRS로 마이그레이션
@@ -789,8 +817,7 @@ function calcNext(item, grade) {
     }
   }
   
-  // 경과일 계산 (최소 1일 보장 - 같은 날 복습해도 의미 있는 증가 위해)
-  // ★ Invalid Date 방지: 빈 문자열이나 유효하지 않은 날짜 체크
+  // ★ FSRS-6: 경과일 계산 (0 이상 허용 - same-day 지원)
   let lastReview = null;
   if (item.lastReview && typeof item.lastReview === 'string' && item.lastReview.trim() !== '') {
     const parsed = new Date(item.lastReview);
@@ -798,27 +825,42 @@ function calcNext(item, grade) {
       lastReview = parsed;
     }
   }
-  const elapsedDays = lastReview ? Math.max(1, (now - lastReview) / (1000 * 60 * 60 * 24)) : 1;
-  
-  // Retrievability 계산
-  const R = FSRS.retrievability(elapsedDays, S);
+  const elapsedDays = lastReview ? Math.max(0, (now - lastReview) / (1000 * 60 * 60 * 24)) : 1;
   
   // Difficulty 업데이트
   D = FSRS.updateDifficulty(D, grade);
   
-  // Stability 업데이트
+  // ★ FSRS-6: Same-day vs Normal 분기
   let lapses = item.lapses || 0;
   let fsrsState = item.fsrsState || 'Review';
   
-  if (grade === 0) {
-    // Again - 실패
-    S = FSRS.updateStabilityFail(D, S, R);
-    lapses++;
-    fsrsState = 'Relearning';
+  if (elapsedDays < 1) {
+    // ★ Same-day review: FSRS-6 공식 적용
+    if (grade === 0) {
+      // Again - same-day에서도 실패 처리
+      const R = FSRS.retrievability(Math.max(0.001, elapsedDays), S);
+      S = FSRS.updateStabilityFail(D, S, R);
+      lapses++;
+      fsrsState = 'Relearning';
+    } else {
+      // Hard/Good/Easy - same-day stability 공식
+      S = FSRS.updateStabilitySameDay(S, grade);
+      fsrsState = 'Review';
+    }
   } else {
-    // Hard/Good/Easy - 성공
-    S = FSRS.updateStabilitySuccess(D, S, R, grade);
-    fsrsState = 'Review';
+    // Normal review (1일 이상 경과)
+    const R = FSRS.retrievability(elapsedDays, S);
+    
+    if (grade === 0) {
+      // Again - 실패
+      S = FSRS.updateStabilityFail(D, S, R);
+      lapses++;
+      fsrsState = 'Relearning';
+    } else {
+      // Hard/Good/Easy - 성공
+      S = FSRS.updateStabilitySuccess(D, S, R, grade);
+      fsrsState = 'Review';
+    }
   }
   
   // 다음 간격 계산
@@ -1225,15 +1267,20 @@ switchStudyType(t);
 switchStatsType(t);
 switchDataType(t);
 }
-function selectMode(el,t){
+async function selectMode(el,t){
 const container=t==='phrasal'?'#study-phrasal':t==='expr'?'#study-expr':'#study-vocab';
 document.querySelectorAll(container+' .mode-card').forEach(c=>c.classList.remove('active'));
 el.classList.add('active');
-// ★ 바로 학습 시작
+// ★ 바로 학습 시작 (에러 처리 추가)
 const mode=el.dataset.mode;
-if(t==='expr')startExprStudyWithMode(mode);
-else if(t==='phrasal')startPVStudyWithMode(mode);
-else startVocabStudyWithMode(mode);
+try{
+  if(t==='expr')await startExprStudyWithMode(mode);
+  else if(t==='phrasal')await startPVStudyWithMode(mode);
+  else await startVocabStudyWithMode(mode);
+}catch(e){
+  console.error('[selectMode] Error:',e);
+  showToast('❌ 학습 시작 오류: '+e.message);
+}
 }
 // ★ 어휘 모드별 즉시 시작
 async function startVocabStudyWithMode(mode){
@@ -1245,8 +1292,13 @@ const dueCount=Math.ceil(count*0.6),weakCount=Math.ceil(count*0.3),newCount=coun
 const dueItems=sortByFSRSPriority(w.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
 const weakItems=shuffle(w.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
 const newItems=shuffle(w.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-// ★ 순서 유지: 복습예정 먼저 → 취약 → 신규 (shuffle 제거)
-const sel=[...dueItems,...weakItems,...newItems];
+// ★ 순서 유지 + 부족하면 나머지에서 채우기
+let sel=[...dueItems,...weakItems,...newItems];
+if(sel.length<count){
+  const usedWords=new Set(sel.map(x=>x.word));
+  const remaining=shuffle(w.filter(x=>!usedWords.has(x.word))).slice(0,count-sel.length);
+  sel=[...sel,...remaining];
+}
 if(!sel.length){showToast('✅ 학습할 단어가 없습니다!');return;}
 if(mode==='flashcard')startFC(sel,w,'vocab');
 else if(mode==='quiz')startQuiz(sel,w,'quiz','vocab');
@@ -1267,8 +1319,13 @@ const dueCount=Math.ceil(count*0.6),weakCount=Math.ceil(count*0.3),newCount=coun
 const dueItems=sortByFSRSPriority(p.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
 const weakItems=shuffle(p.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
 const newItems=shuffle(p.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-// ★ 순서 유지: 복습예정 먼저 → 취약 → 신규
-const sel=[...dueItems,...weakItems,...newItems];
+// ★ 순서 유지 + 부족하면 나머지에서 채우기
+let sel=[...dueItems,...weakItems,...newItems];
+if(sel.length<count){
+  const usedPVs=new Set(sel.map(x=>x.Phrasal_Verb));
+  const remaining=shuffle(p.filter(x=>!usedPVs.has(x.Phrasal_Verb))).slice(0,count-sel.length);
+  sel=[...sel,...remaining];
+}
 if(!sel.length){showToast('✅ 학습할 구동사가 없습니다!');return;}
 if(mode==='pv-flashcard')startFC(sel,p,'phrasal');
 else if(mode==='pv-particle')startPVP(sel,p);
@@ -1287,8 +1344,13 @@ const dueCount=Math.ceil(count*0.6),weakCount=Math.ceil(count*0.3),newCount=coun
 const dueItems=sortByFSRSPriority(e.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
 const weakItems=shuffle(e.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
 const newItems=shuffle(e.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-// ★ 순서 유지: 복습예정 먼저 → 취약 → 신규
-const sel=[...dueItems,...weakItems,...newItems];
+// ★ 순서 유지 + 부족하면 나머지에서 채우기
+let sel=[...dueItems,...weakItems,...newItems];
+if(sel.length<count){
+  const usedExprs=new Set(sel.map(x=>x.Expression));
+  const remaining=shuffle(e.filter(x=>!usedExprs.has(x.Expression))).slice(0,count-sel.length);
+  sel=[...sel,...remaining];
+}
 if(!sel.length){showToast('✅ 학습할 표현이 없습니다!');return;}
 if(mode==='expr-fc')startExprFCWithItems(sel,e);
 else if(mode==='expr-quiz')startExprQuiz(sel,e);
@@ -1434,9 +1496,14 @@ if(t==='phrasal'){
   const dueItems=sortByFSRSPriority(p.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
   const weakItems=shuffle(p.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
   const newItems=shuffle(p.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-  // ★ 순서 유지: 복습예정 먼저 → 취약 → 신규
-  const selected=[...dueItems,...weakItems,...newItems];
-  console.log('[QuickStudy PV] FSRS기반:',{due:dueItems.length,weak:weakItems.length,new:newItems.length});
+  // ★ 순서 유지 + 부족하면 채우기
+  let selected=[...dueItems,...weakItems,...newItems];
+  if(selected.length<count){
+    const usedPVs=new Set(selected.map(x=>x.Phrasal_Verb));
+    const remaining=shuffle(p.filter(x=>!usedPVs.has(x.Phrasal_Verb))).slice(0,count-selected.length);
+    selected=[...selected,...remaining];
+  }
+  console.log('[QuickStudy PV] FSRS기반:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length});
   if(!selected.length){showToast('✅ 학습할 구동사가 없습니다!');return;}
   if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
   startFC(selected,p,'phrasal');
@@ -1451,9 +1518,14 @@ const newCount=count-dueCount-weakCount;
 const dueItems=sortByFSRSPriority(w.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
 const weakItems=shuffle(w.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
 const newItems=shuffle(w.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-// ★ 순서 유지: 복습예정 먼저 → 취약 → 신규
-const selected=[...dueItems,...weakItems,...newItems];
-console.log('[QuickStudy Vocab] FSRS기반:',{due:dueItems.length,weak:weakItems.length,new:newItems.length});
+// ★ 순서 유지 + 부족하면 채우기
+let selected=[...dueItems,...weakItems,...newItems];
+if(selected.length<count){
+  const usedWords=new Set(selected.map(x=>x.word));
+  const remaining=shuffle(w.filter(x=>!usedWords.has(x.word))).slice(0,count-selected.length);
+  selected=[...selected,...remaining];
+}
+console.log('[QuickStudy Vocab] FSRS기반:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length});
 if(!selected.length){showToast('✅ 학습할 단어가 없습니다!');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 startFC(selected,w,'vocab');
@@ -1472,8 +1544,13 @@ if(t==='phrasal'){
   const dueItems=sortByFSRSPriority(valid.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
   const weakItems=shuffle(valid.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
   const newItems=shuffle(valid.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-  // ★ 순서 유지: 복습예정 먼저 → 취약 → 신규
-  const selected=[...dueItems,...weakItems,...newItems];
+  // ★ 순서 유지 + 부족하면 채우기
+  let selected=[...dueItems,...weakItems,...newItems];
+  if(selected.length<count){
+    const usedPVs=new Set(selected.map(x=>x.Phrasal_Verb));
+    const remaining=shuffle(valid.filter(x=>!usedPVs.has(x.Phrasal_Verb))).slice(0,count-selected.length);
+    selected=[...selected,...remaining];
+  }
   if(!selected.length){showToast('✅ 학습할 구동사가 없습니다!');return;}
   if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
   startPVP(selected,p);
@@ -1489,8 +1566,13 @@ const newCount=count-dueCount-weakCount;
 const dueItems=sortByFSRSPriority(valid.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
 const weakItems=shuffle(valid.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
 const newItems=shuffle(valid.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-// ★ 순서 유지: 복습예정 먼저 → 취약 → 신규
-const selected=[...dueItems,...weakItems,...newItems];
+// ★ 순서 유지 + 부족하면 채우기
+let selected=[...dueItems,...weakItems,...newItems];
+if(selected.length<count){
+  const usedWords=new Set(selected.map(x=>x.word));
+  const remaining=shuffle(valid.filter(x=>!usedWords.has(x.word))).slice(0,count-selected.length);
+  selected=[...selected,...remaining];
+}
 if(!selected.length){showToast('✅ 학습할 단어가 없습니다!');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 startQuiz(selected,w,'quiz','vocab');
@@ -2325,10 +2407,12 @@ showModal('quiz-complete-modal');updateHomeStats();
 // 어휘 리스닝
 function showListeningQ(){
 const item=listeningState.words[listeningState.idx];
-// ★ 무한 루프 방지: safeSkipInvalid 사용
-if(!item||!item.word){
+// ★ 타입별 유효성 체크
+const itemKey = currentListeningType==='vocab' ? item?.word : 
+                currentListeningType==='phrasal' ? item?.Phrasal_Verb : item?.Expression;
+if(!item||!itemKey){
   console.warn('Invalid listening item, skipping:',item,listeningState.idx);
-  return safeSkipInvalid(listeningState, showListeningQ, endListening);
+  return safeSkipInvalid(listeningState, showListeningQ, endCurrentListening);
 }
 listeningState.skipCount=0; // 정상 아이템이면 카운터 리셋
 listeningState.currentWord=item;
@@ -2338,15 +2422,22 @@ document.getElementById('listening-current').textContent=listeningState.idx+1;
 document.getElementById('listening-word').textContent='';
 document.getElementById('listening-word').classList.add('hidden');
 document.getElementById('listening-play-btn').disabled=false;
-// 선택지 생성 (5지선다) - 스마트 선택지
+// ★ 선택지 생성 - 타입별 처리
 const correctMeaning=getMKO(item)||getMEN(item);
 const pool=listeningState.all.filter(x=>{
-  if(x.word===item.word)return false;
+  // 타입별 키 비교
+  const xKey = currentListeningType==='vocab' ? x.word : 
+               currentListeningType==='phrasal' ? x.Phrasal_Verb : x.Expression;
+  if(xKey===itemKey)return false;
   const m=getMKO(x);
   if(!m||m===correctMeaning)return false;
   return true;
 });
-const distractors=getDistractors(item,pool,4);
+// ★ 타입별 distractor 함수 사용
+let distractors;
+if(currentListeningType==='vocab') distractors=getDistractors(item,pool,4);
+else if(currentListeningType==='phrasal') distractors=getPVDistractors(item,pool,4);
+else distractors=getExprDistractors(item,pool,4);
 // 중복 의미 제거
 const usedMeanings=new Set([correctMeaning]);
 const uniqueDistractors=distractors.filter(d=>{
@@ -2356,10 +2447,13 @@ const uniqueDistractors=distractors.filter(d=>{
   return true;
 }).slice(0,4);
 const allOpts=shuffle([item,...uniqueDistractors]);
-console.log('[Listening]',{word:item.word,POS:item.POS,distractorCount:uniqueDistractors.length});
+console.log('[Listening]',{type:currentListeningType,key:itemKey,distractorCount:uniqueDistractors.length});
 document.getElementById('listening-options').innerHTML=allOpts.map((o,i)=>{
 const meaning=getMKO(o)||getMEN(o);
-const isCorrect=o.word===item.word;
+// ★ 타입별 정답 비교
+const oKey = currentListeningType==='vocab' ? o.word : 
+             currentListeningType==='phrasal' ? o.Phrasal_Verb : o.Expression;
+const isCorrect=oKey===itemKey;
 return `<div class="quiz-option" onclick="selectListeningOption(this,${isCorrect})">${meaning}</div>`;
 }).join('');
 // 액션 바 업데이트
@@ -2479,9 +2573,8 @@ function nextListeningQ(){
 document.getElementById('listening-rating-bar').classList.add('hidden');
 document.getElementById('listening-next-btn').classList.add('hidden');
 listeningState.idx++;
-if(currentListeningType==='vocab')showListeningQ();
-else if(currentListeningType==='phrasal')showPVListeningQ();
-else if(currentListeningType==='expr')showExprListeningQ();
+// ★ 모든 타입에서 통합 showListeningQ 사용
+showListeningQ();
 }
 
 function speakText(text){
@@ -2942,8 +3035,8 @@ if(mode==='pv-flashcard')startFC(sel,p,'phrasal');
 else if(mode==='pv-particle'){const v=sel.filter(x=>x.Particle?.trim());if(v.length<5){showToast('⚠️ Particle이 있는 구동사가 부족합니다');return;}startPVP(v,p);}
 else if(mode==='pv-meaning'){const v=sel.filter(x=>getMKO(x));if(v.length<5){showToast('⚠️ 뜻이 있는 구동사가 부족합니다');return;}startPVQ(v,p,'meaning');}
 else if(mode==='pv-reverse'){const v=sel.filter(x=>getMKO(x));if(v.length<5){showToast('⚠️ 뜻이 있는 구동사가 부족합니다');return;}startPVQ(v,p,'reverse');}
-else if(mode==='pv-listening')startPVListening(sel,p);
-else if(mode==='pv-dictation')startPVDictation(sel);
+else if(mode==='pv-listening')startListening(sel,p,'phrasal');
+else if(mode==='pv-dictation')startDictation(sel,p,'phrasal');
 }
 // PV Particle
 function startPVP(items,all){
@@ -4270,11 +4363,11 @@ showPage('expr-typing');showExprTypingQ();
 }else if(mode==='expr-listening'){
 const valid=sel.filter(e=>getMKO(e));
 if(valid.length<5){showToast('⚠️ 뜻이 있는 표현이 부족합니다');return;}
-startExprListening(valid,exprs);
+startListening(valid,exprs,'expr');
 }else if(mode==='expr-dictation'){
 const valid=sel.filter(e=>getMKO(e));
 if(!valid.length){showToast('⚠️ 뜻이 있는 표현이 없습니다');return;}
-startExprDictation(valid);
+startDictation(valid,exprs,'expr');
 }else{
 exprState={words:sel,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null};
 document.getElementById('expr-fc-total').textContent=exprState.words.length;
