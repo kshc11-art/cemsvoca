@@ -453,8 +453,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="type-tabs"><div class="type-tab active" data-type="vocab" onclick="switchGlobalType('vocab')">📖 어휘</div><div class="type-tab phrasal" data-type="phrasal" onclick="switchGlobalType('phrasal')">🔗 구동사</div><div class="type-tab expr" data-type="expr" onclick="switchGlobalType('expr')">💬 표현</div></div>
 <div class="card"><div class="card-title">📚 단어 목록 <span id="word-count" style="font-size:12px;opacity:.7;margin-left:8px">0개</span></div>
 <div style="display:flex;gap:8px;margin-bottom:12px"><input type="text" id="word-search" placeholder="🔍 검색..." style="flex:1;min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text)" oninput="searchWords()"><button class="btn btn-primary" onclick="openAddWordModal()" style="width:50px;padding:10px">➕</button></div>
+<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;font-size:11px">
+<select id="data-filter-special" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+<option value="all">전체</option>
+<option value="new-today">📅 오늘 추가</option>
+<option value="duplicate">📑 중복단어(1,2,3)</option>
+<option value="starred">⭐ 북마크</option>
+<option value="wrong">❌ 오답노트</option>
+<option value="no-review">🆕 미학습</option>
+</select>
+<select id="data-filter-l2" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+<option value="all">L2 전체</option>
+</select>
+<select id="data-sort" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+<option value="alpha">가나다순</option>
+<option value="acc-asc">오답율↑</option>
+<option value="acc-desc">정답율↑</option>
+<option value="stability-asc">불안정↑</option>
+<option value="due-first">복습예정↑</option>
+<option value="review-desc">복습횟수↑</option>
+<option value="added-desc">최근추가↑</option>
+</select>
+</div>
 <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;font-size:12px" id="tag-filter-container"></div>
-<div class="table-container"><table class="word-table"><thead><tr><th id="col1-h">단어</th><th>뜻</th><th>정답률</th></tr></thead><tbody id="word-table-body"></tbody></table></div><button class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="loadMoreWords()">더 보기</button></div>
+<div class="table-container"><table class="word-table"><thead><tr><th id="col1-h">단어</th><th>뜻</th><th style="width:60px">정답률</th><th style="width:36px">🔊</th></tr></thead><tbody id="word-table-body"></tbody></table></div><button class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="loadMoreWords()">더 보기</button></div>
 <div class="card" style="padding:12px">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
 <span style="font-weight:600;font-size:14px">💾 DB 현황</span>
@@ -1304,7 +1326,7 @@ return shuffle([...shuffle(scored.slice(0,cutoff)).slice(0,n-1),...shuffle(score
 function switchHomeType(t){currentHomeType=t;document.querySelectorAll('#page-home .type-tab').forEach(e=>e.classList.toggle('active',e.dataset.type===t));document.getElementById('home-vocab').classList.toggle('hidden',t!=='vocab');document.getElementById('home-phrasal').classList.toggle('hidden',t!=='phrasal');document.getElementById('home-expr').classList.toggle('hidden',t!=='expr');}
 function switchStudyType(t){currentStudyType=t;document.querySelectorAll('#study-type-tabs .type-tab').forEach(e=>e.classList.toggle('active',e.dataset.type===t));document.getElementById('study-vocab').classList.toggle('hidden',t!=='vocab');document.getElementById('study-phrasal').classList.toggle('hidden',t!=='phrasal');document.getElementById('study-expr').classList.toggle('hidden',t!=='expr');}
 function switchStatsType(t){document.querySelectorAll('#page-stats .type-tab').forEach(e=>e.classList.toggle('active',e.dataset.type===t));document.getElementById('stats-vocab').classList.toggle('hidden',t!=='vocab');document.getElementById('stats-phrasal').classList.toggle('hidden',t!=='phrasal');document.getElementById('stats-expr').classList.toggle('hidden',t!=='expr');if(t==='phrasal')updatePVStats();if(t==='expr')updateExprStats();}
-function switchDataType(t){currentDataType=t;currentSearchQuery='';currentTagFilter='all';document.getElementById('word-search').value='';document.querySelectorAll('#page-data .type-tab').forEach(e=>e.classList.toggle('active',e.dataset.type===t));document.getElementById('col1-h').textContent=t==='phrasal'?'구동사':t==='expr'?'표현':'단어';wordOffset=0;updateWordTable();switchDbTab(t==='phrasal'?'pv':t);}
+function switchDataType(t){currentDataType=t;currentSearchQuery='';currentTagFilter='all';document.getElementById('word-search').value='';document.getElementById('data-filter-special').value='all';document.getElementById('data-filter-l2').value='all';document.getElementById('data-sort').value='alpha';document.querySelectorAll('#page-data .type-tab').forEach(e=>e.classList.toggle('active',e.dataset.type===t));document.getElementById('col1-h').textContent=t==='phrasal'?'구동사':t==='expr'?'표현':'단어';wordOffset=0;updateWordTable();switchDbTab(t==='phrasal'?'pv':t);}
 // ★ 전역 타입 연동 - 모든 탭 동시 전환
 function switchGlobalType(t){
 switchHomeType(t);
@@ -5522,13 +5544,44 @@ legend+='</div>';
 return stackBar+legend;
 }
 let currentSearchQuery='',currentTagFilter='all';
+// 데이터탭 필터 적용
+function applyDataFilter(){wordOffset=0;updateWordTable();}
+// 데이터탭 음성 재생
+function speakDataWord(text,e){
+if(e)e.stopPropagation();
+if(!text)return;
+speechSynthesis.cancel();
+const u=new SpeechSynthesisUtterance(text);
+u.lang='en-US';u.rate=0.9;
+speechSynthesis.speak(u);
+}
+// L2 필터 옵션 업데이트
+async function updateL2FilterOptions(){
+const select=document.getElementById('data-filter-l2');
+if(currentDataType==='vocab'){
+  // 어휘: L2 필터
+  const w=await getAllWords();
+  const l2s=[...new Set(w.map(x=>x.L2).filter(Boolean))].sort();
+  select.innerHTML='<option value="all">L2 전체</option>'+l2s.map(l=>`<option value="${l}">${l}</option>`).join('');
+}else{
+  // 구동사/표현: Register 필터
+  select.innerHTML='<option value="all">격식도 전체</option><option value="Formal">Formal</option><option value="Neutral">Neutral</option><option value="Casual">Casual</option>';
+}
+}
 async function updateWordTable(){
 const query=currentSearchQuery.toLowerCase().trim();
 const tagF=currentTagFilter;
+const specialF=document.getElementById('data-filter-special')?.value||'all';
+const l2F=document.getElementById('data-filter-l2')?.value||'all';
+const sortBy=document.getElementById('data-sort')?.value||'alpha';
+const today=new Date().toISOString().slice(0,10);
+
 if(currentDataType==='expr'){
 let e=await getAllExpr();
+// 검색 필터
 if(query){
 e=e.filter(x=>(x.Expression||'').toLowerCase().includes(query)||(getMKO(x)||'').toLowerCase().includes(query)||(x.Function||'').toLowerCase().includes(query));
+// 검색 결과 정렬: 정확일치 > 시작일치 > 포함
 e.sort((a,b)=>{
 const aWord=(a.Expression||'').toLowerCase();
 const bWord=(b.Expression||'').toLowerCase();
@@ -5541,8 +5594,33 @@ if(aStarts!==bStarts)return aStarts-bStarts;
 return aWord.localeCompare(bWord);
 });
 }
+// 특수 필터
+if(specialF==='new-today')e=e.filter(x=>x.addedDate&&x.addedDate.startsWith(today));
+else if(specialF==='duplicate')e=e.filter(x=>/[¹²³]/.test(x.Expression)||/[123]$/.test(x.Expression));
+else if(specialF==='starred')e=e.filter(x=>x.starred);
+else if(specialF==='wrong')e=e.filter(x=>x.wrongNote);
+else if(specialF==='no-review')e=e.filter(x=>!x.reviewCount);
+// Register 필터 (표현)
+if(l2F!=='all')e=e.filter(x=>(x.Register||'Neutral')===l2F);
+// 정렬
+if(!query){
+if(sortBy==='acc-asc')e=e.filter(x=>x.reviewCount>0).sort((a,b)=>(getAcc(a)||100)-(getAcc(b)||100));
+else if(sortBy==='acc-desc')e=e.filter(x=>x.reviewCount>0).sort((a,b)=>(getAcc(b)||0)-(getAcc(a)||0));
+else if(sortBy==='stability-asc')e=e.sort((a,b)=>(a.stability||999)-(b.stability||999));
+else if(sortBy==='due-first')e=e.filter(x=>x.nextReview).sort((a,b)=>new Date(a.nextReview)-new Date(b.nextReview));
+else if(sortBy==='review-desc')e=e.sort((a,b)=>(b.reviewCount||0)-(a.reviewCount||0));
+else if(sortBy==='added-desc')e=e.sort((a,b)=>(b.addedDate||'').localeCompare(a.addedDate||''));
+else e.sort((a,b)=>(a.Expression||'').localeCompare(b.Expression||''));
+}
 document.getElementById('word-count').textContent=e.length+'개';
-document.getElementById('word-table-body').innerHTML=e.slice(0,wordOffset+50).map(x=>{const a=getAcc(x),as=a!==null?a+'%':'-',c=a===null?'':a>=80?'color:var(--success)':a<50?'color:var(--danger)':'color:var(--warning)';const star=x.starred?'⭐ ':'';const reg=x.Register?`<span style="background:var(--expr);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:4px">${x.Register}</span>`:'';return`<tr onclick="openExprEditModal('${x.Expression.replace(/'/g,"\\'")}')" style="cursor:pointer"><td><strong>${star}${x.Expression}</strong>${reg}</td><td>${getMKO(x)||x.Function||''}</td><td style="${c}">${as}</td></tr>`;}).join('');
+document.getElementById('word-table-body').innerHTML=e.slice(0,wordOffset+50).map(x=>{
+const a=getAcc(x),as=a!==null?a+'%':'-',c=a===null?'':a>=80?'color:var(--success)':a<50?'color:var(--danger)':'color:var(--warning)';
+const star=x.starred?'⭐ ':'';
+const reg=x.Register?`<span style="background:var(--expr);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:4px">${x.Register}</span>`:'';
+const expr=x.Expression.replace(/'/g,"\\'");
+return`<tr><td onclick="openExprEditModal('${expr}')" style="cursor:pointer"><strong>${star}${x.Expression}</strong>${reg}</td><td onclick="openExprEditModal('${expr}')" style="cursor:pointer">${getMKO(x)||x.Function||''}</td><td style="${c}">${as}</td><td style="text-align:center"><button onclick="speakDataWord('${expr}',event)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:4px">🔊</button></td></tr>`;
+}).join('');
+
 }else if(currentDataType==='phrasal'){
 let p=await getAllPV();
 // 검색 필터
@@ -5561,12 +5639,38 @@ if(aStarts!==bStarts)return aStarts-bStarts;
 return aWord.localeCompare(bWord);
 });
 }
+// 특수 필터
+if(specialF==='new-today')p=p.filter(x=>x.addedDate&&x.addedDate.startsWith(today));
+else if(specialF==='duplicate')p=p.filter(x=>/[¹²³]/.test(x.Phrasal_Verb)||/[123]$/.test(x.Phrasal_Verb));
+else if(specialF==='starred')p=p.filter(x=>x.starred);
+else if(specialF==='wrong')p=p.filter(x=>x.wrongNote);
+else if(specialF==='no-review')p=p.filter(x=>!x.reviewCount);
+// Register 필터 (구동사)
+if(l2F!=='all')p=p.filter(x=>(x.Register||'Neutral')===l2F);
 // 태그 필터
 if(tagF!=='all')p=p.filter(x=>(x.tags||[]).includes(tagF));
+// 정렬
+if(!query){
+if(sortBy==='acc-asc')p=p.filter(x=>x.reviewCount>0).sort((a,b)=>(getAcc(a)||100)-(getAcc(b)||100));
+else if(sortBy==='acc-desc')p=p.filter(x=>x.reviewCount>0).sort((a,b)=>(getAcc(b)||0)-(getAcc(a)||0));
+else if(sortBy==='stability-asc')p=p.sort((a,b)=>(a.stability||999)-(b.stability||999));
+else if(sortBy==='due-first')p=p.filter(x=>x.nextReview).sort((a,b)=>new Date(a.nextReview)-new Date(b.nextReview));
+else if(sortBy==='review-desc')p=p.sort((a,b)=>(b.reviewCount||0)-(a.reviewCount||0));
+else if(sortBy==='added-desc')p=p.sort((a,b)=>(b.addedDate||'').localeCompare(a.addedDate||''));
+else p.sort((a,b)=>(a.Phrasal_Verb||'').localeCompare(b.Phrasal_Verb||''));
+}
 document.getElementById('word-count').textContent=p.length+'개';
-document.getElementById('word-table-body').innerHTML=p.slice(0,wordOffset+50).map(x=>{const a=getAcc(x),as=a!==null?a+'%':'-',c=a===null?'':a>=80?'color:var(--success)':a<50?'color:var(--danger)':'color:var(--warning)';const star=x.starred?'⭐ ':'';const tags=(x.tags||[]).map(t=>`<span style="background:var(--primary);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:4px">${t}</span>`).join('');return`<tr onclick="openEditModal('${x.Phrasal_Verb.replace(/'/g,"\\'")}','phrasal')" style="cursor:pointer"><td><strong>${star}${x.Phrasal_Verb}</strong>${tags}</td><td>${getMKO(x)||''}</td><td style="${c}">${as}</td></tr>`;}).join('');
+document.getElementById('word-table-body').innerHTML=p.slice(0,wordOffset+50).map(x=>{
+const a=getAcc(x),as=a!==null?a+'%':'-',c=a===null?'':a>=80?'color:var(--success)':a<50?'color:var(--danger)':'color:var(--warning)';
+const star=x.starred?'⭐ ':'';
+const tags=(x.tags||[]).map(t=>`<span style="background:var(--primary);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:4px">${t}</span>`).join('');
+const pv=x.Phrasal_Verb.replace(/'/g,"\\'");
+return`<tr><td onclick="openEditModal('${pv}','phrasal')" style="cursor:pointer"><strong>${star}${x.Phrasal_Verb}</strong>${tags}</td><td onclick="openEditModal('${pv}','phrasal')" style="cursor:pointer">${getMKO(x)||''}</td><td style="${c}">${as}</td><td style="text-align:center"><button onclick="speakDataWord('${pv}',event)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:4px">🔊</button></td></tr>`;
+}).join('');
+
 }else{
 let w=await getAllWords();
+// 검색 필터
 if(query){
 w=w.filter(x=>displayWord(x.word||'').toLowerCase().includes(query)||(getMKO(x)||'').toLowerCase().includes(query)||(getMEN(x)||'').toLowerCase().includes(query));
 // 검색 결과 정렬: 정확일치 > 시작일치 > 포함
@@ -5582,11 +5686,38 @@ if(aStarts!==bStarts)return aStarts-bStarts;
 return aWord.localeCompare(bWord);
 });
 }
+// 특수 필터
+if(specialF==='new-today')w=w.filter(x=>x.addedDate&&x.addedDate.startsWith(today));
+else if(specialF==='duplicate')w=w.filter(x=>/[¹²³]/.test(x.word)||/[123]$/.test(x.word));
+else if(specialF==='starred')w=w.filter(x=>x.starred);
+else if(specialF==='wrong')w=w.filter(x=>x.wrongNote);
+else if(specialF==='no-review')w=w.filter(x=>!x.reviewCount);
+// L2 필터 (어휘 전용)
+if(l2F!=='all')w=w.filter(x=>x.L2===l2F);
+// 태그 필터
 if(tagF!=='all')w=w.filter(x=>(x.tags||[]).includes(tagF));
+// 정렬
+if(!query){
+if(sortBy==='acc-asc')w=w.filter(x=>x.reviewCount>0).sort((a,b)=>(getAcc(a)||100)-(getAcc(b)||100));
+else if(sortBy==='acc-desc')w=w.filter(x=>x.reviewCount>0).sort((a,b)=>(getAcc(b)||0)-(getAcc(a)||0));
+else if(sortBy==='stability-asc')w=w.sort((a,b)=>(a.stability||999)-(b.stability||999));
+else if(sortBy==='due-first')w=w.filter(x=>x.nextReview).sort((a,b)=>new Date(a.nextReview)-new Date(b.nextReview));
+else if(sortBy==='review-desc')w=w.sort((a,b)=>(b.reviewCount||0)-(a.reviewCount||0));
+else if(sortBy==='added-desc')w=w.sort((a,b)=>(b.addedDate||'').localeCompare(a.addedDate||''));
+else w.sort((a,b)=>displayWord(a.word||'').localeCompare(displayWord(b.word||'')));
+}
 document.getElementById('word-count').textContent=w.length+'개';
-document.getElementById('word-table-body').innerHTML=w.slice(0,wordOffset+50).map(x=>{const a=getAcc(x),as=a!==null?a+'%':'-',c=a===null?'':a>=80?'color:var(--success)':a<50?'color:var(--danger)':'color:var(--warning)';const star=x.starred?'⭐ ':'';const tags=(x.tags||[]).map(t=>`<span style="background:var(--primary);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:4px">${t}</span>`).join('');return`<tr onclick="openEditModal('${x.word.replace(/'/g,"\\'")}','vocab')" style="cursor:pointer"><td><strong>${star}${displayWord(x.word)}</strong>${tags}</td><td>${getMKO(x)||''}</td><td style="${c}">${as}</td></tr>`;}).join('');
+document.getElementById('word-table-body').innerHTML=w.slice(0,wordOffset+50).map(x=>{
+const a=getAcc(x),as=a!==null?a+'%':'-',c=a===null?'':a>=80?'color:var(--success)':a<50?'color:var(--danger)':'color:var(--warning)';
+const star=x.starred?'⭐ ':'';
+const tags=(x.tags||[]).map(t=>`<span style="background:var(--primary);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:4px">${t}</span>`).join('');
+const wd=x.word.replace(/'/g,"\\'");
+const spkWord=displayWord(x.word,true).replace(/'/g,"\\'");
+return`<tr><td onclick="openEditModal('${wd}','vocab')" style="cursor:pointer"><strong>${star}${displayWord(x.word)}</strong>${tags}</td><td onclick="openEditModal('${wd}','vocab')" style="cursor:pointer">${getMKO(x)||''}</td><td style="${c}">${as}</td><td style="text-align:center"><button onclick="speakDataWord('${spkWord}',event)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:4px">🔊</button></td></tr>`;
+}).join('');
 }
 await updateTagFilter();
+await updateL2FilterOptions();
 }
 async function loadMoreWords(){wordOffset+=50;updateWordTable();}
 
