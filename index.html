@@ -36,6 +36,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .mode-selector{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px}.mode-card{padding:12px 8px;background:var(--bg);border-radius:12px;text-align:center;cursor:pointer;border:2px solid transparent}.mode-card.active{border-color:var(--primary);background:rgba(99,102,241,.1)}.mode-card.phrasal.active{border-color:var(--phrasal);background:rgba(236,72,153,.1)}.mode-card.expr.active{border-color:var(--expr);background:rgba(249,115,22,.1)}.mode-card-icon{font-size:24px;margin-bottom:4px}.mode-card-title{font-size:13px;font-weight:600;margin-bottom:2px}.mode-card-desc{font-size:11px;color:var(--muted)}
 .range-container{display:flex;align-items:center;gap:16px}.range-slider{flex:1;-webkit-appearance:none;height:6px;background:var(--border);border-radius:3px}.range-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:var(--primary);border-radius:50%}.range-value{font-size:18px;font-weight:700;min-width:60px;text-align:right}
 .chip-group{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:8px 14px;background:var(--bg);border-radius:20px;font-size:13px;cursor:pointer;border:1px solid var(--border)}.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.chip-multi{display:flex;flex-wrap:wrap;gap:6px}.chip-multi .chip{padding:6px 12px;font-size:12px}.chip-multi .chip.checked{background:var(--primary);color:#fff;border-color:var(--primary)}.chip-multi .chip.excluded{background:#ef4444;color:#fff;border-color:#ef4444}
+.filter-select{position:relative}.filter-select select{padding-right:28px}.filter-mode{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;padding:2px 4px;border-radius:4px;cursor:pointer;background:var(--bg);border:1px solid var(--border)}.filter-mode.exclude{background:#ef4444;color:#fff;border-color:#ef4444}
 .form-group{margin-bottom:16px}.form-label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}.form-select{width:100%;padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:15px}
 .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0}.toggle-label{font-size:14px}.toggle-switch{position:relative;width:50px;height:28px}.toggle-switch input{opacity:0;width:0;height:0}.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:28px;transition:.3s}.toggle-slider:before{position:absolute;content:"";height:22px;width:22px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}.toggle-switch input:checked+.toggle-slider{background:var(--primary)}.toggle-switch input:checked+.toggle-slider:before{transform:translateX(22px)}
 .upload-zone{display:block;border:2px dashed var(--border);border-radius:16px;padding:40px 20px;text-align:center;cursor:pointer}.upload-zone.dragover{border-color:var(--primary);background:rgba(99,102,241,.05)}.upload-zone-icon{font-size:48px;margin-bottom:16px}.upload-zone p{color:var(--muted);font-size:14px}
@@ -80,7 +82,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </style>
 </head>
 <body>
-<div id="splash"><div class="splash-icon">📚</div><div class="splash-title">CEMS Vocab Pro</div><div class="splash-sub">v7.0 - FSRS Algorithm</div><div class="splash-loader"></div></div>
+<div id="splash"><div class="splash-icon">📚</div><div class="splash-title">CEMS Vocab Pro</div><div class="splash-sub">v7.2 - FSRS-6 Algorithm</div><div class="splash-loader"></div></div>
 <div class="app">
 <!-- 홈 -->
 <div id="page-home" class="page active">
@@ -203,17 +205,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="study-vocab">
 <div class="card"><div class="card-title">🎮 학습 모드</div><div class="mode-selector"><div class="mode-card active" data-mode="flashcard" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div><div class="mode-card-desc">카드 뒤집기</div></div><div class="mode-card" data-mode="quiz" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">❓</div><div class="mode-card-title">5지선다</div><div class="mode-card-desc">의미 맞추기</div></div></div><div class="mode-selector"><div class="mode-card" data-mode="reverse" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🔄</div><div class="mode-card-title">역방향</div><div class="mode-card-desc">뜻→영어</div></div><div class="mode-card" data-mode="typing" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">⌨️</div><div class="mode-card-title">타이핑</div><div class="mode-card-desc">스펠링</div></div></div><div class="mode-selector"><div class="mode-card" data-mode="cloze" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">📝</div><div class="mode-card-title">빈칸채우기</div><div class="mode-card-desc">문장 완성</div></div><div class="mode-card" data-mode="collocation" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🔗</div><div class="mode-card-title">Collocation</div><div class="mode-card-desc">연어 학습</div></div></div><div class="mode-selector"><div class="mode-card" data-mode="listening" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🎧</div><div class="mode-card-title">리스닝</div><div class="mode-card-desc">듣고 뜻 맞추기</div></div><div class="mode-card" data-mode="dictation" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">✍️</div><div class="mode-card-title">받아쓰기</div><div class="mode-card-desc">듣고 스펠링</div></div></div></div>
 <div class="card"><div class="card-title">📝 학습 분량</div><div class="range-container"><input type="range" class="range-slider" id="study-count" min="5" max="20" value="20" step="1" oninput="document.getElementById('study-count-val').textContent=this.value"><div class="range-value"><span id="study-count-val">20</span>개</div></div></div>
-<div class="card"><div class="card-title">🎯 필터</div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-group" id="filter-mastery"><span class="chip active" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group" style="margin-bottom:0"><label class="form-label">📚 CEFR</label><select class="form-select" id="filter-cefr"><option value="all">전체</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📊 빈도</label><select class="form-select" id="filter-freq"><option value="all">전체</option><option value="K1">K1</option><option value="K2">K2</option><option value="K3">K3</option><option value="K4">K4</option><option value="K5">K5</option><option value="K6">K6</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎯 우선순위</label><select class="form-select" id="filter-priority"><option value="all">전체</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">💬 Register</label><select class="form-select" id="filter-register"><option value="all">전체</option><option value="Formal">Formal</option><option value="Neutral">Neutral</option><option value="Casual">Casual</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📁 카테고리</label><select class="form-select" id="filter-l1"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🏷️ 태그</label><select class="form-select" id="filter-tag"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎓 TOEFL</label><select class="form-select" id="filter-toefl"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📰 COCA</label><select class="form-select" id="filter-coca"><option value="all">전체</option></select></div></div></div>
+<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group" style="margin-bottom:0"><label class="form-label">📚 CEFR</label><div class="filter-select"><select class="form-select" id="filter-cefr"><option value="all">전체</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select><span class="filter-mode" data-for="filter-cefr" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📊 빈도</label><div class="filter-select"><select class="form-select" id="filter-freq"><option value="all">전체</option><option value="K1">K1</option><option value="K2">K2</option><option value="K3">K3</option><option value="K4">K4</option><option value="K5">K5</option><option value="K6">K6</option></select><span class="filter-mode" data-for="filter-freq" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎯 우선순위</label><div class="filter-select"><select class="form-select" id="filter-priority"><option value="all">전체</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select><span class="filter-mode" data-for="filter-priority" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">💬 Register</label><div class="filter-select"><select class="form-select" id="filter-register"><option value="all">전체</option><option value="Formal">Formal</option><option value="Neutral">Neutral</option><option value="Casual">Casual</option><option value="Archaic">구식(Archaic)</option><option value="Slang">속어(Slang)</option></select><span class="filter-mode" data-for="filter-register" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📁 카테고리</label><div class="filter-select"><select class="form-select" id="filter-l1"><option value="all">전체</option></select><span class="filter-mode" data-for="filter-l1" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🏷️ 태그</label><div class="filter-select"><select class="form-select" id="filter-tag"><option value="all">전체</option></select><span class="filter-mode" data-for="filter-tag" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎓 TOEFL</label><div class="filter-select"><select class="form-select" id="filter-toefl"><option value="all">전체</option></select><span class="filter-mode" data-for="filter-toefl" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📰 COCA</label><div class="filter-select"><select class="form-select" id="filter-coca"><option value="all">전체</option></select><span class="filter-mode" data-for="filter-coca" onclick="toggleFilterMode(this)">+</span></div></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('vocab')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('vocab')">💾 필터 저장</button></div></div>
 </div>
 <div id="study-phrasal" class="hidden">
 <div class="card"><div class="card-title">🎮 구동사 학습 모드</div><div class="mode-selector"><div class="mode-card phrasal active" data-mode="pv-flashcard" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div><div class="mode-card-desc">카드 뒤집기</div></div><div class="mode-card phrasal" data-mode="pv-particle" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🧩</div><div class="mode-card-title">Particle</div><div class="mode-card-desc">figure ___?</div></div></div><div class="mode-selector"><div class="mode-card phrasal" data-mode="pv-meaning" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">💡</div><div class="mode-card-title">의미 맞추기</div><div class="mode-card-desc">구동사→뜻</div></div><div class="mode-card phrasal" data-mode="pv-reverse" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🔄</div><div class="mode-card-title">역방향</div><div class="mode-card-desc">뜻→구동사</div></div></div><div class="mode-selector"><div class="mode-card phrasal" data-mode="pv-listening" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🎧</div><div class="mode-card-title">리스닝</div><div class="mode-card-desc">듣고 뜻 맞추기</div></div><div class="mode-card phrasal" data-mode="pv-dictation" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">✍️</div><div class="mode-card-title">받아쓰기</div><div class="mode-card-desc">듣고 스펠링</div></div></div></div>
 <div class="card"><div class="card-title">📝 학습 분량</div><div class="range-container"><input type="range" class="range-slider" id="pv-study-count" min="5" max="20" value="15" step="1" oninput="document.getElementById('pv-study-count-val').textContent=this.value"><div class="range-value"><span id="pv-study-count-val">15</span>개</div></div></div>
-<div class="card"><div class="card-title">🎯 필터</div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-group" id="pv-filter-mastery"><span class="chip active" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group" style="margin-bottom:0"><label class="form-label">📚 CEFR</label><select class="form-select" id="pv-filter-cefr"><option value="all">전체</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎯 우선순위</label><select class="form-select" id="pv-filter-priority"><option value="all">전체</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">💬 Register</label><select class="form-select" id="pv-filter-register"><option value="all">전체</option><option value="Formal">Formal</option><option value="Neutral">Neutral</option><option value="Casual">Casual</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📁 카테고리</label><select class="form-select" id="pv-filter-cat"><option value="all">전체</option></select></div></div></div>
+<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="pv-filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group" style="margin-bottom:0"><label class="form-label">📚 CEFR</label><div class="filter-select"><select class="form-select" id="pv-filter-cefr"><option value="all">전체</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select><span class="filter-mode" data-for="pv-filter-cefr" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎯 우선순위</label><div class="filter-select"><select class="form-select" id="pv-filter-priority"><option value="all">전체</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select><span class="filter-mode" data-for="pv-filter-priority" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">💬 Register</label><div class="filter-select"><select class="form-select" id="pv-filter-register"><option value="all">전체</option><option value="Formal">Formal</option><option value="Neutral">Neutral</option><option value="Casual">Casual</option><option value="Archaic">구식(Archaic)</option><option value="Slang">속어(Slang)</option></select><span class="filter-mode" data-for="pv-filter-register" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📁 카테고리</label><div class="filter-select"><select class="form-select" id="pv-filter-cat"><option value="all">전체</option></select><span class="filter-mode" data-for="pv-filter-cat" onclick="toggleFilterMode(this)">+</span></div></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('phrasal')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('phrasal')">💾 필터 저장</button></div></div>
 </div>
 <div id="study-expr" class="hidden">
 <div class="card"><div class="card-title">🎮 표현 학습 모드</div><div class="mode-selector"><div class="mode-card expr active" data-mode="expr-fc" onclick="selectMode(this,'expr')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div><div class="mode-card-desc">표현 암기</div></div><div class="mode-card expr" data-mode="expr-quiz" onclick="selectMode(this,'expr')"><div class="mode-card-icon">❓</div><div class="mode-card-title">5지선다</div><div class="mode-card-desc">뜻 맞추기</div></div><div class="mode-card expr" data-mode="expr-cloze" onclick="selectMode(this,'expr')"><div class="mode-card-icon">📝</div><div class="mode-card-title">빈칸채우기</div><div class="mode-card-desc">문맥 학습</div></div><div class="mode-card expr" data-mode="expr-typing" onclick="selectMode(this,'expr')"><div class="mode-card-icon">⌨️</div><div class="mode-card-title">쓰기 연습</div><div class="mode-card-desc">표현 타이핑</div></div></div><div class="mode-selector"><div class="mode-card expr" data-mode="expr-listening" onclick="selectMode(this,'expr')"><div class="mode-card-icon">🎧</div><div class="mode-card-title">리스닝</div><div class="mode-card-desc">듣고 뜻 맞추기</div></div><div class="mode-card expr" data-mode="expr-dictation" onclick="selectMode(this,'expr')"><div class="mode-card-icon">✍️</div><div class="mode-card-title">받아쓰기</div><div class="mode-card-desc">듣고 스펠링</div></div></div></div>
 <div class="card"><div class="card-title">📝 학습 분량</div><div class="range-container"><input type="range" class="range-slider" id="expr-study-count" min="5" max="20" value="20" step="1" oninput="document.getElementById('expr-study-count-val').textContent=this.value"><div class="range-value"><span id="expr-study-count-val">20</span>개</div></div></div>
-<div class="card"><div class="card-title">🎯 필터</div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-group" id="expr-filter-mastery"><span class="chip active" data-value="all">전체</span><span class="chip" data-value="new">새 표현</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group" style="margin-bottom:0"><label class="form-label">📚 CEFR</label><select class="form-select" id="expr-filter-cefr"><option value="all">전체</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎯 우선순위</label><select class="form-select" id="expr-filter-priority"><option value="all">전체</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select></div><div class="form-group" style="margin-bottom:0;grid-column:span 2"><label class="form-label">💬 Register</label><select class="form-select" id="expr-filter-register"><option value="all">전체</option><option value="Formal">Formal</option><option value="Neutral">Neutral</option><option value="Casual">Casual</option></select></div></div></div>
+<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="expr-filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 표현</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group" style="margin-bottom:0"><label class="form-label">📚 CEFR</label><div class="filter-select"><select class="form-select" id="expr-filter-cefr"><option value="all">전체</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select><span class="filter-mode" data-for="expr-filter-cefr" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎯 우선순위</label><div class="filter-select"><select class="form-select" id="expr-filter-priority"><option value="all">전체</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select><span class="filter-mode" data-for="expr-filter-priority" onclick="toggleFilterMode(this)">+</span></div></div><div class="form-group" style="margin-bottom:0;grid-column:span 2"><label class="form-label">💬 Register</label><div class="filter-select"><select class="form-select" id="expr-filter-register"><option value="all">전체</option><option value="Formal">Formal</option><option value="Neutral">Neutral</option><option value="Casual">Casual</option><option value="Archaic">구식(Archaic)</option><option value="Slang">속어(Slang)</option></select><span class="filter-mode" data-for="expr-filter-register" onclick="toggleFilterMode(this)">+</span></div></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('expr')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('expr')">💾 필터 저장</button></div></div>
 </div>
 <div class="card"><div class="card-title">🔀 순서</div><div class="toggle-row"><span class="toggle-label">학습 순서</span><select class="form-select" id="option-order" style="width:auto"><option value="fsrs">FSRS 우선</option><option value="weak">취약 우선</option><option value="random">랜덤</option></select></div></div>
 </div>
@@ -408,6 +410,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="card"><div class="card-title">🎯 인풋/아웃풋 학습</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div style="background:rgba(99,102,241,0.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">👁️ 인풋 (인지)</div><div style="font-size:24px;font-weight:700;color:var(--primary)" id="stats-input-count">0</div><div style="font-size:11px;color:var(--muted)">읽기/듣기/선택</div><div style="font-size:12px;margin-top:4px"><span id="stats-input-acc" style="color:var(--success)">-</span> 정답률</div><div style="font-size:11px;margin-top:2px;color:var(--muted)">첫시도 <span id="stats-input-first" style="color:var(--primary)">-</span></div></div><div style="background:rgba(34,197,94,0.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">🖊️ 아웃풋 (산출)</div><div style="font-size:24px;font-weight:700;color:var(--success)" id="stats-output-count">0</div><div style="font-size:11px;color:var(--muted)">쓰기/받아쓰기</div><div style="font-size:12px;margin-top:4px"><span id="stats-output-acc" style="color:var(--success)">-</span> 정답률</div><div style="font-size:11px;margin-top:2px;color:var(--muted)">첫시도 <span id="stats-output-first" style="color:var(--success)">-</span></div></div></div><div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">💡 인풋: 플래시카드, 퀴즈, 빈칸, 리스닝 | 아웃풋: 타이핑, 받아쓰기</div></div>
 <div class="card"><div class="card-title">⏱️ 학습 분석</div><div class="stat-grid"><div class="stat-item"><div class="stat-value" id="stats-time" style="font-size:18px">0분</div><div class="stat-label">총 학습시간</div></div><div class="stat-item"><div class="stat-value" id="stats-sessions">0</div><div class="stat-label">학습 횟수</div></div><div class="stat-item"><div class="stat-value" id="stats-avg-acc">0%</div><div class="stat-label">평균 정답률</div></div><div class="stat-item"><div class="stat-value warning" id="stats-forget">0</div><div class="stat-label">예상 망각</div></div></div></div>
 <div class="card"><div class="card-title">🔍 취약 분석</div><div id="weak-analysis" style="font-size:13px;color:var(--muted)">분석 중...</div></div>
+<div class="card"><div class="card-title">📦 카드 상태 (Anki 스타일)</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center"><div style="background:rgba(99,102,241,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--primary)" id="state-new">0</div><div style="font-size:9px;color:var(--muted)">New</div></div><div style="background:rgba(245,158,11,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--warning)" id="state-learning">0</div><div style="font-size:9px;color:var(--muted)">Learning</div></div><div style="background:rgba(239,68,68,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--danger)" id="state-relearning">0</div><div style="font-size:9px;color:var(--muted)">Relearning</div></div><div style="background:rgba(34,197,94,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--success)" id="state-young">0</div><div style="font-size:9px;color:var(--muted)">Young</div></div><div style="background:rgba(16,185,129,0.15);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:#10b981" id="state-mature">0</div><div style="font-size:9px;color:var(--muted)">Mature</div></div></div><div style="font-size:10px;color:var(--muted);margin-top:6px;text-align:center">Young: &lt;21일 | Mature: ≥21일</div></div>
+<div class="card"><div class="card-title">🐌 Leech 카드 <span id="leech-count" style="font-size:12px;color:var(--danger);margin-left:4px"></span></div><div id="leech-list" style="font-size:13px;max-height:120px;overflow-y:auto"></div><div style="font-size:10px;color:var(--muted);margin-top:6px;text-align:center">8회 이상 실패한 어려운 카드</div></div>
 <div class="card"><div class="card-title">📦 Leitner Box</div><div class="leitner-container" id="leitner-stats"></div></div>
 <div class="card"><div class="card-title">🎯 정답률 분포</div><div class="stat-grid stat-grid-3"><div class="stat-item"><div class="stat-value success" id="stats-high">0</div><div class="stat-label">80%+</div></div><div class="stat-item"><div class="stat-value warning" id="stats-mid">0</div><div class="stat-label">50-79%</div></div><div class="stat-item"><div class="stat-value danger" id="stats-low">0</div><div class="stat-label">&lt;50%</div></div></div></div>
 <div class="card"><div class="card-title">📊 FSRS 안정도 분포</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center"><div style="background:rgba(239,68,68,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(0,3,'vocab'))"><div style="font-size:18px;font-weight:700;color:var(--danger)" id="stability-0-3">0</div><div style="font-size:10px;color:var(--muted)">0-3일</div></div><div style="background:rgba(245,158,11,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(3,7,'vocab'))"><div style="font-size:18px;font-weight:700;color:var(--warning)" id="stability-3-7">0</div><div style="font-size:10px;color:var(--muted)">3-7일</div></div><div style="background:rgba(99,102,241,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(7,30,'vocab'))"><div style="font-size:18px;font-weight:700;color:var(--primary)" id="stability-7-30">0</div><div style="font-size:10px;color:var(--muted)">7-30일</div></div><div style="background:rgba(34,197,94,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(30,999,'vocab'))"><div style="font-size:18px;font-weight:700;color:var(--success)" id="stability-30-plus">0</div><div style="font-size:10px;color:var(--muted)">30일+</div></div></div><div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">💡 클릭하면 해당 구간 카드 학습</div></div>
@@ -423,6 +427,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="card"><div class="card-title">🔗 학습 현황</div><div class="stat-grid"><div class="stat-item"><div class="stat-value" id="pv-stats-total">0</div><div class="stat-label">전체</div></div><div class="stat-item"><div class="stat-value success" id="pv-stats-mastered">0</div><div class="stat-label">마스터</div></div><div class="stat-item"><div class="stat-value warning" id="pv-stats-learning">0</div><div class="stat-label">학습중</div></div><div class="stat-item"><div class="stat-value" id="pv-stats-new">0</div><div class="stat-label">미학습</div></div></div></div>
 <div class="card"><div class="card-title">🎯 인풋/아웃풋 학습</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div style="background:rgba(168,85,247,0.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">👁️ 인풋 (인지)</div><div style="font-size:24px;font-weight:700;color:var(--phrasal)" id="pv-stats-input-count">0</div><div style="font-size:11px;color:var(--muted)">플래시카드/퀴즈/리스닝</div><div style="font-size:12px;margin-top:4px"><span id="pv-stats-input-acc" style="color:var(--success)">-</span> 정답률</div><div style="font-size:11px;margin-top:2px;color:var(--muted)">첫시도 <span id="pv-stats-input-first" style="color:var(--phrasal)">-</span></div></div><div style="background:rgba(34,197,94,0.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">🖊️ 아웃풋 (산출)</div><div style="font-size:24px;font-weight:700;color:var(--success)" id="pv-stats-output-count">0</div><div style="font-size:11px;color:var(--muted)">받아쓰기</div><div style="font-size:12px;margin-top:4px"><span id="pv-stats-output-acc" style="color:var(--success)">-</span> 정답률</div><div style="font-size:11px;margin-top:2px;color:var(--muted)">첫시도 <span id="pv-stats-output-first" style="color:var(--success)">-</span></div></div></div></div>
 <div class="card"><div class="card-title">⏱️ 학습 분석</div><div class="stat-grid"><div class="stat-item"><div class="stat-value" id="pv-stats-time" style="font-size:18px">0분</div><div class="stat-label">총 학습시간</div></div><div class="stat-item"><div class="stat-value" id="pv-stats-sessions">0</div><div class="stat-label">학습 횟수</div></div><div class="stat-item"><div class="stat-value" id="pv-stats-avg-acc">0%</div><div class="stat-label">평균 정답률</div></div><div class="stat-item"><div class="stat-value warning" id="pv-stats-forget">0</div><div class="stat-label">예상 망각</div></div></div></div>
+<div class="card"><div class="card-title">📦 카드 상태</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center"><div style="background:rgba(168,85,247,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--phrasal)" id="pv-state-new">0</div><div style="font-size:9px;color:var(--muted)">New</div></div><div style="background:rgba(245,158,11,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--warning)" id="pv-state-learning">0</div><div style="font-size:9px;color:var(--muted)">Learning</div></div><div style="background:rgba(239,68,68,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--danger)" id="pv-state-relearning">0</div><div style="font-size:9px;color:var(--muted)">Relearning</div></div><div style="background:rgba(34,197,94,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--success)" id="pv-state-young">0</div><div style="font-size:9px;color:var(--muted)">Young</div></div><div style="background:rgba(16,185,129,0.15);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:#10b981" id="pv-state-mature">0</div><div style="font-size:9px;color:var(--muted)">Mature</div></div></div></div>
+<div class="card"><div class="card-title">🐌 Leech 카드 <span id="pv-leech-count" style="font-size:12px;color:var(--danger);margin-left:4px"></span></div><div id="pv-leech-list" style="font-size:13px;max-height:100px;overflow-y:auto"></div></div>
 <div class="card"><div class="card-title">📦 Leitner Box</div><div class="leitner-container" id="pv-leitner-stats"></div></div>
 <div class="card"><div class="card-title">🎯 정답률 분포</div><div class="stat-grid stat-grid-3"><div class="stat-item"><div class="stat-value success" id="pv-stats-high">0</div><div class="stat-label">80%+</div></div><div class="stat-item"><div class="stat-value warning" id="pv-stats-mid">0</div><div class="stat-label">50-79%</div></div><div class="stat-item"><div class="stat-value danger" id="pv-stats-low">0</div><div class="stat-label">&lt;50%</div></div></div></div>
 <div class="card"><div class="card-title">📊 FSRS 안정도 분포</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center"><div style="background:rgba(239,68,68,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(0,3,'phrasal'))"><div style="font-size:18px;font-weight:700;color:var(--danger)" id="pv-stability-0-3">0</div><div style="font-size:10px;color:var(--muted)">0-3일</div></div><div style="background:rgba(245,158,11,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(3,7,'phrasal'))"><div style="font-size:18px;font-weight:700;color:var(--warning)" id="pv-stability-3-7">0</div><div style="font-size:10px;color:var(--muted)">3-7일</div></div><div style="background:rgba(168,85,247,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(7,30,'phrasal'))"><div style="font-size:18px;font-weight:700;color:var(--phrasal)" id="pv-stability-7-30">0</div><div style="font-size:10px;color:var(--muted)">7-30일</div></div><div style="background:rgba(34,197,94,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(30,999,'phrasal'))"><div style="font-size:18px;font-weight:700;color:var(--success)" id="pv-stability-30-plus">0</div><div style="font-size:10px;color:var(--muted)">30일+</div></div></div><div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">💡 클릭하면 해당 구간 카드 학습</div></div>
@@ -437,6 +443,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="card"><div class="card-title">💬 학습 현황</div><div class="stat-grid"><div class="stat-item"><div class="stat-value" id="expr-stats-total">0</div><div class="stat-label">전체</div></div><div class="stat-item"><div class="stat-value success" id="expr-stats-mastered">0</div><div class="stat-label">마스터</div></div><div class="stat-item"><div class="stat-value warning" id="expr-stats-learning">0</div><div class="stat-label">학습중</div></div><div class="stat-item"><div class="stat-value" id="expr-stats-new">0</div><div class="stat-label">미학습</div></div></div></div>
 <div class="card"><div class="card-title">🎯 인풋/아웃풋 학습</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div style="background:rgba(249,115,22,0.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">👁️ 인풋 (인지)</div><div style="font-size:24px;font-weight:700;color:var(--expr)" id="expr-stats-input-count">0</div><div style="font-size:11px;color:var(--muted)">플래시카드/퀴즈/빈칸/리스닝</div><div style="font-size:12px;margin-top:4px"><span id="expr-stats-input-acc" style="color:var(--success)">-</span> 정답률</div><div style="font-size:11px;margin-top:2px;color:var(--muted)">첫시도 <span id="expr-stats-input-first" style="color:var(--expr)">-</span></div></div><div style="background:rgba(34,197,94,0.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">🖊️ 아웃풋 (산출)</div><div style="font-size:24px;font-weight:700;color:var(--success)" id="expr-stats-output-count">0</div><div style="font-size:11px;color:var(--muted)">타이핑/받아쓰기</div><div style="font-size:12px;margin-top:4px"><span id="expr-stats-output-acc" style="color:var(--success)">-</span> 정답률</div><div style="font-size:11px;margin-top:2px;color:var(--muted)">첫시도 <span id="expr-stats-output-first" style="color:var(--success)">-</span></div></div></div></div>
 <div class="card"><div class="card-title">⏱️ 학습 분석</div><div class="stat-grid"><div class="stat-item"><div class="stat-value" id="expr-stats-time" style="font-size:18px">0분</div><div class="stat-label">총 학습시간</div></div><div class="stat-item"><div class="stat-value" id="expr-stats-sessions">0</div><div class="stat-label">학습 횟수</div></div><div class="stat-item"><div class="stat-value" id="expr-stats-avg-acc">0%</div><div class="stat-label">평균 정답률</div></div><div class="stat-item"><div class="stat-value warning" id="expr-stats-forget">0</div><div class="stat-label">예상 망각</div></div></div></div>
+<div class="card"><div class="card-title">📦 카드 상태</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center"><div style="background:rgba(249,115,22,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--expr)" id="expr-state-new">0</div><div style="font-size:9px;color:var(--muted)">New</div></div><div style="background:rgba(245,158,11,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--warning)" id="expr-state-learning">0</div><div style="font-size:9px;color:var(--muted)">Learning</div></div><div style="background:rgba(239,68,68,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--danger)" id="expr-state-relearning">0</div><div style="font-size:9px;color:var(--muted)">Relearning</div></div><div style="background:rgba(34,197,94,0.1);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:var(--success)" id="expr-state-young">0</div><div style="font-size:9px;color:var(--muted)">Young</div></div><div style="background:rgba(16,185,129,0.15);border-radius:8px;padding:6px"><div style="font-size:16px;font-weight:700;color:#10b981" id="expr-state-mature">0</div><div style="font-size:9px;color:var(--muted)">Mature</div></div></div></div>
+<div class="card"><div class="card-title">🐌 Leech 카드 <span id="expr-leech-count" style="font-size:12px;color:var(--danger);margin-left:4px"></span></div><div id="expr-leech-list" style="font-size:13px;max-height:100px;overflow-y:auto"></div></div>
 <div class="card"><div class="card-title">📦 Leitner Box</div><div class="leitner-container" id="expr-leitner-stats"></div></div>
 <div class="card"><div class="card-title">🎯 정답률 분포</div><div class="stat-grid stat-grid-3"><div class="stat-item"><div class="stat-value success" id="expr-stats-high">0</div><div class="stat-label">80%+</div></div><div class="stat-item"><div class="stat-value warning" id="expr-stats-mid">0</div><div class="stat-label">50-79%</div></div><div class="stat-item"><div class="stat-value danger" id="expr-stats-low">0</div><div class="stat-label">&lt;50%</div></div></div></div>
 <div class="card"><div class="card-title">📊 FSRS 안정도 분포</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center"><div style="background:rgba(239,68,68,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(0,3,'expr'))"><div style="font-size:18px;font-weight:700;color:var(--danger)" id="expr-stability-0-3">0</div><div style="font-size:10px;color:var(--muted)">0-3일</div></div><div style="background:rgba(245,158,11,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(3,7,'expr'))"><div style="font-size:18px;font-weight:700;color:var(--warning)" id="expr-stability-3-7">0</div><div style="font-size:10px;color:var(--muted)">3-7일</div></div><div style="background:rgba(249,115,22,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(7,30,'expr'))"><div style="font-size:18px;font-weight:700;color:var(--expr)" id="expr-stability-7-30">0</div><div style="font-size:10px;color:var(--muted)">7-30일</div></div><div style="background:rgba(34,197,94,0.1);border-radius:8px;padding:8px;cursor:pointer" onclick="safeStart(()=>startStabilityStudy(30,999,'expr'))"><div style="font-size:18px;font-weight:700;color:var(--success)" id="expr-stability-30-plus">0</div><div style="font-size:10px;color:var(--muted)">30일+</div></div></div><div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">💡 클릭하면 해당 구간 카드 학습</div></div>
@@ -520,7 +528,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="background:var(--bg);padding:12px;border-radius:12px;text-align:center"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">💬 표현 일일목표</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><button onclick="adjustGoal('expr',-5)" style="width:28px;height:28px;border:none;background:var(--card);color:var(--text);border-radius:6px;cursor:pointer">−</button><input type="number" class="form-input" id="setting-expr-goal" value="10" min="1" max="100" style="width:50px;text-align:center;padding:4px;font-size:16px;font-weight:600" onchange="saveSetting('exprGoal',this.value)"><button onclick="adjustGoal('expr',5)" style="width:28px;height:28px;border:none;background:var(--card);color:var(--text);border-radius:6px;cursor:pointer">+</button></div></div>
 <div style="background:var(--bg);padding:12px;border-radius:12px;text-align:center"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">📝 기본 학습분량</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><button onclick="adjustGoal('count',-5)" style="width:28px;height:28px;border:none;background:var(--card);color:var(--text);border-radius:6px;cursor:pointer">−</button><input type="number" class="form-input" id="setting-count" value="20" min="5" max="100" style="width:50px;text-align:center;padding:4px;font-size:16px;font-weight:600" onchange="saveSetting('defaultCount',this.value)"><button onclick="adjustGoal('count',5)" style="width:28px;height:28px;border:none;background:var(--card);color:var(--text);border-radius:6px;cursor:pointer">+</button></div></div>
 </div></div>
-<div class="card"><div class="card-title">ℹ️ 버전 정보</div><p style="font-size:13px;color:var(--muted);line-height:1.8"><strong>CEMS Vocab Pro v7.0</strong><br>• 🧠 FSRS 알고리즘 적용<br>• 📱 iOS PWA 최적화<br>• 🏷️ 표현 태그 시스템<br>• ⚡ 안정성 개선</p></div>
+<div class="card"><div class="card-title">🧠 FSRS 스케줄링</div>
+<div class="toggle-row"><span class="toggle-label">Interval Fuzz <span style="font-size:11px;color:var(--muted)">(±5% 랜덤)</span></span><label class="toggle-switch"><input type="checkbox" id="setting-fuzz" checked onchange="FSRS.intervalFuzz=this.checked;saveSetting('intervalFuzz',this.checked)"><span class="toggle-slider"></span></label></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+<div style="background:var(--bg);padding:12px;border-radius:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:6px">🆕 일일 새 카드</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><input type="number" class="form-input" id="setting-daily-new" value="9999" min="1" max="9999" style="width:60px;text-align:center;padding:4px;font-size:14px" onchange="FSRS.dailyNewLimit=parseInt(this.value);saveSetting('dailyNewLimit',this.value)"></div></div>
+<div style="background:var(--bg);padding:12px;border-radius:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:6px">📖 일일 복습</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><input type="number" class="form-input" id="setting-daily-review" value="9999" min="1" max="9999" style="width:60px;text-align:center;padding:4px;font-size:14px" onchange="FSRS.dailyReviewLimit=parseInt(this.value);saveSetting('dailyReviewLimit',this.value)"></div></div>
+<div style="background:var(--bg);padding:12px;border-radius:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:6px">🌙 다음날 시작</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><input type="number" class="form-input" id="setting-next-day" value="4" min="0" max="12" style="width:50px;text-align:center;padding:4px;font-size:14px" onchange="FSRS.nextDayStartsAt=parseInt(this.value);saveSetting('nextDayStartsAt',this.value)"><span style="font-size:12px;color:var(--muted)">AM</span></div></div>
+<div style="background:var(--bg);padding:12px;border-radius:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:6px">🐌 Leech 기준</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><input type="number" class="form-input" id="setting-leech" value="8" min="4" max="20" style="width:50px;text-align:center;padding:4px;font-size:14px" onchange="FSRS.leechThreshold=parseInt(this.value);saveSetting('leechThreshold',this.value)"><span style="font-size:12px;color:var(--muted)">회</span></div></div>
+<div style="background:var(--bg);padding:12px;border-radius:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:6px">📅 최대 간격</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><input type="number" class="form-input" id="setting-max-interval" value="365" min="30" max="36500" style="width:60px;text-align:center;padding:4px;font-size:14px" onchange="FSRS.maxInterval=parseInt(this.value);saveSetting('maxInterval',this.value)"><span style="font-size:12px;color:var(--muted)">일</span></div></div>
+<div style="background:var(--bg);padding:12px;border-radius:12px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:6px">🎯 목표 기억률</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><input type="number" class="form-input" id="setting-retention" value="90" min="70" max="99" style="width:50px;text-align:center;padding:4px;font-size:14px" onchange="FSRS.requestRetention=parseInt(this.value)/100;saveSetting('requestRetention',this.value)"><span style="font-size:12px;color:var(--muted)">%</span></div></div>
+</div>
+<div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">Learning Steps: 1m→10m | Relearning: 10m</div>
+</div>
+<div class="card"><div class="card-title">ℹ️ 버전 정보</div><p style="font-size:13px;color:var(--muted);line-height:1.8"><strong>CEMS Vocab Pro v7.2</strong><br>• 🧠 FSRS-6 알고리즘 (Anki 호환)<br>• 📊 Card States (Young/Mature)<br>• 🐌 Leech 감지 및 경고<br>• ⚙️ 고급 스케줄링 설정</p></div>
 </div>
 </div>
 <!-- 네비게이션 -->
@@ -728,6 +748,19 @@ const FSRS = {
       1.8729, 0.5425, 0.0912, 0.0658, 0.1542],
   requestRetention: 0.9, // 목표 기억률 90%
   
+  // ★ Anki 스타일 설정 (NEW)
+  learningSteps: [1, 10],      // 분 단위 Learning Steps (Anki 기본: 1m 10m)
+  relearningSteps: [10],       // 분 단위 Relearning Steps (Again 시)
+  graduatingInterval: 1,       // Learning 완료 후 첫 간격 (일)
+  easyInterval: 4,             // Easy 버튼 시 간격 (일)
+  intervalFuzz: true,          // 간격 ±5% 랜덤 변동
+  nextDayStartsAt: 4,          // 다음 날 시작 시각 (AM)
+  leechThreshold: 8,           // Leech 판정 lapses 수
+  dailyNewLimit: 9999,         // 일일 새 카드 제한 (기본 무제한)
+  dailyReviewLimit: 9999,      // 일일 복습 제한 (기본 무제한)
+  YOUNG_THRESHOLD: 21,         // Young/Mature 구분 기준 (일)
+  maxInterval: 365,            // 최대 간격 (일) - 기본 1년
+  
   // ★ FSRS-6 factor: R(S,S)=90%가 되도록 정의
   factor() {
     const w20 = this.w[20];
@@ -764,7 +797,7 @@ const FSRS = {
     const f = this.factor();
     const w20 = this.w[20];
     const interval = (stability / f) * (Math.pow(this.requestRetention, -1 / w20) - 1);
-    return Math.min(365, Math.max(1, Math.round(interval))); // 최대 365일 제한
+    return Math.min(this.maxInterval, Math.max(1, Math.round(interval))); // 최대 maxInterval 제한
   },
   
   // ★ FSRS-5/6 Difficulty 업데이트 (Linear Damping + Mean Reversion to D0(4))
@@ -800,14 +833,14 @@ const FSRS = {
     return Math.min(Math.max(0.1, newS), S); // 실패 시 stability는 기존보다 작아야 함
   },
   
-  // ★ FSRS-6 Same-day Stability 업데이트
-  // S'(S,G) = S * e^(w[17] * (G-3+w[18]) * S^(-w[19]))
+  // ★ FSRS-6 Same-day Stability 업데이트 (수정됨)
+  // S'(S,G) = S * e^(w[17] * (G-3+w[18])) * S^(-w[19])
   // G>=3일 때 S'>=S 보장 필요
   updateStabilitySameDay(S, grade) {
     const G = grade + 1;
     const w17 = this.w[17], w18 = this.w[18], w19 = this.w[19];
-    const exponent = w17 * (G - 3 + w18) * Math.pow(S, -w19);
-    const SInc = Math.exp(exponent);
+    // ★ 수정: S^(-w19)가 지수 밖에 있어야 함 (곱셈)
+    const SInc = Math.exp(w17 * (G - 3 + w18)) * Math.pow(S, -w19);
     // G>=3 (Good/Easy)일 때 S가 감소하지 않도록 보장
     if (G >= 3) {
       return Math.max(S, S * SInc);
@@ -825,15 +858,92 @@ const FSRS = {
     // Ease → Difficulty 변환 (ease 2.5=easy → D=1, ease 1.3=hard → D=10)
     const difficulty = Math.max(1, Math.min(10, 11 - (ease * 4)));
     return { stability, difficulty };
+  },
+  
+  // ★ Interval Fuzz: ±5% 랜덤 변동 (같은 날 추가된 카드 분산)
+  applyFuzz(interval) {
+    if (!this.intervalFuzz || interval < 3) return interval;
+    const fuzzRange = Math.max(1, Math.round(interval * 0.05));
+    const fuzz = Math.floor(Math.random() * (fuzzRange * 2 + 1)) - fuzzRange;
+    return Math.max(1, interval + fuzz);
+  },
+  
+  // ★ 다음 날 시작 시각 기준으로 오늘/내일 판정
+  isNextDay(date1, date2) {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    // nextDayStartsAt 시각 기준으로 날짜 조정
+    d1.setHours(d1.getHours() - this.nextDayStartsAt);
+    d2.setHours(d2.getHours() - this.nextDayStartsAt);
+    return d1.toDateString() !== d2.toDateString();
+  },
+  
+  // ★ Card State 구분 (Anki 스타일)
+  getCardState(item) {
+    if (!item.reps || item.reps === 0) return 'New';
+    if (item.fsrsState === 'Learning') return 'Learning';
+    if (item.fsrsState === 'Relearning') return 'Relearning';
+    const interval = item.interval || 0;
+    if (interval >= this.YOUNG_THRESHOLD) return 'Mature';
+    return 'Young';
+  },
+  
+  // ★ Leech 판정 (8회 실패 시)
+  checkLeech(item) {
+    const lapses = item.lapses || 0;
+    if (lapses >= this.leechThreshold && lapses % (this.leechThreshold / 2) === 0) {
+      return true; // Leech 경고 발생
+    }
+    return false;
+  },
+  
+  // ★ Learning Step 간격 계산 (분 → 다음 복습 시간)
+  getLearningStepInterval(stepIndex, isRelearning = false) {
+    const steps = isRelearning ? this.relearningSteps : this.learningSteps;
+    if (stepIndex >= steps.length) {
+      return isRelearning ? 1 : this.graduatingInterval; // 졸업
+    }
+    return steps[stepIndex]; // 분 단위
   }
 };
 
-// FSRS 기반 다음 복습 계산
+// ★ 일일 학습 카운터 (Daily Limits 용)
+const dailyCounter = {
+  date: null,
+  newCount: 0,
+  reviewCount: 0,
+  reset() {
+    const today = new Date();
+    today.setHours(today.getHours() - FSRS.nextDayStartsAt);
+    const todayStr = today.toDateString();
+    if (this.date !== todayStr) {
+      this.date = todayStr;
+      this.newCount = 0;
+      this.reviewCount = 0;
+    }
+  },
+  canStudyNew() {
+    this.reset();
+    return this.newCount < FSRS.dailyNewLimit;
+  },
+  canStudyReview() {
+    this.reset();
+    return this.reviewCount < FSRS.dailyReviewLimit;
+  },
+  addNew() { this.reset(); this.newCount++; },
+  addReview() { this.reset(); this.reviewCount++; }
+};
+
+// FSRS 기반 다음 복습 계산 (★ Anki 스타일 업그레이드)
 function calcNext(item, grade) {
   // grade: 0=Again(모름), 1=Hard(어려움), 2=Good(보통), 3=Easy(쉬움)
   const now = new Date();
   let S = item.stability;
   let D = item.difficulty;
+  let learningStep = item.learningStep || 0;
+  let fsrsState = item.fsrsState || 'New';
+  let lapses = item.lapses || 0;
+  let isLeech = item.isLeech || false;
   
   // 새 카드 또는 마이그레이션 필요 (★ null 체크 추가)
   if (S === undefined || S === null || D === undefined || D === null) {
@@ -842,24 +952,63 @@ function calcNext(item, grade) {
       const migrated = FSRS.migrateFromSM2(item);
       S = migrated.stability;
       D = migrated.difficulty;
+      fsrsState = 'Review';
     } else {
-      // 완전히 새 카드
+      // ★ 완전히 새 카드 - Learning Steps 적용
       S = FSRS.initStability(grade);
       D = FSRS.initDifficulty(grade);
-      const interval = grade === 0 ? 0 : FSRS.nextInterval(S);
-      const nextReview = new Date(now);
-      nextReview.setDate(nextReview.getDate() + interval);
-      return {
-        stability: S,
-        difficulty: D,
-        interval: interval,
-        nextReview: nextReview.toISOString(),
-        lastReview: now.toISOString(),
-        fsrsState: 'Learning',
-        reps: 1,
-        lapses: grade === 0 ? 1 : 0,
-        leitnerBox: stabilityToBox(S) // 호환성
-      };
+      
+      if (grade === 0) {
+        // Again: 첫 단계로
+        learningStep = 0;
+        fsrsState = 'Learning';
+        const stepMinutes = FSRS.getLearningStepInterval(0, false);
+        const nextReview = new Date(now.getTime() + stepMinutes * 60 * 1000);
+        return {
+          stability: S, difficulty: D, interval: 0,
+          nextReview: nextReview.toISOString(), lastReview: now.toISOString(),
+          fsrsState: 'Learning', learningStep: 0,
+          reps: 1, lapses: 1, isLeech: false,
+          leitnerBox: 1
+        };
+      } else if (grade === 3) {
+        // Easy: 바로 졸업 (Easy Interval)
+        const interval = FSRS.applyFuzz(FSRS.easyInterval);
+        const nextReview = new Date(now);
+        nextReview.setDate(nextReview.getDate() + interval);
+        return {
+          stability: S, difficulty: D, interval: interval,
+          nextReview: nextReview.toISOString(), lastReview: now.toISOString(),
+          fsrsState: 'Review', learningStep: -1,
+          reps: 1, lapses: 0, isLeech: false,
+          leitnerBox: stabilityToBox(S)
+        };
+      } else {
+        // Hard/Good: Learning Steps 진행
+        learningStep = (grade === 1) ? 0 : 1;
+        if (learningStep >= FSRS.learningSteps.length) {
+          // 졸업
+          const interval = FSRS.applyFuzz(FSRS.graduatingInterval);
+          const nextReview = new Date(now);
+          nextReview.setDate(nextReview.getDate() + interval);
+          return {
+            stability: S, difficulty: D, interval: interval,
+            nextReview: nextReview.toISOString(), lastReview: now.toISOString(),
+            fsrsState: 'Review', learningStep: -1,
+            reps: 1, lapses: 0, isLeech: false,
+            leitnerBox: stabilityToBox(S)
+          };
+        }
+        const stepMinutes = FSRS.getLearningStepInterval(learningStep, false);
+        const nextReview = new Date(now.getTime() + stepMinutes * 60 * 1000);
+        return {
+          stability: S, difficulty: D, interval: 0,
+          nextReview: nextReview.toISOString(), lastReview: now.toISOString(),
+          fsrsState: 'Learning', learningStep: learningStep,
+          reps: 1, lapses: 0, isLeech: false,
+          leitnerBox: 1
+        };
+      }
     }
   }
   
@@ -873,23 +1022,99 @@ function calcNext(item, grade) {
   }
   const elapsedDays = lastReview ? Math.max(0, (now - lastReview) / (1000 * 60 * 60 * 24)) : 1;
   
-  // Difficulty 업데이트
+  // ★ Learning/Relearning 상태 처리
+  if (fsrsState === 'Learning' || fsrsState === 'Relearning') {
+    const isRelearning = fsrsState === 'Relearning';
+    const steps = isRelearning ? FSRS.relearningSteps : FSRS.learningSteps;
+    
+    if (grade === 0) {
+      // Again: 첫 단계로 되돌아감
+      learningStep = 0;
+      if (isRelearning) lapses++; // Relearning에서 Again은 lapses 증가 안 함 (이미 증가됨)
+      const stepMinutes = FSRS.getLearningStepInterval(0, isRelearning);
+      const nextReview = new Date(now.getTime() + stepMinutes * 60 * 1000);
+      
+      // ★ Leech 체크
+      if (FSRS.checkLeech({...item, lapses})) {
+        isLeech = true;
+      }
+      
+      return {
+        stability: S, difficulty: D, interval: 0,
+        nextReview: nextReview.toISOString(), lastReview: now.toISOString(),
+        fsrsState: fsrsState, learningStep: 0,
+        reps: (item.reps || 0) + 1, lapses: lapses, isLeech: isLeech,
+        leitnerBox: 1
+      };
+    } else if (grade === 3) {
+      // Easy: 바로 졸업
+      D = FSRS.updateDifficulty(D, grade);
+      const interval = FSRS.applyFuzz(isRelearning ? 1 : FSRS.easyInterval);
+      const nextReview = new Date(now);
+      nextReview.setDate(nextReview.getDate() + interval);
+      return {
+        stability: S, difficulty: D, interval: interval,
+        nextReview: nextReview.toISOString(), lastReview: now.toISOString(),
+        fsrsState: 'Review', learningStep: -1,
+        reps: (item.reps || 0) + 1, lapses: lapses, isLeech: isLeech,
+        leitnerBox: stabilityToBox(S)
+      };
+    } else {
+      // Hard/Good: 다음 단계로
+      learningStep = (grade === 1) ? learningStep : learningStep + 1;
+      if (learningStep >= steps.length) {
+        // 졸업!
+        D = FSRS.updateDifficulty(D, grade);
+        const interval = FSRS.applyFuzz(isRelearning ? 1 : FSRS.graduatingInterval);
+        const nextReview = new Date(now);
+        nextReview.setDate(nextReview.getDate() + interval);
+        return {
+          stability: S, difficulty: D, interval: interval,
+          nextReview: nextReview.toISOString(), lastReview: now.toISOString(),
+          fsrsState: 'Review', learningStep: -1,
+          reps: (item.reps || 0) + 1, lapses: lapses, isLeech: isLeech,
+          leitnerBox: stabilityToBox(S)
+        };
+      }
+      const stepMinutes = FSRS.getLearningStepInterval(learningStep, isRelearning);
+      const nextReview = new Date(now.getTime() + stepMinutes * 60 * 1000);
+      return {
+        stability: S, difficulty: D, interval: 0,
+        nextReview: nextReview.toISOString(), lastReview: now.toISOString(),
+        fsrsState: fsrsState, learningStep: learningStep,
+        reps: (item.reps || 0) + 1, lapses: lapses, isLeech: isLeech,
+        leitnerBox: 1
+      };
+    }
+  }
+  
+  // ★ Review 상태 처리 (FSRS 알고리즘 적용)
   D = FSRS.updateDifficulty(D, grade);
   
-  // ★ FSRS-6: Same-day vs Normal 분기
-  let lapses = item.lapses || 0;
-  let fsrsState = item.fsrsState || 'Review';
-  
   if (elapsedDays < 1) {
-    // ★ Same-day review: FSRS-6 공식 적용
+    // Same-day review
     if (grade === 0) {
-      // Again - same-day에서도 실패 처리
       const R = FSRS.retrievability(Math.max(0.001, elapsedDays), S);
       S = FSRS.updateStabilityFail(D, S, R);
       lapses++;
-      fsrsState = 'Relearning';
+      
+      // ★ Relearning Steps 시작
+      const stepMinutes = FSRS.getLearningStepInterval(0, true);
+      const nextReview = new Date(now.getTime() + stepMinutes * 60 * 1000);
+      
+      // ★ Leech 체크
+      if (FSRS.checkLeech({...item, lapses})) {
+        isLeech = true;
+      }
+      
+      return {
+        stability: S, difficulty: D, interval: 0,
+        nextReview: nextReview.toISOString(), lastReview: now.toISOString(),
+        fsrsState: 'Relearning', learningStep: 0,
+        reps: (item.reps || 0) + 1, lapses: lapses, isLeech: isLeech,
+        leitnerBox: 1
+      };
     } else {
-      // Hard/Good/Easy - same-day stability 공식
       S = FSRS.updateStabilitySameDay(S, grade);
       fsrsState = 'Review';
     }
@@ -898,19 +1123,34 @@ function calcNext(item, grade) {
     const R = FSRS.retrievability(elapsedDays, S);
     
     if (grade === 0) {
-      // Again - 실패
       S = FSRS.updateStabilityFail(D, S, R);
       lapses++;
-      fsrsState = 'Relearning';
+      
+      // ★ Relearning Steps 시작
+      const stepMinutes = FSRS.getLearningStepInterval(0, true);
+      const nextReview = new Date(now.getTime() + stepMinutes * 60 * 1000);
+      
+      // ★ Leech 체크
+      if (FSRS.checkLeech({...item, lapses})) {
+        isLeech = true;
+      }
+      
+      return {
+        stability: S, difficulty: D, interval: 0,
+        nextReview: nextReview.toISOString(), lastReview: now.toISOString(),
+        fsrsState: 'Relearning', learningStep: 0,
+        reps: (item.reps || 0) + 1, lapses: lapses, isLeech: isLeech,
+        leitnerBox: 1
+      };
     } else {
-      // Hard/Good/Easy - 성공
       S = FSRS.updateStabilitySuccess(D, S, R, grade);
       fsrsState = 'Review';
     }
   }
   
-  // 다음 간격 계산
-  const interval = grade === 0 ? 0 : FSRS.nextInterval(S);
+  // ★ 다음 간격 계산 (Fuzz 적용)
+  let interval = FSRS.nextInterval(S);
+  interval = FSRS.applyFuzz(interval);
   const nextReview = new Date(now);
   nextReview.setDate(nextReview.getDate() + interval);
   
@@ -921,9 +1161,11 @@ function calcNext(item, grade) {
     nextReview: nextReview.toISOString(),
     lastReview: now.toISOString(),
     fsrsState: fsrsState,
+    learningStep: -1,
     reps: (item.reps || 0) + 1,
     lapses: lapses,
-    leitnerBox: stabilityToBox(S) // 호환성: stability → box 변환
+    isLeech: isLeech,
+    leitnerBox: stabilityToBox(S)
   };
 }
 
@@ -1206,6 +1448,139 @@ function showModal(id){document.getElementById(id)?.classList.add('show');}
 function closeModal(id){document.getElementById(id)?.classList.remove('show');}
 function showConfirm(title,msg,fn){const titleEl=document.getElementById('confirm-title');const msgEl=document.getElementById('confirm-msg');const btnEl=document.getElementById('confirm-btn');if(titleEl)titleEl.textContent=title;if(msgEl)msgEl.textContent=msg;if(btnEl)btnEl.onclick=()=>{closeModal('confirm-modal');fn();};showModal('confirm-modal');}
 function getChip(id){return document.querySelector('#'+id+' .chip.active')?.dataset.value||'all';}
+// ★ 다중 선택 필터 함수들
+function getMultiChip(id){
+  const container=document.getElementById(id);
+  if(!container)return {include:[],exclude:[]};
+  const chips=container.querySelectorAll('.chip');
+  const include=[],exclude=[];
+  chips.forEach(c=>{
+    const v=c.dataset.value;
+    if(c.classList.contains('checked'))include.push(v);
+    if(c.classList.contains('excluded'))exclude.push(v);
+  });
+  return {include,exclude};
+}
+function getFilterValue(id){
+  const sel=document.getElementById(id);
+  const mode=document.querySelector(`.filter-mode[data-for="${id}"]`);
+  const val=sel?.value||'all';
+  const isExclude=mode?.classList.contains('exclude');
+  return {value:val,exclude:isExclude};
+}
+function toggleFilterMode(el){
+  el.classList.toggle('exclude');
+  el.textContent=el.classList.contains('exclude')?'−':'+';
+}
+function resetFilters(type){
+  const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
+  // 학습 상태 초기화
+  const mastery=document.getElementById(prefix+'-mastery');
+  if(mastery){
+    mastery.querySelectorAll('.chip').forEach(c=>{
+      c.classList.remove('checked','excluded');
+      if(c.dataset.value==='all')c.classList.add('checked');
+    });
+  }
+  // 셀렉트 박스 초기화
+  const selects=type==='vocab'?['cefr','freq','priority','register','l1','tag','toefl','coca']:
+                type==='phrasal'?['cefr','priority','register','cat']:
+                ['cefr','priority','register'];
+  selects.forEach(s=>{
+    const sel=document.getElementById(prefix+'-'+s);
+    if(sel)sel.value='all';
+    const mode=document.querySelector(`.filter-mode[data-for="${prefix}-${s}"]`);
+    if(mode){mode.classList.remove('exclude');mode.textContent='+';}
+  });
+  showToast('🔄 필터가 초기화되었습니다');
+}
+function saveFilters(type){
+  const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
+  const data={mastery:getMultiChip(prefix+'-mastery')};
+  const selects=type==='vocab'?['cefr','freq','priority','register','l1','tag','toefl','coca']:
+                type==='phrasal'?['cefr','priority','register','cat']:
+                ['cefr','priority','register'];
+  selects.forEach(s=>{
+    data[s]=getFilterValue(prefix+'-'+s);
+  });
+  localStorage.setItem('filter_'+type,JSON.stringify(data));
+  showToast('💾 필터 설정이 저장되었습니다');
+}
+function loadFilters(type){
+  const saved=localStorage.getItem('filter_'+type);
+  if(!saved)return;
+  try{
+    const data=JSON.parse(saved);
+    const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
+    // 학습 상태 복원
+    if(data.mastery){
+      const mastery=document.getElementById(prefix+'-mastery');
+      if(mastery){
+        mastery.querySelectorAll('.chip').forEach(c=>{
+          c.classList.remove('checked','excluded');
+          const v=c.dataset.value;
+          if(data.mastery.include.includes(v))c.classList.add('checked');
+          if(data.mastery.exclude.includes(v))c.classList.add('excluded');
+        });
+      }
+    }
+    // 셀렉트 박스 복원
+    const selects=type==='vocab'?['cefr','freq','priority','register','l1','tag','toefl','coca']:
+                  type==='phrasal'?['cefr','priority','register','cat']:
+                  ['cefr','priority','register'];
+    selects.forEach(s=>{
+      if(data[s]){
+        const sel=document.getElementById(prefix+'-'+s);
+        if(sel&&data[s].value)sel.value=data[s].value;
+        const mode=document.querySelector(`.filter-mode[data-for="${prefix}-${s}"]`);
+        if(mode){
+          if(data[s].exclude){mode.classList.add('exclude');mode.textContent='−';}
+          else{mode.classList.remove('exclude');mode.textContent='+';}
+        }
+      }
+    });
+  }catch(e){console.error('loadFilters error:',e);}
+}
+// 필터 조건 체크 헬퍼
+function checkMasteryFilter(item,mastery){
+  const {include,exclude}=mastery;
+  // 'all'이 포함되어 있으면 제외 조건만 체크
+  if(include.includes('all')){
+    // 제외 조건 체크
+    for(const ex of exclude){
+      if(ex==='new'&&(!item.reviewCount||item.reviewCount===0))return false;
+      if(ex==='weak'&&isWeak(item))return false;
+      if(ex==='wrong'&&isWrong(item))return false;
+      if(ex==='starred'&&item.starred)return false;
+      if(ex==='leech'&&item.isLeech)return false;
+    }
+    return true;
+  }
+  // 포함 조건 체크 (OR 연산)
+  let pass=false;
+  for(const inc of include){
+    if(inc==='new'&&(!item.reviewCount||item.reviewCount===0)){pass=true;break;}
+    if(inc==='weak'&&isWeak(item)){pass=true;break;}
+    if(inc==='wrong'&&isWrong(item)){pass=true;break;}
+    if(inc==='starred'&&item.starred){pass=true;break;}
+    if(inc==='leech'&&item.isLeech){pass=true;break;}
+  }
+  if(!pass)return false;
+  // 제외 조건 체크
+  for(const ex of exclude){
+    if(ex==='new'&&(!item.reviewCount||item.reviewCount===0))return false;
+    if(ex==='weak'&&isWeak(item))return false;
+    if(ex==='wrong'&&isWrong(item))return false;
+    if(ex==='starred'&&item.starred)return false;
+    if(ex==='leech'&&item.isLeech)return false;
+  }
+  return true;
+}
+function checkSelectFilter(itemValue,filter){
+  if(filter.value==='all')return true;
+  if(filter.exclude)return itemValue!==filter.value;
+  return itemValue===filter.value;
+}
 function getDistractors(correct,pool,n=4){
 console.log('[getDistractors] pool size:',pool.length,'correct POS:',correct.POS);
 if(pool.length===0)return [];
@@ -1378,29 +1753,38 @@ const w=await getAllWords();if(!w.length){showToast('📤 먼저 어휘 DB를 �
 // ★ 학습탭 슬라이더 값 우선, 없으면 설정값
 const count=parseInt(document.getElementById('study-count')?.value||localStorage.getItem('defaultCount')||'20');
 const now=new Date();
-// ★ 필터 적용
-const filter=getChip('filter-mastery');
-const l1=document.getElementById('filter-l1')?.value||'all';
-const cefrF=document.getElementById('filter-cefr')?.value||'all';
-const freqF=document.getElementById('filter-freq')?.value||'all';
-const priorityF=document.getElementById('filter-priority')?.value||'all';
-const registerF=document.getElementById('filter-register')?.value||'all';
-const toefl=document.getElementById('filter-toefl')?.value||'all';
-const coca=document.getElementById('filter-coca')?.value||'all';
-const tagF=document.getElementById('filter-tag')?.value||'all';
+// ★ 필터 적용 (다중 선택 및 제외 지원)
+const masteryF=getMultiChip('filter-mastery');
+const l1F=getFilterValue('filter-l1');
+const cefrF=getFilterValue('filter-cefr');
+const freqF=getFilterValue('filter-freq');
+const priorityF=getFilterValue('filter-priority');
+const registerF=getFilterValue('filter-register');
+const toeflF=getFilterValue('filter-toefl');
+const cocaF=getFilterValue('filter-coca');
+const tagF=getFilterValue('filter-tag');
 let filtered=w.filter(x=>{
-  if(l1!=='all'&&x.L1!==l1)return false;
-  if(cefrF!=='all'&&(x.CEFR||'B1')!==cefrF)return false;
-  if(freqF!=='all'&&(x.Frequency||'K3')!==freqF)return false;
-  if(priorityF!=='all'&&(x.Priority||'P2')!==priorityF)return false;
-  if(registerF!=='all'&&(x.Register||'Neutral')!==registerF)return false;
-  if(toefl!=='all'&&(x.TOEFL_Rel||'').toLowerCase()!==toefl.toLowerCase())return false;
-  if(coca!=='all'&&!(x.COCA_Genre||'').toLowerCase().includes(coca.toLowerCase()))return false;
-  if(tagF!=='all'&&!(x.tags||[]).includes(tagF))return false;
-  if(filter==='new'&&(x.reviewCount||0)>0)return false;
-  if(filter==='weak'&&!isWeak(x))return false;
-  if(filter==='wrong'&&!isWrong(x))return false;
-  if(filter==='starred'&&!x.starred)return false;
+  // 학습 상태 필터 (다중 선택)
+  if(!checkMasteryFilter(x,masteryF))return false;
+  // 셀렉트 필터들 (포함/제외)
+  if(!checkSelectFilter(x.L1,l1F))return false;
+  if(!checkSelectFilter(x.CEFR||'B1',cefrF))return false;
+  if(!checkSelectFilter(x.Frequency||'K3',freqF))return false;
+  if(!checkSelectFilter(x.Priority||'P2',priorityF))return false;
+  if(!checkSelectFilter(x.Register||'Neutral',registerF))return false;
+  // TOEFL/COCA/태그는 포함 검색
+  if(toeflF.value!=='all'){
+    const match=(x.TOEFL_Rel||'').toLowerCase()===toeflF.value.toLowerCase();
+    if(toeflF.exclude?match:!match)return false;
+  }
+  if(cocaF.value!=='all'){
+    const match=(x.COCA_Genre||'').toLowerCase().includes(cocaF.value.toLowerCase());
+    if(cocaF.exclude?match:!match)return false;
+  }
+  if(tagF.value!=='all'){
+    const match=(x.tags||[]).includes(tagF.value);
+    if(tagF.exclude?match:!match)return false;
+  }
   return true;
 });
 if(!filtered.length){showToast('⚠️ 필터 조건에 맞는 단어가 없습니다');return;}
@@ -1434,21 +1818,18 @@ const p=await getAllPV();if(!p.length){showToast('📤 먼저 구동사 DB를 �
 // ★ 학습탭 슬라이더 값 우선, 없으면 설정값
 const count=parseInt(document.getElementById('pv-study-count')?.value||localStorage.getItem('defaultCount')||'20');
 const now=new Date();
-// ★ 필터 적용
-const filter=getChip('pv-filter-mastery');
-const cat=document.getElementById('pv-filter-cat')?.value||'all';
-const cefrF=document.getElementById('pv-filter-cefr')?.value||'all';
-const priorityF=document.getElementById('pv-filter-priority')?.value||'all';
-const registerF=document.getElementById('pv-filter-register')?.value||'all';
+// ★ 필터 적용 (다중 선택 및 제외 지원)
+const masteryF=getMultiChip('pv-filter-mastery');
+const catF=getFilterValue('pv-filter-cat');
+const cefrF=getFilterValue('pv-filter-cefr');
+const priorityF=getFilterValue('pv-filter-priority');
+const registerF=getFilterValue('pv-filter-register');
 let filtered=p.filter(x=>{
-  if(cat!=='all'&&x.Category!==cat)return false;
-  if(cefrF!=='all'&&(x.CEFR||'B1')!==cefrF)return false;
-  if(priorityF!=='all'&&(x.Priority||'P2')!==priorityF)return false;
-  if(registerF!=='all'&&(x.Register||'Neutral')!==registerF)return false;
-  if(filter==='new'&&(x.reviewCount||0)>0)return false;
-  if(filter==='weak'&&!isWeak(x))return false;
-  if(filter==='wrong'&&!isWrong(x))return false;
-  if(filter==='starred'&&!x.starred)return false;
+  if(!checkMasteryFilter(x,masteryF))return false;
+  if(!checkSelectFilter(x.Category,catF))return false;
+  if(!checkSelectFilter(x.CEFR||'B1',cefrF))return false;
+  if(!checkSelectFilter(x.Priority||'P2',priorityF))return false;
+  if(!checkSelectFilter(x.Register||'Neutral',registerF))return false;
   return true;
 });
 if(!filtered.length){showToast('⚠️ 필터 조건에 맞는 구동사가 없습니다');return;}
@@ -1480,19 +1861,16 @@ const e=await getAllExpr();if(!e.length){showToast('📤 먼저 표현 DB를 업
 // ★ 학습탭 슬라이더 값 우선, 없으면 설정값
 const count=parseInt(document.getElementById('expr-study-count')?.value||localStorage.getItem('defaultCount')||'20');
 const now=new Date();
-// ★ 필터 적용
-const filter=getChip('expr-filter-mastery');
-const cefrF=document.getElementById('expr-filter-cefr')?.value||'all';
-const priorityF=document.getElementById('expr-filter-priority')?.value||'all';
-const registerF=document.getElementById('expr-filter-register')?.value||'all';
+// ★ 필터 적용 (다중 선택 및 제외 지원)
+const masteryF=getMultiChip('expr-filter-mastery');
+const cefrF=getFilterValue('expr-filter-cefr');
+const priorityF=getFilterValue('expr-filter-priority');
+const registerF=getFilterValue('expr-filter-register');
 let filtered=e.filter(x=>{
-  if(cefrF!=='all'&&(x.CEFR||'B1')!==cefrF)return false;
-  if(priorityF!=='all'&&(x.Priority||'P2')!==priorityF)return false;
-  if(registerF!=='all'&&(x.Register||'Neutral')!==registerF)return false;
-  if(filter==='new'&&(x.reviewCount||0)>0)return false;
-  if(filter==='weak'&&!isWeak(x))return false;
-  if(filter==='wrong'&&!isWrong(x))return false;
-  if(filter==='starred'&&!x.starred)return false;
+  if(!checkMasteryFilter(x,masteryF))return false;
+  if(!checkSelectFilter(x.CEFR||'B1',cefrF))return false;
+  if(!checkSelectFilter(x.Priority||'P2',priorityF))return false;
+  if(!checkSelectFilter(x.Register||'Neutral',registerF))return false;
   return true;
 });
 if(!filtered.length){showToast('⚠️ 필터 조건에 맞는 표현이 없습니다');return;}
@@ -1542,6 +1920,48 @@ async function quickStartMode(type, mode){
   }catch(e){console.error('quickStartMode error:',e);showToast('⚠️ 학습 시작 오류');}
 }
 document.querySelectorAll('.chip-group').forEach(g=>{g.addEventListener('click',e=>{if(e.target.classList.contains('chip')){g.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));e.target.classList.add('active');}});});
+// ★ 다중 선택 칩 그룹 이벤트
+document.querySelectorAll('.chip-multi').forEach(g=>{
+  g.addEventListener('click',e=>{
+    if(!e.target.classList.contains('chip'))return;
+    const chip=e.target;
+    const val=chip.dataset.value;
+    // 'all' 클릭 시 다른 것 모두 해제
+    if(val==='all'){
+      g.querySelectorAll('.chip').forEach(c=>{c.classList.remove('checked','excluded');});
+      chip.classList.add('checked');
+      return;
+    }
+    // 다른 칩 클릭 시 'all' 해제
+    const allChip=g.querySelector('.chip[data-value="all"]');
+    if(allChip)allChip.classList.remove('checked');
+    // 토글 (checked → excluded → 해제)
+    if(chip.classList.contains('excluded')){
+      chip.classList.remove('excluded');
+    }else if(chip.classList.contains('checked')){
+      chip.classList.remove('checked');
+      chip.classList.add('excluded');
+    }else{
+      chip.classList.add('checked');
+    }
+    // 아무것도 선택 안되면 'all' 선택
+    const anySelected=g.querySelector('.chip.checked,.chip.excluded');
+    if(!anySelected&&allChip)allChip.classList.add('checked');
+  });
+  // 더블클릭으로 바로 제외
+  g.addEventListener('dblclick',e=>{
+    if(!e.target.classList.contains('chip'))return;
+    const chip=e.target;
+    const val=chip.dataset.value;
+    if(val==='all')return;
+    const allChip=g.querySelector('.chip[data-value="all"]');
+    if(allChip)allChip.classList.remove('checked');
+    chip.classList.remove('checked');
+    chip.classList.add('excluded');
+  });
+});
+// 필터 설정 로드
+setTimeout(()=>{loadFilters('vocab');loadFilters('phrasal');loadFilters('expr');},500);
 // 학습 페이지 여부 확인
 const studyPages=['flashcard','quiz','typing','listening','dictation','cloze','collocation','expr-fc','expr-cloze','expr-typing','expr-quiz','pv-particle','pv-quiz'];
 let skipStudyCheck=false; // forceEnd 후 이중 확인 방지 플래그
@@ -1688,36 +2108,46 @@ async function updateStudyPage(){const w=await getAllWords(),p=await getAllPV();
 async function startStudySession(){
 if(currentStudyType==='phrasal'){await startPVStudySession();return;}
 const words=await getAllWords();if(!words.length){showToast('📤 먼저 어휘 DB를 업로드하세요');return;}
-const count=parseInt(document.getElementById('study-count')?.value||'20'),filter=getChip('filter-mastery'),l1=document.getElementById('filter-l1')?.value||'all',order=document.getElementById('option-order')?.value||'fsrs';
-const toefl=document.getElementById('filter-toefl')?.value||'all',coca=document.getElementById('filter-coca')?.value||'all',tagF=document.getElementById('filter-tag')?.value||'all';
-// ★ 새 필터: CEFR, Frequency, Priority, Register
-const cefrF=document.getElementById('filter-cefr')?.value||'all';
-const freqF=document.getElementById('filter-freq')?.value||'all';
-const priorityF=document.getElementById('filter-priority')?.value||'all';
-const registerF=document.getElementById('filter-register')?.value||'all';
+const count=parseInt(document.getElementById('study-count')?.value||'20'),order=document.getElementById('option-order')?.value||'fsrs';
+// ★ 다중 선택 필터 적용
+const masteryF=getMultiChip('filter-mastery');
+const l1F=getFilterValue('filter-l1');
+const cefrF=getFilterValue('filter-cefr');
+const freqF=getFilterValue('filter-freq');
+const priorityF=getFilterValue('filter-priority');
+const registerF=getFilterValue('filter-register');
+const toeflF=getFilterValue('filter-toefl');
+const cocaF=getFilterValue('filter-coca');
+const tagF=getFilterValue('filter-tag');
 const now=new Date();
 const today=now.toDateString();
 const mode=document.querySelector('#study-vocab .mode-card.active')?.dataset.mode||'flashcard';
 // ★ 타이핑 모드: needsProduction=true면 SM-2 필터 무시
 const isTypingMode=mode==='typing';
 // ★ Priority 기반 학습 모드: P3는 타이핑(산출) 제외
-const isP3Only=priorityF==='P3';
+const isP3Only=priorityF.value==='P3'&&!priorityF.exclude;
 let filtered=words.filter(w=>{
-// 기본 필터
-if(l1!=='all'&&w.L1!==l1)return false;
-if(toefl!=='all'&&(w.TOEFL_Rel||'').toLowerCase()!==toefl.toLowerCase())return false;
-if(coca!=='all'&&!(w.COCA_Genre||'').toLowerCase().includes(coca.toLowerCase()))return false;
-if(tagF!=='all'&&!(w.tags||[]).includes(tagF))return false;
-// ★ 새 필터 적용
-if(cefrF!=='all'&&(w.CEFR||'B1')!==cefrF)return false;
-if(freqF!=='all'&&(w.Frequency||'K3')!==freqF)return false;
-if(priorityF!=='all'&&(w.Priority||'P2')!==priorityF)return false;
-if(registerF!=='all'&&(w.Register||'Neutral')!==registerF)return false;
-const rc=w.reviewCount||0;
-if(filter==='new'&&rc>0)return false;
-if(filter==='weak'&&!isWeak(w))return false;
-if(filter==='wrong'&&!isWrong(w))return false;
-if(filter==='starred'&&!w.starred)return false;
+// 학습 상태 필터 (다중 선택)
+if(!checkMasteryFilter(w,masteryF))return false;
+// 셀렉트 필터들
+if(!checkSelectFilter(w.L1,l1F))return false;
+if(!checkSelectFilter(w.CEFR||'B1',cefrF))return false;
+if(!checkSelectFilter(w.Frequency||'K3',freqF))return false;
+if(!checkSelectFilter(w.Priority||'P2',priorityF))return false;
+if(!checkSelectFilter(w.Register||'Neutral',registerF))return false;
+// TOEFL/COCA/태그
+if(toeflF.value!=='all'){
+  const match=(w.TOEFL_Rel||'').toLowerCase()===toeflF.value.toLowerCase();
+  if(toeflF.exclude?match:!match)return false;
+}
+if(cocaF.value!=='all'){
+  const match=(w.COCA_Genre||'').toLowerCase().includes(cocaF.value.toLowerCase());
+  if(cocaF.exclude?match:!match)return false;
+}
+if(tagF.value!=='all'){
+  const match=(w.tags||[]).includes(tagF.value);
+  if(tagF.exclude?match:!match)return false;
+}
 return true;
 });
 if(!filtered.length){showToast('⚠️ 학습할 단어가 없습니다');return;}
@@ -2074,6 +2504,30 @@ setRating(true);vibrate(10);
 }
 }
 
+// ★ Interval 표시 형식 (분/시간/일 구분)
+function formatInterval(result) {
+  if (!result) return '?';
+  const interval = result.interval || 0;
+  const state = result.fsrsState || 'Review';
+  const step = result.learningStep;
+  
+  // Learning/Relearning 상태: 분 단위
+  if (state === 'Learning' || state === 'Relearning') {
+    const steps = state === 'Relearning' ? FSRS.relearningSteps : FSRS.learningSteps;
+    const nextStep = Math.min(step + 1, steps.length - 1);
+    const mins = steps[nextStep] || steps[steps.length - 1];
+    if (mins < 60) return `${mins}분`;
+    if (mins < 1440) return `${Math.round(mins/60)}시간`;
+    return `${Math.round(mins/1440)}일`;
+  }
+  
+  // Review 상태: 일 단위
+  if (interval === 0) return '다시';
+  if (interval >= 365) return `${Math.round(interval/365)}년`;
+  if (interval >= 30) return `${Math.round(interval/30)}개월`;
+  return `${interval}일`;
+}
+
 function setRating(en){
 try{
 const sec=document.getElementById('rating-section');
@@ -2089,9 +2543,9 @@ const result1 = calcNext({...item}, 1);
 const result2 = calcNext({...item}, 2);
 const result3 = calcNext({...item}, 3);
 const intervals=['다시',
-  `${result1.interval}일`,
-  `${result2.interval}일`,
-  `${result3.interval}일`];
+  formatInterval(result1),
+  formatInterval(result2),
+  formatInterval(result3)];
 document.querySelectorAll('.rating-interval').forEach((el,i)=>el.textContent=intervals[i]);
 }catch(calcErr){
 console.warn('calcNext error in setRating:',calcErr);
@@ -2135,7 +2589,7 @@ item.reviewCount=(item.reviewCount||0)+1;if(r>=2)item.correctCount=(item.correct
 updateMastery(item,r>=2);
 updateInputOutput(item,false,r>=2); // ★ 플래시카드 = 인풋 모드
 // FSRS 계산 (lastReview는 calcNext 내부에서 설정)
-try{Object.assign(item,calcNext(item,r));}catch(calcErr){console.error('calcNext error:',calcErr);item.lastReview=new Date().toISOString();}
+try{Object.assign(item,calcNext(item,r));if(item.isLeech)showToast('🐌 Leech 카드! '+((fcState.type==='phrasal')?item.Phrasal_Verb:item.word));}catch(calcErr){console.error('calcNext error:',calcErr);item.lastReview=new Date().toISOString();}
 }else{
 // 재출제 카드: reviewCount, correctCount만 업데이트 (FSRS는 건너뜀)
 console.log('[rateCard] isRetry card, skipping FSRS update');
@@ -2269,7 +2723,7 @@ if(ok&&!w.needsProduction){
 }
 // ★ FSRS: 오답만 바로 Again(0) 적용, 정답은 rating 선택 시 적용
 if(!ok){
-  try{Object.assign(w,calcNext(w,0));await saveWord(w);}catch(e){console.error(e);}
+  try{Object.assign(w,calcNext(w,0));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){console.error(e);}
   updateWrong(w,false);
 }else{
   updateWrong(w,true);
@@ -2306,7 +2760,7 @@ try{
 if(quizState.autoNextTimer){clearTimeout(quizState.autoNextTimer);quizState.autoNextTimer=null;}
 const w=quizState.words[quizState.idx];
 // ★ 통계는 이미 selectQuiz에서 저장됨, 여기서는 FSRS만 적용
-try{Object.assign(w,calcNext(w,grade));await saveWord(w);}catch(e){console.error(e);}
+try{Object.assign(w,calcNext(w,grade));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){console.error(e);}
 document.getElementById('quiz-rating-bar').classList.add('hidden');
 nextQuiz();
 }catch(e){console.error('rateQuizItem error:',e);nextQuiz();}
@@ -2391,7 +2845,7 @@ w.reviewCount=(w.reviewCount||0)+1;if(ok&&!typingState.hintUsed)w.correctCount=(
 updateMastery(w,ok);if(ok&&!typingState.hintUsed)updateWrong(w,true);
 updateInputOutput(w,true,ok&&!typingState.hintUsed); // ★ 타이핑 = 아웃풋 모드
 // Free Recall 보상
-try{Object.assign(w,calcNext(w,ok&&!typingState.hintUsed?3:(ok?2:0)));await saveWord(w);}catch(e){console.error(e);}
+try{Object.assign(w,calcNext(w,ok&&!typingState.hintUsed?3:(ok?2:0)));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){console.error(e);}
 }
 vibrate(ok?10:[50,30,50]);
 document.getElementById('typing-correct').textContent=typingState.correct;document.getElementById('typing-wrong').textContent=typingState.wrong;
@@ -2506,7 +2960,7 @@ if(ok&&!w.needsProduction){
 }else if(!ok){w.consecutiveCorrect=0;}
 // ★ FSRS: 오답만 바로 Again(0) 적용, 정답은 rating 선택 시 적용
 if(!ok){
-  try{Object.assign(w,calcNext(w,0));await saveWord(w);}catch(e){console.error(e);}
+  try{Object.assign(w,calcNext(w,0));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){console.error(e);}
   updateWrong(w,false);
 }else{
   updateWrong(w,true);
@@ -2531,7 +2985,7 @@ if(ok){
 async function rateClozeItem(grade){
 if(clozeState.autoNextTimer){clearTimeout(clozeState.autoNextTimer);clozeState.autoNextTimer=null;}
 const w=clozeState.words[clozeState.idx];
-try{Object.assign(w,calcNext(w,grade));await saveWord(w);}catch(e){console.error(e);}
+try{Object.assign(w,calcNext(w,grade));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){console.error(e);}
 document.getElementById('cloze-rating-bar').classList.add('hidden');
 nextCloze();
 }
@@ -2639,7 +3093,7 @@ if(ok&&!w.needsProduction){
 }else if(!ok){w.consecutiveCorrect=0;}
 // ★ FSRS: 오답만 바로 Again(0) 적용, 정답은 rating 선택 시 적용
 if(!ok){
-  try{Object.assign(w,calcNext(w,0));await saveWord(w);}catch(e){console.error(e);}
+  try{Object.assign(w,calcNext(w,0));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){console.error(e);}
   updateWrong(w,false);
 }else{
   updateWrong(w,true);
@@ -2664,7 +3118,7 @@ if(ok){
 async function rateCollocItem(grade){
 if(collocState.autoNextTimer){clearTimeout(collocState.autoNextTimer);collocState.autoNextTimer=null;}
 const w=collocState.words[collocState.idx];
-try{Object.assign(w,calcNext(w,grade));await saveWord(w);}catch(e){console.error(e);}
+try{Object.assign(w,calcNext(w,grade));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){console.error(e);}
 document.getElementById('colloc-rating-bar').classList.add('hidden');
 nextColloc();
 }
@@ -2959,7 +3413,7 @@ if(w){
     updateInputOutput(w,false,false); // ★ 리스닝 오답
     updateMastery(w,false);
     updateWrong(w,false);
-    try{Object.assign(w,calcNext(w,0));await saveWord(w);}catch(e){} // 오답은 FSRS 바로 적용
+    try{Object.assign(w,calcNext(w,0));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){} // 오답은 FSRS 바로 적용
   }
 }
 }else if(currentListeningType==='phrasal'){
@@ -2981,7 +3435,7 @@ if(pv){
     updateMastery(pv,false);
     updateWrong(pv,false);
     updateInputOutput(pv,false,false); // ★ 리스닝 오답
-    try{Object.assign(pv,calcNext(pv,0));await savePV(pv);}catch(e){}
+    try{Object.assign(pv,calcNext(pv,0));if(pv.isLeech)showToast('🐌 Leech: '+pv.Phrasal_Verb);await savePV(pv);}catch(e){}
   }
 }
 }else if(currentListeningType==='expr'){
@@ -2998,7 +3452,7 @@ if(e){
     updateMastery(e,false);
     updateWrong(e,false);
     updateInputOutput(e,false,false); // ★ 리스닝 오답
-    try{Object.assign(e,calcNext(e,0));await saveExpr(e);}catch(e2){}
+    try{Object.assign(e,calcNext(e,0));if(e.isLeech)showToast('🐌 Leech: '+e.Expression);await saveExpr(e);}catch(e2){}
   }
 }
 }
@@ -3045,13 +3499,13 @@ const item=listeningState.currentWord;
 // ★ 통계는 이미 selectListeningOption에서 저장됨, 여기서는 FSRS만 적용
 if(currentListeningType==='vocab'){
 const w=await getWord(item.word);
-if(w){Object.assign(w,calcNext(w,grade));await saveWord(w);}
+if(w){Object.assign(w,calcNext(w,grade));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}
 }else if(currentListeningType==='phrasal'){
 const pv=await getPV(item.Phrasal_Verb);
-if(pv){Object.assign(pv,calcNext(pv,grade));await savePV(pv);}
+if(pv){Object.assign(pv,calcNext(pv,grade));if(pv.isLeech)showToast('🐌 Leech: '+pv.Phrasal_Verb);await savePV(pv);}
 }else if(currentListeningType==='expr'){
 const e=await getExpr(item.Expression);
-if(e){Object.assign(e,calcNext(e,grade));await saveExpr(e);}
+if(e){Object.assign(e,calcNext(e,grade));if(e.isLeech)showToast('🐌 Leech: '+e.Expression);await saveExpr(e);}
 }
 document.getElementById('listening-rating-bar').classList.add('hidden');
 nextListeningQ();
@@ -3183,7 +3637,7 @@ if(ok)w.correctCount=(w.correctCount||0)+1;
 updateMastery(w,ok);
 updateInputOutput(w,true,ok&&!dictationState.hintUsed); // ★ 받아쓰기 = 아웃풋 모드
 if(ok){updateWrong(w,true);Object.assign(w,calcNext(w,dictationState.hintUsed?2:3));}
-else{updateWrong(w,false);Object.assign(w,calcNext(w,0));w.needsProduction=true;}
+else{updateWrong(w,false);Object.assign(w,calcNext(w,0));if(w.isLeech)showToast('🐌 Leech: '+w.word);w.needsProduction=true;}
 try{await saveWord(w);}catch(e){console.error(e);}
 }
 }else if(type==='phrasal'){
@@ -3194,7 +3648,7 @@ if(ok)p.correctCount=(p.correctCount||0)+1;
 updateMastery(p,ok);
 updateInputOutput(p,true,ok&&!dictationState.hintUsed); // ★ 받아쓰기 = 아웃풋 모드
 if(ok){updateWrong(p,true);Object.assign(p,calcNext(p,dictationState.hintUsed?2:3));}
-else{updateWrong(p,false);Object.assign(p,calcNext(p,0));p.needsProduction=true;}
+else{updateWrong(p,false);Object.assign(p,calcNext(p,0));if(p.isLeech)showToast('🐌 Leech: '+p.Phrasal_Verb);p.needsProduction=true;}
 try{await savePV(p);}catch(e){console.error(e);}
 }
 }else{
@@ -3205,7 +3659,7 @@ if(ok)e.correctCount=(e.correctCount||0)+1;
 updateMastery(e,ok);
 updateInputOutput(e,true,ok&&!dictationState.hintUsed); // ★ 받아쓰기 = 아웃풋 모드
 if(ok){updateWrong(e,true);Object.assign(e,calcNext(e,dictationState.hintUsed?2:3));}
-else{updateWrong(e,false);Object.assign(e,calcNext(e,0));e.needsProduction=true;}
+else{updateWrong(e,false);Object.assign(e,calcNext(e,0));if(e.isLeech)showToast('🐌 Leech: '+e.Expression);e.needsProduction=true;}
 try{await saveExpr(e);}catch(e2){console.error(e2);}
 }
 }
@@ -3229,24 +3683,21 @@ document.getElementById('dictation-input')?.addEventListener('keypress',e=>{if(e
 // === PV 학습 ===
 async function startPVStudySession(){
 const p=await getAllPV();if(!p.length){showToast('📤 먼저 구동사 DB를 업로드하세요');return;}
-const count=parseInt(document.getElementById('pv-study-count').value),filter=getChip('pv-filter-mastery'),cat=document.getElementById('pv-filter-cat').value,order=document.getElementById('option-order').value;
-// ★ 새 필터
-const cefrF=document.getElementById('pv-filter-cefr')?.value||'all';
-const priorityF=document.getElementById('pv-filter-priority')?.value||'all';
-const registerF=document.getElementById('pv-filter-register')?.value||'all';
+const count=parseInt(document.getElementById('pv-study-count').value),order=document.getElementById('option-order').value;
+// ★ 다중 선택 필터 적용
+const masteryF=getMultiChip('pv-filter-mastery');
+const catF=getFilterValue('pv-filter-cat');
+const cefrF=getFilterValue('pv-filter-cefr');
+const priorityF=getFilterValue('pv-filter-priority');
+const registerF=getFilterValue('pv-filter-register');
 const now=new Date();
 const today=now.toDateString();
 let filtered=p.filter(x=>{
-if(cat!=='all'&&x.Category!==cat)return false;
-// ★ 새 필터 적용
-if(cefrF!=='all'&&(x.CEFR||'B1')!==cefrF)return false;
-if(priorityF!=='all'&&(x.Priority||'P2')!==priorityF)return false;
-if(registerF!=='all'&&(x.Register||'Neutral')!==registerF)return false;
-const rc=x.reviewCount||0;
-if(filter==='new'&&rc>0)return false;
-if(filter==='weak'&&!isWeak(x))return false;
-if(filter==='wrong'&&!isWrong(x))return false;
-if(filter==='starred'&&!x.starred)return false;
+if(!checkMasteryFilter(x,masteryF))return false;
+if(!checkSelectFilter(x.Category,catF))return false;
+if(!checkSelectFilter(x.CEFR||'B1',cefrF))return false;
+if(!checkSelectFilter(x.Priority||'P2',priorityF))return false;
+if(!checkSelectFilter(x.Register||'Neutral',registerF))return false;
 return true;
 });
 if(!filtered.length){showToast('⚠️ 학습할 구동사가 없습니다');return;}
@@ -3346,7 +3797,7 @@ updateMastery(pv,ok);
 updateInputOutput(pv,false,ok); // ★ PV 퀴즈 = 인풋 모드
 // ★ FSRS: 오답만 바로 Again(0) 적용, 정답은 rating 선택 시 적용
 if(!ok){
-  try{Object.assign(pv,calcNext(pv,0));await savePV(pv);}catch(e){console.error(e);}
+  try{Object.assign(pv,calcNext(pv,0));if(pv.isLeech)showToast('🐌 Leech: '+pv.Phrasal_Verb);await savePV(pv);}catch(e){console.error(e);}
   updateWrong(pv,false);
 }else{
   updateWrong(pv,true);
@@ -3373,7 +3824,7 @@ try{
 if(pvState.autoNextTimer){clearTimeout(pvState.autoNextTimer);pvState.autoNextTimer=null;}
 const pv=pvState.words[pvState.idx];
 // ★ 통계는 이미 selectPVP에서 저장됨, 여기서는 FSRS만 적용
-try{Object.assign(pv,calcNext(pv,grade));await savePV(pv);}catch(e){console.error(e);}
+try{Object.assign(pv,calcNext(pv,grade));if(pv.isLeech)showToast('🐌 Leech: '+pv.Phrasal_Verb);await savePV(pv);}catch(e){console.error(e);}
 document.getElementById('pvp-rating-bar').classList.add('hidden');
 nextPVP();
 }catch(e){console.error('ratePVPItem error:',e);nextPVP();}
@@ -3445,7 +3896,7 @@ updateMastery(pv,ok);
 updateInputOutput(pv,false,ok); // ★ PV 의미 퀴즈 = 인풋 모드
 // ★ FSRS: 오답만 바로 Again(0) 적용, 정답은 rating 선택 시 적용
 if(!ok){
-  try{Object.assign(pv,calcNext(pv,0));await savePV(pv);}catch(e){console.error(e);}
+  try{Object.assign(pv,calcNext(pv,0));if(pv.isLeech)showToast('🐌 Leech: '+pv.Phrasal_Verb);await savePV(pv);}catch(e){console.error(e);}
   updateWrong(pv,false);
 }else{
   updateWrong(pv,true);
@@ -3472,7 +3923,7 @@ try{
 if(pvState.autoNextTimer){clearTimeout(pvState.autoNextTimer);pvState.autoNextTimer=null;}
 const pv=pvState.words[pvState.idx];
 // ★ 통계는 이미 selectPVQ에서 저장됨, 여기서는 FSRS만 적용
-try{Object.assign(pv,calcNext(pv,grade));await savePV(pv);}catch(e){console.error(e);}
+try{Object.assign(pv,calcNext(pv,grade));if(pv.isLeech)showToast('🐌 Leech: '+pv.Phrasal_Verb);await savePV(pv);}catch(e){console.error(e);}
 document.getElementById('pvq-rating-bar').classList.add('hidden');
 nextPVQ();
 }catch(e){console.error('ratePVQItem error:',e);nextPVQ();}
@@ -4289,9 +4740,9 @@ const result1 = calcNext({...e}, 1);
 const result2 = calcNext({...e}, 2);
 const result3 = calcNext({...e}, 3);
 const intervals=['다시',
-  `${result1.interval}일`,
-  `${result2.interval}일`,
-  `${result3.interval}일`];
+  formatInterval(result1),
+  formatInterval(result2),
+  formatInterval(result3)];
 document.querySelectorAll('#expr-rating-grid .rating-interval').forEach((el,i)=>el.textContent=intervals[i]);
 }
 }
@@ -4334,6 +4785,7 @@ if(r<=1)fresh.needsProduction=true;
 updateMastery(fresh,r>=2);
 updateInputOutput(fresh,false,r>=2); // ★ Expr 플래시카드 = 인풋 모드
 Object.assign(fresh,calcNext(fresh,r));
+if(fresh.isLeech)showToast('🐌 Leech: '+fresh.Expression);
 await saveExpr(fresh);
 Object.assign(e,fresh);
 }
@@ -4475,6 +4927,7 @@ updateInputOutput(fresh,false,ok); // ★ Expr 퀴즈 = 인풋 모드
 // ★ FSRS: 오답만 바로 Again(0) 적용, 정답은 rating 선택 시 적용
 if(!ok){
   Object.assign(fresh,calcNext(fresh,0));
+  if(fresh.isLeech)showToast('🐌 Leech: '+fresh.Expression);
   updateWrong(fresh,false);
 }else{
   updateWrong(fresh,true);
@@ -4507,6 +4960,7 @@ try{
 const fresh=await getExpr(e.Expression);
 if(fresh){
 Object.assign(fresh,calcNext(fresh,grade));
+if(fresh.isLeech)showToast('🐌 Leech: '+fresh.Expression);
 await saveExpr(fresh);
 }
 }catch(dbErr){console.error(dbErr);}
@@ -4729,7 +5183,7 @@ updateMastery(e,ok);
 updateInputOutput(e,false,ok); // ★ Expr 클로즈 = 인풋 모드
 // ★ FSRS: 오답만 바로 Again(0) 적용, 정답은 rating 선택 시 적용
 if(!ok){
-  try{Object.assign(e,calcNext(e,0));await saveExpr(e);}catch(err){console.error('[selectExprCloze] save error:',err);}
+  try{Object.assign(e,calcNext(e,0));if(e.isLeech)showToast('🐌 Leech: '+e.Expression);await saveExpr(e);}catch(err){console.error('[selectExprCloze] save error:',err);}
   updateWrong(e,false);
 }else{
   updateWrong(e,true);
@@ -4752,7 +5206,7 @@ if(ok){
 async function rateExprClozeItem(grade){
 if(exprState.autoNextTimer){clearTimeout(exprState.autoNextTimer);exprState.autoNextTimer=null;}
 const e=exprState.words[exprState.idx];
-try{Object.assign(e,calcNext(e,grade));await saveExpr(e);}catch(err){console.error(err);}
+try{Object.assign(e,calcNext(e,grade));if(e.isLeech)showToast('🐌 Leech: '+e.Expression);await saveExpr(e);}catch(err){console.error(err);}
 document.getElementById('expr-cloze-rating-bar').classList.add('hidden');
 exprState.idx++;exprState.answered=false;showExprClozeQ();
 }
@@ -4924,6 +5378,7 @@ updateMastery(fresh,false);
 updateWrong(fresh,false);
 updateInputOutput(fresh,true,false); // ★ 아웃풋 오답
 Object.assign(fresh,calcNext(fresh,0)); // Again
+if(fresh.isLeech)showToast('🐌 Leech: '+fresh.Expression);
 fresh.needsProduction=true; // 6. 오답 시 산출 연습 필요 표시
 }
 await saveExpr(fresh);
@@ -5132,6 +5587,25 @@ document.getElementById('stability-0-3').textContent=stab0_3;
 document.getElementById('stability-3-7').textContent=stab3_7;
 document.getElementById('stability-7-30').textContent=stab7_30;
 document.getElementById('stability-30-plus').textContent=stab30;
+// ★ Card States (Anki 스타일) 통계
+let stateNew=0,stateLearning=0,stateRelearning=0,stateYoung=0,stateMature=0;
+w.forEach(x=>{
+  const state=FSRS.getCardState(x);
+  if(state==='New')stateNew++;
+  else if(state==='Learning')stateLearning++;
+  else if(state==='Relearning')stateRelearning++;
+  else if(state==='Young')stateYoung++;
+  else if(state==='Mature')stateMature++;
+});
+document.getElementById('state-new').textContent=stateNew;
+document.getElementById('state-learning').textContent=stateLearning;
+document.getElementById('state-relearning').textContent=stateRelearning;
+document.getElementById('state-young').textContent=stateYoung;
+document.getElementById('state-mature').textContent=stateMature;
+// ★ Leech 카드 통계
+const leechCards=w.filter(x=>(x.lapses||0)>=FSRS.leechThreshold||x.isLeech).slice(0,10);
+document.getElementById('leech-count').textContent=leechCards.length?`(${leechCards.length}개)`:'';
+document.getElementById('leech-list').innerHTML=leechCards.length?leechCards.map((c,i)=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)"><span>${i+1}. ${c.word}</span><span style="color:var(--danger)">${c.lapses||0}회 실패</span></div>`).join(''):'<div style="color:var(--success);text-align:center;padding:10px">✅ Leech 카드 없음</div>';
 // ★ 7일 리뷰 예측 차트
 const forecast=[0,0,0,0,0,0,0];
 w.forEach(x=>{if(x.nextReview){const d=Math.floor((new Date(x.nextReview)-now)/(1000*60*60*24));if(d>=0&&d<7)forecast[d]++;}});
@@ -5277,6 +5751,25 @@ document.getElementById('pv-stability-0-3').textContent=stab0_3;
 document.getElementById('pv-stability-3-7').textContent=stab3_7;
 document.getElementById('pv-stability-7-30').textContent=stab7_30;
 document.getElementById('pv-stability-30-plus').textContent=stab30;
+// ★ Card States (Anki 스타일) 통계
+let pvStateNew=0,pvStateLearning=0,pvStateRelearning=0,pvStateYoung=0,pvStateMature=0;
+p.forEach(x=>{
+  const state=FSRS.getCardState(x);
+  if(state==='New')pvStateNew++;
+  else if(state==='Learning')pvStateLearning++;
+  else if(state==='Relearning')pvStateRelearning++;
+  else if(state==='Young')pvStateYoung++;
+  else if(state==='Mature')pvStateMature++;
+});
+document.getElementById('pv-state-new').textContent=pvStateNew;
+document.getElementById('pv-state-learning').textContent=pvStateLearning;
+document.getElementById('pv-state-relearning').textContent=pvStateRelearning;
+document.getElementById('pv-state-young').textContent=pvStateYoung;
+document.getElementById('pv-state-mature').textContent=pvStateMature;
+// ★ Leech 카드 통계
+const pvLeechCards=p.filter(x=>(x.lapses||0)>=FSRS.leechThreshold||x.isLeech).slice(0,10);
+document.getElementById('pv-leech-count').textContent=pvLeechCards.length?`(${pvLeechCards.length}개)`:'';
+document.getElementById('pv-leech-list').innerHTML=pvLeechCards.length?pvLeechCards.map((c,i)=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)"><span>${i+1}. ${c.Phrasal_Verb}</span><span style="color:var(--danger)">${c.lapses||0}회</span></div>`).join(''):'<div style="color:var(--success);text-align:center;padding:10px">✅ Leech 없음</div>';
 // ★ 7일 리뷰 예측 차트
 const forecast=[0,0,0,0,0,0,0];
 p.forEach(x=>{if(x.nextReview){const d=Math.floor((new Date(x.nextReview)-now)/(1000*60*60*24));if(d>=0&&d<7)forecast[d]++;}});
@@ -5407,6 +5900,25 @@ document.getElementById('expr-stability-0-3').textContent=stab0_3;
 document.getElementById('expr-stability-3-7').textContent=stab3_7;
 document.getElementById('expr-stability-7-30').textContent=stab7_30;
 document.getElementById('expr-stability-30-plus').textContent=stab30;
+// ★ Card States (Anki 스타일) 통계
+let exprStateNew=0,exprStateLearning=0,exprStateRelearning=0,exprStateYoung=0,exprStateMature=0;
+e.forEach(x=>{
+  const state=FSRS.getCardState(x);
+  if(state==='New')exprStateNew++;
+  else if(state==='Learning')exprStateLearning++;
+  else if(state==='Relearning')exprStateRelearning++;
+  else if(state==='Young')exprStateYoung++;
+  else if(state==='Mature')exprStateMature++;
+});
+document.getElementById('expr-state-new').textContent=exprStateNew;
+document.getElementById('expr-state-learning').textContent=exprStateLearning;
+document.getElementById('expr-state-relearning').textContent=exprStateRelearning;
+document.getElementById('expr-state-young').textContent=exprStateYoung;
+document.getElementById('expr-state-mature').textContent=exprStateMature;
+// ★ Leech 카드 통계
+const exprLeechCards=e.filter(x=>(x.lapses||0)>=FSRS.leechThreshold||x.isLeech).slice(0,10);
+document.getElementById('expr-leech-count').textContent=exprLeechCards.length?`(${exprLeechCards.length}개)`:'';
+document.getElementById('expr-leech-list').innerHTML=exprLeechCards.length?exprLeechCards.map((c,i)=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i+1}. ${c.Expression}</span><span style="color:var(--danger);flex-shrink:0;margin-left:8px">${c.lapses||0}회</span></div>`).join(''):'<div style="color:var(--success);text-align:center;padding:10px">✅ Leech 없음</div>';
 // ★ 7일 리뷰 예측 차트
 const forecast=[0,0,0,0,0,0,0];
 e.forEach(x=>{if(x.nextReview){const d=Math.floor((new Date(x.nextReview)-now)/(1000*60*60*24));if(d>=0&&d<7)forecast[d]++;}});
@@ -6769,6 +7281,28 @@ document.getElementById('setting-wrong-auto').checked=wa!=='false';
 const wl=localStorage.getItem('wrongLimit')||'5';
 document.getElementById('setting-wrong-limit').value=wl;
 document.getElementById('wrong-limit-val').textContent=wl;
+// ★ FSRS 설정 로드
+const fuzz=localStorage.getItem('intervalFuzz');
+FSRS.intervalFuzz=fuzz!=='false';
+document.getElementById('setting-fuzz').checked=FSRS.intervalFuzz;
+const dnl=localStorage.getItem('dailyNewLimit')||'9999';
+FSRS.dailyNewLimit=parseInt(dnl);
+document.getElementById('setting-daily-new').value=dnl;
+const drl=localStorage.getItem('dailyReviewLimit')||'9999';
+FSRS.dailyReviewLimit=parseInt(drl);
+document.getElementById('setting-daily-review').value=drl;
+const nds=localStorage.getItem('nextDayStartsAt')||'4';
+FSRS.nextDayStartsAt=parseInt(nds);
+document.getElementById('setting-next-day').value=nds;
+const lt=localStorage.getItem('leechThreshold')||'8';
+FSRS.leechThreshold=parseInt(lt);
+document.getElementById('setting-leech').value=lt;
+const mi=localStorage.getItem('maxInterval')||'365';
+FSRS.maxInterval=parseInt(mi);
+document.getElementById('setting-max-interval').value=mi;
+const rr=localStorage.getItem('requestRetention')||'90';
+FSRS.requestRetention=parseInt(rr)/100;
+document.getElementById('setting-retention').value=rr;
 try{await openDB();await updateHomeStats();}catch(e){console.error('Init error:',e);showToast('❌ 초기화 오류: '+e.message);}
 setTimeout(()=>document.getElementById('splash').classList.add('hidden'),800);
 }
