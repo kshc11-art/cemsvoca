@@ -18,7 +18,7 @@
 html{background:var(--bg);height:-webkit-fill-available}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:-webkit-fill-available}
 .app{max-width:600px;margin:0 auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-left:calc(16px + env(safe-area-inset-left));padding-right:calc(16px + env(safe-area-inset-right));padding-bottom:calc(80px + env(safe-area-inset-bottom))}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:6px 0;padding-bottom:calc(6px + env(safe-area-inset-bottom));z-index:100}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:6px 0;padding-bottom:calc(6px + env(safe-area-inset-bottom));z-index:9999}
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;color:var(--muted);font-size:9px;cursor:pointer;text-decoration:none}
 .nav-item.active{color:var(--primary)}
 .nav-item svg{width:20px;height:20px;pointer-events:none}
@@ -1538,7 +1538,7 @@ u.rate=0.9;
 speechSynthesis.speak(u);
 },50);
 }
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.remove('hidden');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function showModal(id){document.getElementById(id)?.classList.add('show');}
 function closeModal(id){document.getElementById(id)?.classList.remove('show');}
 function showConfirm(title,msg,fn){const titleEl=document.getElementById('confirm-title');const msgEl=document.getElementById('confirm-msg');const btnEl=document.getElementById('confirm-btn');if(titleEl)titleEl.textContent=title;if(msgEl)msgEl.textContent=msg;if(btnEl)btnEl.onclick=()=>{closeModal('confirm-modal');fn();};showModal('confirm-modal');}
@@ -1554,8 +1554,7 @@ function getMultiChip(id){
     if(c.classList.contains('checked'))include.push(v);
     if(c.classList.contains('excluded'))exclude.push(v);
   });
-  // ★ include가 비어있으면 'all'을 기본값으로
-  if(include.length===0)include.push('all');
+  // ★ UI 상태 그대로 반환 (필터 적용 시 checkMultiFilter에서 처리)
   return {include,exclude};
 }
 function getFilterValue(id){
@@ -1596,24 +1595,29 @@ function resetFilters(type){
   showToast('🔄 필터가 초기화되었습니다');
 }
 function saveFilters(type){
-  const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
-  const data={};
-  // chip-multi 저장
-  const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium']:
-                   type==='phrasal'?['mastery','cefr','priority','formality','currency','medium']:
-                   ['mastery','cefr','priority','formality','currency','medium'];
-  chipGroups.forEach(g=>{
-    data[g]=getMultiChip(prefix+'-'+g);
-  });
-  // 셀렉트 박스 저장
-  const selects=type==='vocab'?['l1','tag','toefl','coca']:
-                type==='phrasal'?['cat']:[];
-  selects.forEach(s=>{
-    const sel=document.getElementById(prefix+'-'+s);
-    if(sel)data[s]=sel.value;
-  });
-  localStorage.setItem('filter_'+type,JSON.stringify(data));
-  showToast('💾 필터 설정이 저장되었습니다');
+  try{
+    const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
+    const data={};
+    // chip-multi 저장
+    const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium']:
+                     type==='phrasal'?['mastery','cefr','priority','formality','currency','medium']:
+                     ['mastery','cefr','priority','formality','currency','medium'];
+    chipGroups.forEach(g=>{
+      data[g]=getMultiChip(prefix+'-'+g);
+    });
+    // 셀렉트 박스 저장
+    const selects=type==='vocab'?['l1','tag','toefl','coca']:
+                  type==='phrasal'?['cat']:[];
+    selects.forEach(s=>{
+      const sel=document.getElementById(prefix+'-'+s);
+      if(sel)data[s]=sel.value;
+    });
+    localStorage.setItem('filter_'+type,JSON.stringify(data));
+    showToast('💾 필터 설정이 저장되었습니다');
+  }catch(e){
+    console.error('saveFilters error:',e);
+    showToast('❌ 저장 실패: '+e.message);
+  }
 }
 function loadFilters(type){
   const saved=localStorage.getItem('filter_'+type);
@@ -1635,22 +1639,31 @@ function loadFilters(type){
       // 저장된 설정 적용
       if(data[g]){
         const {include,exclude}=data[g];
-        if(include&&include.length>0){
+        const hasExclude = exclude && exclude.length > 0;
+        const hasInclude = include && include.length > 0;
+        
+        // include 적용
+        if(hasInclude){
           include.forEach(v=>{
             const c=container.querySelector(`.chip[data-value="${v}"]`);
             if(c)c.classList.add('checked');
           });
         }
-        if(exclude&&exclude.length>0){
+        // exclude 적용
+        if(hasExclude){
           exclude.forEach(v=>{
             const c=container.querySelector(`.chip[data-value="${v}"]`);
             if(c)c.classList.add('excluded');
           });
         }
-      }
-      // ★ 아무것도 선택 안되면 'all' 자동 선택
-      const anySelected=container.querySelector('.chip.checked,.chip.excluded');
-      if(!anySelected){
+        // ★ 아무것도 선택 안되어 있으면 'all' 선택
+        // exclude만 있으면 getMultiChip에서 자동으로 'all'을 include에 추가하므로 UI에는 all을 선택하지 않음
+        if(!hasInclude && !hasExclude){
+          const allChip=container.querySelector('.chip[data-value="all"]');
+          if(allChip)allChip.classList.add('checked');
+        }
+      }else{
+        // 데이터 없으면 'all' 선택
         const allChip=container.querySelector('.chip[data-value="all"]');
         if(allChip)allChip.classList.add('checked');
       }
@@ -2246,14 +2259,14 @@ showToast('📊 학습 기록 저장됨');
 }catch(e){console.error('forceEndCurrentStudy error:',e);}
 }
 // 학습 중일 때 확인 후 새 학습 시작
-function safeStart(fn){
+async function safeStart(fn){
 if(isOnStudyPage()){
 showConfirm('학습 종료','현재 학습을 종료하고 새 학습을 시작할까요?\n(진행 기록은 자동 저장됩니다)',async()=>{
   await forceEndCurrentStudy();
   skipStudyCheck=true; // 이중 확인 방지
-  fn();
+  try{await fn();}catch(e){console.error('safeStart error:',e);}
 });
-}else{fn();}
+}else{try{await fn();}catch(e){console.error('safeStart error:',e);}}
 }
 function showPage(n,force=false){
 // 이중 확인 방지 플래그 체크
@@ -2693,13 +2706,13 @@ function formatInterval(result) {
   if (!result) return '?';
   const interval = result.interval || 0;
   const state = result.fsrsState || 'Review';
-  const step = result.learningStep;
+  const step = result.learningStep || 0;
   
-  // Learning/Relearning 상태: 분 단위
+  // Learning/Relearning 상태: 분 단위 - calcNext에서 이미 계산된 step 사용
   if (state === 'Learning' || state === 'Relearning') {
     const steps = state === 'Relearning' ? FSRS.relearningSteps : FSRS.learningSteps;
-    const nextStep = Math.min(step + 1, steps.length - 1);
-    const mins = steps[nextStep] || steps[steps.length - 1];
+    // ★ 수정: calcNext에서 이미 올바른 step이 설정됨, +1 하지 않음
+    const mins = steps[step] || steps[steps.length - 1] || 10;
     if (mins < 60) return `${mins}분`;
     if (mins < 1440) return `${Math.round(mins/60)}시간`;
     return `${Math.round(mins/1440)}일`;
@@ -6725,15 +6738,24 @@ for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[wIdx])continue;const
 // Synonyms/Antonyms: 여러 컬럼명 지원
 const synRaw=gM(r,'Synonyms','Synonyms_EN','SynonymsEN','Synonym');
 const antRaw=gM(r,'Antonyms','Antonyms_EN','AntonymsEN','Antonyms_KO','AntonymsKO','Antonym');
-ws.push({word:wK,POS:gC(r,'POS'),Meaning1_EN:gC(r,'Meaning1_EN')||gC(r,'MeaningEN'),Meaning1_KO:gC(r,'Meaning1_KO')||gC(r,'MeaningKO'),Meaning2_EN:gC(r,'Meaning2_EN'),Meaning2_KO:gC(r,'Meaning2_KO'),
+ws.push({word:wK,POS:gC(r,'POS')||ex?.POS||'',
+Meaning1_EN:gM(r,'Meaning1_EN','MeaningEN','Meaning_EN','Meaning1EN')||ex?.Meaning1_EN||'',
+Meaning1_KO:gM(r,'Meaning1_KO','MeaningKO','Meaning_KO','Meaning1KO')||ex?.Meaning1_KO||'',
+Meaning2_EN:gC(r,'Meaning2_EN')||ex?.Meaning2_EN||'',
+Meaning2_KO:gC(r,'Meaning2_KO')||ex?.Meaning2_KO||'',
 Synonyms:synRaw?synRaw.split(',').map(s=>s.trim()).filter(s=>s):(ex?.Synonyms||[]),
 Antonyms:antRaw?antRaw.split(',').map(s=>s.trim()).filter(s=>s):(ex?.Antonyms||[]),
-Antonyms_EN:gC(r,'Antonyms_EN'),Antonyms_KO:gC(r,'Antonyms_KO'),
+Antonyms_EN:gC(r,'Antonyms_EN')||ex?.Antonyms_EN||'',Antonyms_KO:gC(r,'Antonyms_KO')||ex?.Antonyms_KO||'',
 L0:gC(r,'L0')||ex?.L0||'Academic',L1:gC(r,'L1')||ex?.L1||'General',L2:gC(r,'L2')||ex?.L2||'',
 Formality:gM(r,'Formality','Register')||ex?.Formality||'Neutral',
 Currency:gC(r,'Currency')||ex?.Currency||'Current',
 Medium:gC(r,'Medium')||ex?.Medium||'Both',
-CEFR:gC(r,'CEFR')||ex?.CEFR||'B1',Frequency:gC(r,'Frequency')||ex?.Frequency||'K3',Priority:gC(r,'Priority')||ex?.Priority||'P2',TOEFL_Rel:gC(r,'TOEFL_Rel')||ex?.TOEFL_Rel||'',COCA_Genre:gC(r,'COCA_Genre')||ex?.COCA_Genre||'',Example1:gC(r,'Example1'),Example2:gC(r,'Example2'),Key_Collocation:gC(r,'Key_Collocation'),Common_Error:gC(r,'Common_Error'),tags:tags,starred:starredVal==='y'||starredVal==='yes'||ex?.starred||false,needsProduction:needsProdVal==='y'||needsProdVal==='yes'||ex?.needsProduction||false,
+CEFR:gC(r,'CEFR')||ex?.CEFR||'B1',Frequency:gC(r,'Frequency')||ex?.Frequency||'K3',Priority:gC(r,'Priority')||ex?.Priority||'P2',TOEFL_Rel:gC(r,'TOEFL_Rel')||ex?.TOEFL_Rel||'',COCA_Genre:gC(r,'COCA_Genre')||ex?.COCA_Genre||'',
+Example1:gM(r,'Example1','Example','Example_1')||ex?.Example1||'',
+Example2:gC(r,'Example2')||ex?.Example2||'',
+Key_Collocation:gC(r,'Key_Collocation')||ex?.Key_Collocation||'',
+Common_Error:gC(r,'Common_Error')||ex?.Common_Error||'',
+tags:tags,starred:starredVal==='y'||starredVal==='yes'||ex?.starred||false,needsProduction:needsProdVal==='y'||needsProdVal==='yes'||ex?.needsProduction||false,
 // FSRS 필드 - Excel 값 우선, 없으면 기존 DB, 없으면 기본값
 stability:gN(r,'stability')||ex?.stability||null,
 difficulty:gN(r,'difficulty')||ex?.difficulty||null,
@@ -6766,13 +6788,27 @@ for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[pvIdx])continue;cons
 // Synonyms/Antonyms: 여러 컬럼명 지원
 const synRaw=gM(r,'Synonyms','Synonyms_EN','SynonymsEN');
 const antRaw=gM(r,'Antonyms','Antonyms_EN','AntonymsEN');
-ps.push({Phrasal_Verb:pvK,Base_Verb:gC(r,'Base_Verb')||gC(r,'baseverb'),Particle:gC(r,'Particle'),Meaning1_EN:gC(r,'Meaning1_EN'),Meaning1_KO:gC(r,'Meaning1_KO'),Meaning2_EN:gC(r,'Meaning2_EN'),Meaning2_KO:gC(r,'Meaning2_KO'),Transparency:gC(r,'Transparency'),Particle_Meaning:gC(r,'Particle_Meaning'),Category:gC(r,'Category'),
+ps.push({Phrasal_Verb:pvK,
+Base_Verb:gM(r,'Base_Verb','baseverb','BaseVerb')||ex?.Base_Verb||'',
+Particle:gC(r,'Particle')||ex?.Particle||'',
+Meaning1_EN:gM(r,'Meaning1_EN','MeaningEN','Meaning_EN')||ex?.Meaning1_EN||'',
+Meaning1_KO:gM(r,'Meaning1_KO','MeaningKO','Meaning_KO')||ex?.Meaning1_KO||'',
+Meaning2_EN:gC(r,'Meaning2_EN')||ex?.Meaning2_EN||'',
+Meaning2_KO:gC(r,'Meaning2_KO')||ex?.Meaning2_KO||'',
+Transparency:gC(r,'Transparency')||ex?.Transparency||'',
+Particle_Meaning:gC(r,'Particle_Meaning')||ex?.Particle_Meaning||'',
+Category:gC(r,'Category')||ex?.Category||'General',
 Formality:gM(r,'Formality','Register')||ex?.Formality||'Neutral',
 Currency:gC(r,'Currency')||ex?.Currency||'Current',
 Medium:gC(r,'Medium')||ex?.Medium||'Both',
 Synonyms:synRaw?synRaw.split(',').map(s=>s.trim()).filter(s=>s):(ex?.Synonyms||[]),
 Antonyms:antRaw?antRaw.split(',').map(s=>s.trim()).filter(s=>s):(ex?.Antonyms||[]),
-Formal_Equivalent:gC(r,'Formal_Equivalent'),Separable:gC(r,'Separable'),Example1:gC(r,'Example1'),Example2:gC(r,'Example2'),Common_Error:gC(r,'Common_Error'),CEFR:gC(r,'CEFR')||ex?.CEFR||'B1',Priority:gC(r,'Priority')||ex?.Priority||'P2',Frequency:gC(r,'Frequency')||ex?.Frequency||'K3',tags:tags,starred:starredVal==='y'||starredVal==='yes'||ex?.starred||false,needsProduction:needsProdVal==='y'||needsProdVal==='yes'||ex?.needsProduction||false,
+Formal_Equivalent:gC(r,'Formal_Equivalent')||ex?.Formal_Equivalent||'',
+Separable:gC(r,'Separable')||ex?.Separable||'',
+Example1:gM(r,'Example1','Example','Example_1')||ex?.Example1||'',
+Example2:gC(r,'Example2')||ex?.Example2||'',
+Common_Error:gC(r,'Common_Error')||ex?.Common_Error||'',
+CEFR:gC(r,'CEFR')||ex?.CEFR||'B1',Priority:gC(r,'Priority')||ex?.Priority||'P2',Frequency:gC(r,'Frequency')||ex?.Frequency||'K3',tags:tags,starred:starredVal==='y'||starredVal==='yes'||ex?.starred||false,needsProduction:needsProdVal==='y'||needsProdVal==='yes'||ex?.needsProduction||false,
 // FSRS 필드 - Excel 값 우선
 stability:gN(r,'stability')||ex?.stability||null,
 difficulty:gN(r,'difficulty')||ex?.difficulty||null,
@@ -6798,7 +6834,24 @@ if(eS){const json=XLSX.utils.sheet_to_json(wb.Sheets[eS],{header:1});let hr=0;fo
 if(exprIdx!==undefined){let nC=0,uC=0,pC=0;const es=[];const gC=(r,n)=>{const idx=colIdx[normH(n)];return idx!==undefined&&r[idx]!=null?r[idx].toString():'';};
 const gN=(r,n)=>{const v=gC(r,n);return v?parseFloat(v):null;};
 const gI=(r,n)=>{const v=gC(r,n);return v?parseInt(v,10):0;};
-for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[exprIdx])continue;const eK=r[exprIdx].toString().trim();const ex=await getExpr(eK);if(ex){uC++;if(ex.reviewCount>0)pC++;}else nC++;const starredVal=gC(r,'starred').toLowerCase();const needsProdVal=gC(r,'needsproduction').toLowerCase();const tagsStr=gC(r,'tags');const tags=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):(ex?.tags||[]);es.push({Expression:eK,L1:gC(r,'L1'),L2:gC(r,'L2'),L3:gC(r,'L3'),Function:gC(r,'Function'),Meaning_KO:gC(r,'Meaning_KO')||gC(r,'MeaningKO'),Register:gC(r,'Register')||ex?.Register||'Neutral',Example1:gC(r,'Example1'),Example2:gC(r,'Example2'),Similar_Expr:gC(r,'Similar_Expr'),Alternatives:gC(r,'Alternatives'),Common_Error:gC(r,'Common_Error'),CEFR:gC(r,'CEFR')||ex?.CEFR||'B1',Priority:gC(r,'Priority')||ex?.Priority||'P2',Frequency:gC(r,'Frequency')||ex?.Frequency||'K3',tags:tags,starred:starredVal==='y'||starredVal==='yes'||ex?.starred||false,needsProduction:needsProdVal==='y'||needsProdVal==='yes'||ex?.needsProduction||false,
+const gM=(r,...names)=>{for(const n of names){const v=gC(r,n);if(v)return v;}return '';};
+for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[exprIdx])continue;const eK=r[exprIdx].toString().trim();const ex=await getExpr(eK);if(ex){uC++;if(ex.reviewCount>0)pC++;}else nC++;const starredVal=gC(r,'starred').toLowerCase();const needsProdVal=gC(r,'needsproduction').toLowerCase();const tagsStr=gC(r,'tags');const tags=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):(ex?.tags||[]);es.push({Expression:eK,
+L1:gC(r,'L1')||ex?.L1||'',
+L2:gC(r,'L2')||ex?.L2||'',
+L3:gC(r,'L3')||ex?.L3||'',
+Function:gC(r,'Function')||ex?.Function||'',
+Meaning_KO:gM(r,'Meaning_KO','MeaningKO','Meaning1_KO')||ex?.Meaning_KO||'',
+Meaning_EN:gM(r,'Meaning_EN','MeaningEN','Meaning1_EN')||ex?.Meaning_EN||'',
+Register:gM(r,'Register','Formality')||ex?.Register||'Neutral',
+Formality:gM(r,'Formality','Register')||ex?.Formality||'Neutral',
+Currency:gC(r,'Currency')||ex?.Currency||'Current',
+Medium:gC(r,'Medium')||ex?.Medium||'Both',
+Example1:gM(r,'Example1','Example','Example_1')||ex?.Example1||'',
+Example2:gC(r,'Example2')||ex?.Example2||'',
+Similar_Expr:gC(r,'Similar_Expr')||ex?.Similar_Expr||'',
+Alternatives:gC(r,'Alternatives')||ex?.Alternatives||'',
+Common_Error:gC(r,'Common_Error')||ex?.Common_Error||'',
+CEFR:gC(r,'CEFR')||ex?.CEFR||'B1',Priority:gC(r,'Priority')||ex?.Priority||'P2',Frequency:gC(r,'Frequency')||ex?.Frequency||'K3',tags:tags,starred:starredVal==='y'||starredVal==='yes'||ex?.starred||false,needsProduction:needsProdVal==='y'||needsProdVal==='yes'||ex?.needsProduction||false,
 // FSRS 필드 - Excel 값 우선
 stability:gN(r,'stability')||ex?.stability||null,
 difficulty:gN(r,'difficulty')||ex?.difficulty||null,
@@ -7718,28 +7771,104 @@ async function processModalExcel(file){
 
 async function confirmModalExcel(){
   let added=0;
-  const today=new Date().toISOString().slice(0,10); // YYYY-MM-DD
-  // 어휘 추가 (새 단어로)
+  const today=new Date().toISOString();
+  // 헬퍼: row에서 컬럼 값 가져오기
+  const getCol=(row,headers,name)=>{
+    const norm=name.toLowerCase().replace(/[^a-z0-9]/g,'');
+    const idx=headers.indexOf(norm);
+    if(idx===-1){
+      // 부분 매칭 시도
+      const partialIdx=headers.findIndex(h=>h.includes(norm)||norm.includes(h));
+      if(partialIdx>=0&&row[partialIdx]!=null)return String(row[partialIdx]);
+      return '';
+    }
+    return row[idx]!=null?String(row[idx]):'';
+  };
+  const getColMulti=(row,headers,...names)=>{
+    for(const n of names){const v=getCol(row,headers,n);if(v)return v;}
+    return '';
+  };
+  // 어휘 추가
   for(const item of modalExcelData.vocab){
     const existing=await getWord(item.word);
     if(!existing){
-      await saveWord({word:item.word,Meaning1_KO:item.Meaning1_KO,CEFR:'B1',Priority:'P2',Formality:'Neutral',Currency:'Current',Medium:'Both',tags:[],addedDate:today,reviewCount:0});
+      const r=item._row||[];
+      const h=item._headers||[];
+      await saveWord({
+        word:item.word,
+        POS:getCol(r,h,'POS'),
+        Meaning1_KO:item.Meaning1_KO||getColMulti(r,h,'Meaning1_KO','MeaningKO'),
+        Meaning1_EN:getColMulti(r,h,'Meaning1_EN','MeaningEN','Meaning_EN'),
+        Meaning2_KO:getCol(r,h,'Meaning2_KO'),
+        Meaning2_EN:getCol(r,h,'Meaning2_EN'),
+        Example1:getColMulti(r,h,'Example1','Example'),
+        Example2:getCol(r,h,'Example2'),
+        Key_Collocation:getCol(r,h,'Key_Collocation'),
+        Synonyms:getColMulti(r,h,'Synonyms','Synonyms_EN'),
+        Antonyms:getColMulti(r,h,'Antonyms','Antonyms_EN'),
+        L0:getCol(r,h,'L0')||'Academic',
+        L1:getCol(r,h,'L1')||'General',
+        L2:getCol(r,h,'L2'),
+        CEFR:getCol(r,h,'CEFR')||'B1',
+        Priority:getCol(r,h,'Priority')||'P2',
+        Frequency:getCol(r,h,'Frequency')||'K3',
+        Formality:getColMulti(r,h,'Formality','Register')||'Neutral',
+        Currency:getCol(r,h,'Currency')||'Current',
+        Medium:getCol(r,h,'Medium')||'Both',
+        TOEFL_Rel:getCol(r,h,'TOEFL_Rel'),
+        COCA_Genre:getCol(r,h,'COCA_Genre'),
+        tags:[],addedDate:today,reviewCount:0
+      });
       added++;
     }
   }
-  // 구동사 추가 (새 단어로)
+  // 구동사 추가
   for(const item of modalExcelData.phrasal){
     const existing=await getPV(item.Phrasal_Verb);
     if(!existing){
-      await savePV({Phrasal_Verb:item.Phrasal_Verb,Meaning1_KO:item.Meaning1_KO,CEFR:'B1',Priority:'P2',Formality:'Neutral',Currency:'Current',Medium:'Both',tags:[],addedDate:today,reviewCount:0});
+      const r=item._row||[];
+      const h=item._headers||[];
+      await savePV({
+        Phrasal_Verb:item.Phrasal_Verb,
+        Base_Verb:getColMulti(r,h,'Base_Verb','BaseVerb'),
+        Particle:getCol(r,h,'Particle'),
+        Meaning1_KO:item.Meaning1_KO||getColMulti(r,h,'Meaning1_KO','MeaningKO'),
+        Meaning1_EN:getColMulti(r,h,'Meaning1_EN','MeaningEN'),
+        Example1:getColMulti(r,h,'Example1','Example'),
+        Category:getCol(r,h,'Category')||'General',
+        CEFR:getCol(r,h,'CEFR')||'B1',
+        Priority:getCol(r,h,'Priority')||'P2',
+        Formality:getColMulti(r,h,'Formality','Register')||'Neutral',
+        Currency:getCol(r,h,'Currency')||'Current',
+        Medium:getCol(r,h,'Medium')||'Both',
+        Formal_Equivalent:getCol(r,h,'Formal_Equivalent'),
+        Synonyms:getCol(r,h,'Synonyms'),
+        Antonyms:getCol(r,h,'Antonyms'),
+        tags:[],addedDate:today,reviewCount:0
+      });
       added++;
     }
   }
-  // 표현 추가 (새 단어로)
+  // 표현 추가
   for(const item of modalExcelData.expr){
     const existing=await getExpr(item.Expression);
     if(!existing){
-      await saveExpr({Expression:item.Expression,Meaning_KO:item.Meaning_KO,CEFR:'B1',Priority:'P2',Formality:'Neutral',Currency:'Current',Medium:'Both',tags:[],addedDate:today,reviewCount:0});
+      const r=item._row||[];
+      const h=item._headers||[];
+      await saveExpr({
+        Expression:item.Expression,
+        Meaning_KO:item.Meaning_KO||getColMulti(r,h,'Meaning_KO','MeaningKO'),
+        Meaning_EN:getColMulti(r,h,'Meaning_EN','MeaningEN'),
+        Example:getColMulti(r,h,'Example','Example1'),
+        Context:getCol(r,h,'Context'),
+        Category:getCol(r,h,'Category')||'General',
+        CEFR:getCol(r,h,'CEFR')||'B1',
+        Priority:getCol(r,h,'Priority')||'P2',
+        Formality:getColMulti(r,h,'Formality','Register')||'Neutral',
+        Currency:getCol(r,h,'Currency')||'Current',
+        Medium:getCol(r,h,'Medium')||'Both',
+        tags:[],addedDate:today,reviewCount:0
+      });
       added++;
     }
   }
