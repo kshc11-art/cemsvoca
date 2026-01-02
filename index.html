@@ -18,7 +18,7 @@
 html{background:var(--bg);height:-webkit-fill-available}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:-webkit-fill-available}
 .app{max-width:600px;margin:0 auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-left:calc(16px + env(safe-area-inset-left));padding-right:calc(16px + env(safe-area-inset-right));padding-bottom:calc(80px + env(safe-area-inset-bottom))}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:6px 0;padding-bottom:calc(6px + env(safe-area-inset-bottom));z-index:9999}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:6px 0;padding-bottom:calc(6px + env(safe-area-inset-bottom));z-index:9999;opacity:0;transition:opacity .3s}.bottom-nav.visible{opacity:1}
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;color:var(--muted);font-size:9px;cursor:pointer;text-decoration:none}
 .nav-item.active{color:var(--primary)}
 .nav-item svg{width:20px;height:20px;pointer-events:none}
@@ -34,7 +34,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .badge{display:inline-block;padding:3px 8px;font-size:10px;font-weight:600;border-radius:20px}.badge-warning{background:rgba(245,158,11,.2);color:#fbbf24}.badge-danger{background:rgba(239,68,68,.2);color:#f87171}.badge-phrasal{background:rgba(236,72,153,.2);color:#f472b6}
 .type-tabs{display:flex;gap:8px;margin-bottom:14px}.type-tab{flex:1;padding:10px;background:var(--bg);border:2px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:600}.type-tab.active{border-color:var(--primary);background:rgba(99,102,241,.1);color:var(--primary)}.type-tab.phrasal.active{border-color:var(--phrasal);background:rgba(236,72,153,.1);color:var(--phrasal)}.type-tab.expr.active{border-color:var(--expr);background:rgba(249,115,22,.1);color:var(--expr)}
 .mode-selector{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px}.mode-card{padding:12px 8px;background:var(--bg);border-radius:12px;text-align:center;cursor:pointer;border:2px solid transparent}.mode-card.active{border-color:var(--primary);background:rgba(99,102,241,.1)}.mode-card.phrasal.active{border-color:var(--phrasal);background:rgba(236,72,153,.1)}.mode-card.expr.active{border-color:var(--expr);background:rgba(249,115,22,.1)}.mode-card-icon{font-size:24px;margin-bottom:4px}.mode-card-title{font-size:13px;font-weight:600;margin-bottom:2px}.mode-card-desc{font-size:11px;color:var(--muted)}
-.range-container{display:flex;align-items:center;gap:16px}.range-slider{flex:1;-webkit-appearance:none;height:6px;background:var(--border);border-radius:3px}.range-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:var(--primary);border-radius:50%}.range-value{font-size:18px;font-weight:700;min-width:60px;text-align:right}
+.range-container{display:flex;align-items:center;gap:16px}.range-slider{flex:1;appearance:none;-webkit-appearance:none;height:6px;background:var(--border);border-radius:3px}.range-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:22px;height:22px;background:var(--primary);border-radius:50%}.range-value{font-size:18px;font-weight:700;min-width:60px;text-align:right}
 .chip-group{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:8px 14px;background:var(--bg);border-radius:20px;font-size:13px;cursor:pointer;border:1px solid var(--border)}.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 .chip-multi{display:flex;flex-wrap:wrap;gap:6px}.chip-multi .chip{padding:6px 12px;font-size:12px}.chip-multi .chip.checked{background:var(--primary);color:#fff;border-color:var(--primary)}.chip-multi .chip.excluded{background:#ef4444;color:#fff;border-color:#ef4444}
 .chip-multi.chip-small .chip{padding:4px 8px;font-size:11px}
@@ -75,7 +75,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .typing-answer{font-size:20px;font-weight:600;margin-top:16px;padding:16px;background:var(--bg);border-radius:12px;text-align:center}.typing-answer.correct{color:var(--success)}.typing-answer.wrong{color:var(--danger)}
 .weak-word-item{display:flex;align-items:center;padding:12px;background:var(--bg);border-radius:10px;margin-bottom:8px}.weak-word-text{flex:1}.weak-word-text strong{font-size:15px}.weak-word-text span{font-size:12px;color:var(--muted);display:block;margin-top:2px}.weak-word-stats{text-align:right}.weak-word-rate{font-size:14px;font-weight:600}.weak-word-count{font-size:11px;color:var(--muted)}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;visibility:hidden;transition:all .3s;padding:20px}.modal-overlay.show{opacity:1;visibility:visible}.modal{background:var(--card);border-radius:20px;padding:24px;max-width:400px;width:100%;transform:scale(.9);transition:transform .3s}.modal-overlay.show .modal{transform:scale(1)}.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.modal-header h3{font-size:20px}.modal-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--bg);color:var(--muted);font-size:18px;cursor:pointer}
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);color:var(--text);padding:14px 24px;border-radius:30px;font-size:14px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:2000;opacity:0;transition:all .3s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);color:var(--text);padding:14px 24px;border-radius:30px;font-size:14px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:2000;opacity:0;visibility:hidden;pointer-events:none;transition:all .3s}.toast.show{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0)}
 .hidden{display:none!important}
 .empty-state{text-align:center;padding:32px 16px}.empty-state-icon{font-size:48px;margin-bottom:16px}.empty-state h3{font-size:18px;margin-bottom:8px}.empty-state p{color:var(--muted);font-size:14px}
 #splash{position:fixed;inset:0;background:linear-gradient(135deg,#6366f1,#ec4899,#8b5cf6);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}#splash.hidden{opacity:0;visibility:hidden}.splash-icon{font-size:80px;animation:bounce 1s ease infinite}.splash-title{font-size:32px;font-weight:700;color:#fff;margin-top:20px}.splash-sub{font-size:14px;color:rgba(255,255,255,.8);margin-top:8px}.splash-loader{width:40px;height:40px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;margin-top:40px}
@@ -102,7 +102,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between">⚡ 빠른 시작<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:normal;color:var(--muted)"><span>🎯필터</span><div class="filter-toggle" id="quick-filter-vocab" onclick="toggleQuickFilter('vocab')"></div></div></div><div class="quick-actions"><div class="quick-action" onclick="safeStart(()=>quickStartMode('vocab','flashcard'))"><div class="quick-action-icon">🃏</div><div class="quick-action-label">플래시카드</div><span class="quick-action-badge hidden" id="due-badge-vocab" style="background:var(--primary)">0</span></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('vocab','quiz'))"><div class="quick-action-icon">❓</div><div class="quick-action-label">5지선다</div></div><div class="quick-action" onclick="safeStart(()=>startProductionStudy('vocab'))"><div class="quick-action-icon">🖊️</div><div class="quick-action-label">산출 연습</div><span class="quick-action-badge hidden" id="prod-badge-vocab">0</span></div><div class="quick-action" onclick="safeStart(()=>startWrongReview('vocab'))"><div class="quick-action-icon">📝</div><div class="quick-action-label">오답노트</div><span class="quick-action-badge hidden" id="wrong-badge-vocab">0</span></div></div></div>
 <div class="card"><div class="card-title">🆕 새 단어 & ⭐ 북마크</div>
 <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-<button class="btn btn-primary" onclick="safeStart(()=>startNewWordsStudy('vocab'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px">🆕 신규 학습 <span class="quick-action-badge hidden" id="new-badge-vocab" style="background:rgba(255,255,255,0.3);color:#fff;position:static;font-size:12px;padding:2px 8px">0</span></button>
+<button class="btn btn-primary" onclick="safeStart(()=>startNewWordsStudy('vocab'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;position:relative">🆕 신규 학습<span class="quick-action-badge hidden" id="new-badge-vocab" style="background:var(--warning)">0</span></button>
 <button class="btn btn-secondary" onclick="safeStart(()=>startStarredStudy('vocab'))" style="width:auto;min-width:50px;height:44px;flex:0 0 auto;padding:0 12px;font-size:14px;border-radius:12px" title="⭐ 북마크 학습">⭐ <span id="star-badge-vocab">0</span></button>
 <select class="form-select" id="home-tag-select" onchange="startTagStudy('vocab')" style="width:100px;flex:0 0 auto;height:44px;font-size:14px"><option value="">🏷️ 태그</option></select>
 </div>
@@ -115,8 +115,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="font-size:12px;color:var(--muted);margin-bottom:8px" id="qs-info"></div>
 <div id="qs-example" style="display:none;font-size:13px;color:var(--muted);background:var(--card);padding:8px 10px;border-radius:8px;border-left:3px solid var(--primary);margin-bottom:10px"></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap">
-<button id="qs-bookmark-btn" class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="quickToggleBookmark()">☆ 북마크</button>
-<button id="qs-prod-btn" class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="quickToggleProduction()">🖊️ 산출</button>
+<button id="qs-bookmark-btn" class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="quickToggleBookmark()">☆</button>
+<button id="qs-prod-btn" class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="quickToggleProduction()">🖊️</button>
 <button class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="quickEditWord()">✏️ 수정</button>
 </div>
 <div id="qs-not-this" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><span style="font-size:12px;color:var(--muted)">찾는 단어가 아닌가요?</span> <button class="btn btn-secondary btn-sm" onclick="showAddNewFromSearch()" style="width:auto;padding:4px 10px;font-size:12px;margin-left:8px">➕ "<span id="qs-original-query"></span>" 추가</button></div>
@@ -135,7 +135,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between">⚡ 빠른 시작<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:normal;color:var(--muted)"><span>🎯필터</span><div class="filter-toggle" id="quick-filter-phrasal" onclick="toggleQuickFilter('phrasal')"></div></div></div><div class="quick-actions"><div class="quick-action" onclick="safeStart(()=>quickStartMode('phrasal','pv-flashcard'))"><div class="quick-action-icon">🃏</div><div class="quick-action-label">플래시카드</div><span class="quick-action-badge hidden" id="due-badge-pv" style="background:var(--phrasal)">0</span></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('phrasal','pv-particle'))"><div class="quick-action-icon">🧩</div><div class="quick-action-label">Particle</div></div><div class="quick-action" onclick="safeStart(()=>startProductionStudy('phrasal'))"><div class="quick-action-icon">🖊️</div><div class="quick-action-label">산출 연습</div><span class="quick-action-badge hidden" id="prod-badge-pv">0</span></div><div class="quick-action" onclick="safeStart(()=>startWrongReview('phrasal'))"><div class="quick-action-icon">📝</div><div class="quick-action-label">오답노트</div><span class="quick-action-badge hidden" id="wrong-badge-pv">0</span></div></div></div>
 <div class="card"><div class="card-title">🆕 새 단어 & ⭐ 북마크</div>
 <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-<button class="btn btn-primary" onclick="safeStart(()=>startNewWordsStudy('phrasal'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--phrasal)">🆕 신규 학습 <span class="quick-action-badge hidden" id="new-badge-pv" style="background:rgba(255,255,255,0.3);color:#fff;position:static;font-size:12px;padding:2px 8px">0</span></button>
+<button class="btn btn-primary" onclick="safeStart(()=>startNewWordsStudy('phrasal'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--phrasal);position:relative">🆕 신규 학습<span class="quick-action-badge hidden" id="new-badge-pv" style="background:var(--warning)">0</span></button>
 <button class="btn btn-secondary" onclick="safeStart(()=>startStarredStudy('phrasal'))" style="width:auto;min-width:50px;height:44px;flex:0 0 auto;padding:0 12px;font-size:14px;border-radius:12px" title="⭐ 북마크 학습">⭐ <span id="star-badge-pv">0</span></button>
 <select class="form-select" id="home-pv-tag-select" onchange="startTagStudy('phrasal')" style="width:100px;flex:0 0 auto;height:44px;font-size:14px"><option value="">🏷️ 태그</option></select>
 </div>
@@ -148,8 +148,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="font-size:12px;color:var(--muted);margin-bottom:8px" id="pv-qs-info"></div>
 <div id="pv-qs-example" style="display:none;font-size:13px;color:var(--muted);background:var(--card);padding:8px 10px;border-radius:8px;border-left:3px solid var(--phrasal);margin-bottom:10px"></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap">
-<button id="pv-qs-bookmark-btn" class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="pvQSToggleBookmark()">☆ 북마크</button>
-<button id="pv-qs-prod-btn" class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="pvQSToggleProduction()">🖊️ 산출</button>
+<button id="pv-qs-bookmark-btn" class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="pvQSToggleBookmark()">☆</button>
+<button id="pv-qs-prod-btn" class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="pvQSToggleProduction()">🖊️</button>
 <button class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="pvQSEdit()">✏️ 수정</button>
 </div>
 <div id="pv-qs-not-this" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><span style="font-size:12px;color:var(--muted)">찾는 구동사가 아닌가요?</span> <button class="btn btn-secondary btn-sm" onclick="showPVAddNew()" style="width:auto;padding:4px 10px;font-size:12px;margin-left:8px">➕ "<span id="pv-qs-original"></span>" 추가</button></div>
@@ -166,10 +166,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="card"><div class="card-title">🔗 구동사 현황</div><div class="stat-grid"><div class="stat-item"><div class="stat-value phrasal" id="pv-stat-total">0</div><div class="stat-label">전체</div></div><div class="stat-item"><div class="stat-value success" id="pv-stat-mastered">0</div><div class="stat-label">마스터</div></div><div class="stat-item" onclick="showWeakWords('phrasal')"><div class="stat-value warning" id="pv-stat-weak">0</div><div class="stat-label">취약</div></div><div class="stat-item" onclick="safeStart(()=>startReviewDue('phrasal'))"><div class="stat-value danger" id="pv-stat-due">0</div><div class="stat-label">복습</div></div></div></div>
 </div>
 <div id="home-expr" class="hidden">
-<div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between">⚡ 빠른 시작<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:normal;color:var(--muted)"><span>🎯필터</span><div class="filter-toggle" id="quick-filter-expr" onclick="toggleQuickFilter('expr')"></div></div></div><div class="quick-actions"><div class="quick-action" onclick="safeStart(()=>quickStartMode('expr','expr-fc'))"><div class="quick-action-icon">🃏</div><div class="quick-action-label">플래시카드</div><span class="quick-action-badge hidden" id="due-badge-expr" style="background:var(--expr)">0</span></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('expr','expr-quiz'))"><div class="quick-action-icon">❓</div><div class="quick-action-label">5지선다</div></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('expr','expr-cloze'))"><div class="quick-action-icon">📝</div><div class="quick-action-label">빈칸채우기</div></div><div class="quick-action" onclick="safeStart(startExprWrong)"><div class="quick-action-icon">🔄</div><div class="quick-action-label">오답노트</div><span class="quick-action-badge hidden" id="wrong-badge-expr">0</span></div></div></div>
+<div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between">⚡ 빠른 시작<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:normal;color:var(--muted)"><span>🎯필터</span><div class="filter-toggle" id="quick-filter-expr" onclick="toggleQuickFilter('expr')"></div></div></div><div class="quick-actions"><div class="quick-action" onclick="safeStart(()=>quickStartMode('expr','expr-fc'))"><div class="quick-action-icon">🃏</div><div class="quick-action-label">플래시카드</div><span class="quick-action-badge hidden" id="due-badge-expr" style="background:var(--expr)">0</span></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('expr','expr-quiz'))"><div class="quick-action-icon">❓</div><div class="quick-action-label">5지선다</div></div><div class="quick-action" onclick="safeStart(()=>startProductionStudy('expr'))"><div class="quick-action-icon">🖊️</div><div class="quick-action-label">산출 연습</div><span class="quick-action-badge hidden" id="prod-badge-expr" style="background:var(--success)">0</span></div><div class="quick-action" onclick="safeStart(startExprWrong)"><div class="quick-action-icon">📝</div><div class="quick-action-label">오답노트</div><span class="quick-action-badge hidden" id="wrong-badge-expr">0</span></div></div></div>
 <div class="card"><div class="card-title">🆕 새 단어 & ⭐ 북마크</div>
 <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-<button class="btn btn-primary" onclick="safeStart(()=>startNewWordsStudy('expr'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--expr)">🆕 신규 학습 <span class="quick-action-badge hidden" id="new-badge-expr" style="background:rgba(255,255,255,0.3);color:#fff;position:static;font-size:12px;padding:2px 8px">0</span></button>
+<button class="btn btn-primary" onclick="safeStart(()=>startNewWordsStudy('expr'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--expr);position:relative">🆕 신규 학습<span class="quick-action-badge hidden" id="new-badge-expr" style="background:var(--warning)">0</span></button>
 <button class="btn btn-secondary" onclick="safeStart(startExprStarred)" style="width:auto;min-width:50px;height:44px;flex:0 0 auto;padding:0 12px;font-size:14px;border-radius:12px" title="⭐ 북마크 학습">⭐ <span id="star-badge-expr">0</span></button>
 <select class="form-select" id="home-expr-tag-select" onchange="safeStart(startExprTagStudy)" style="width:100px;flex:0 0 auto;height:44px;font-size:14px"><option value="">🏷️ 태그</option></select>
 </div>
@@ -183,7 +183,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="expr-qs-example" style="display:none;font-size:13px;color:var(--muted);background:var(--card);padding:8px 10px;border-radius:8px;border-left:3px solid var(--expr);margin-bottom:10px"></div>
 <div id="expr-qs-similar" style="display:none;font-size:12px;color:var(--muted);margin-bottom:8px">유사: <span id="expr-qs-similar-list"></span></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap">
-<button id="expr-qs-bookmark-btn" class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="exprQSToggleBookmark()">☆ 북마크</button>
+<button id="expr-qs-bookmark-btn" class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="exprQSToggleBookmark()">☆</button>
 <button class="btn btn-secondary btn-sm" style="width:auto;padding:6px 12px" onclick="exprQSEdit()">✏️ 수정</button>
 </div>
 <div id="expr-qs-not-this" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><span style="font-size:12px;color:var(--muted)">찾는 표현이 아닌가요?</span> <button class="btn btn-secondary btn-sm" onclick="showExprAddNew()" style="width:auto;padding:4px 10px;font-size:12px;margin-left:8px">➕ "<span id="expr-qs-original"></span>" 추가</button></div>
@@ -247,7 +247,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="position:sticky;top:0;z-index:10;background:var(--card);padding:12px 0;margin:-16px -16px 16px -16px;padding:12px 16px"><div class="progress-bar"><div class="progress-fill" id="typing-progress"></div></div><div class="progress-text"><span><span id="typing-current">0</span> / <span id="typing-total">0</span></span><span>✅ <span id="typing-correct">0</span> ❌ <span id="typing-wrong">0</span></span></div></div>
 <div class="retry-banner hidden" id="typing-retry-banner"><div class="retry-banner-icon">🔄</div><div class="retry-banner-text">오답 재출제 중</div><div class="retry-banner-count" id="typing-retry-count">0</div></div>
 <div class="card" style="min-height:180px"><div style="text-align:center"><div style="font-size:14px;color:var(--muted);margin-bottom:8px" id="typing-pos"></div><div style="font-size:28px;font-weight:700;margin-bottom:8px" id="typing-meaning">뜻</div><div style="font-size:14px;color:var(--muted)" id="typing-en"></div></div><div id="typing-example" class="hidden" style="background:rgba(99,102,241,.1);padding:12px;border-radius:10px;border-left:3px solid var(--primary);font-size:13px;margin-top:12px"></div></div>
-<div style="display:flex;gap:8px;margin-bottom:12px"><button class="btn btn-secondary btn-sm" id="typing-bookmark-btn" onclick="toggleTypingBookmark()" style="flex:1">☆ 북마크</button><button class="btn btn-secondary btn-sm" onclick="openTypingEdit()" style="flex:1">✏️ 수정</button></div>
+<div style="display:flex;gap:8px;margin-bottom:12px"><button class="btn btn-secondary btn-sm" id="typing-bookmark-btn" onclick="toggleTypingBookmark()" style="flex:1">☆</button><button class="btn btn-secondary btn-sm" onclick="openTypingEdit()" style="flex:1">✏️</button></div>
 <div class="card"><input type="text" class="form-input" id="typing-input" placeholder="영어 단어 입력..." autocomplete="off" autocapitalize="off"><div class="typing-answer hidden" id="typing-answer"></div></div>
 <div style="display:flex;gap:10px"><button class="btn btn-secondary" onclick="showTypingHint()" id="typing-hint-btn">💡 힌트</button><button class="btn btn-primary" onclick="checkTyping()" id="typing-submit-btn">확인</button></div>
 <button class="btn btn-primary hidden" id="typing-next-btn" onclick="nextTyping()" style="margin-top:16px">다음 문제 →</button>
@@ -289,8 +289,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="font-size:14px;color:var(--muted);text-align:center;margin-bottom:8px"><span id="cloze-hint"></span></div>
 <div id="cloze-sentence" style="font-size:18px;line-height:1.8;text-align:center;padding:16px"></div>
 </div>
-<div class="quiz-options" id="cloze-options"></div>
 <div id="cloze-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateClozeItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="rateClozeItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="rateClozeItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="rateClozeItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div class="quiz-options" id="cloze-options"></div>
 <button class="btn btn-primary hidden" id="cloze-next-btn" onclick="nextCloze()" style="margin-top:16px">다음 문제 →</button>
 <div style="margin-top:16px"><button class="btn btn-secondary btn-sm" onclick="confirmEndCloze()">학습 종료</button></div>
 </div>
@@ -303,8 +303,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="colloc-question" style="font-size:28px;font-weight:700;text-align:center;padding:16px">_____ + decision</div>
 <div style="font-size:14px;color:var(--muted);text-align:center" id="colloc-meaning"></div>
 </div>
-<div class="quiz-options" id="colloc-options"></div>
 <div id="colloc-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateCollocItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="rateCollocItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="rateCollocItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="rateCollocItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div class="quiz-options" id="colloc-options"></div>
 <button class="btn btn-primary hidden" id="colloc-next-btn" onclick="nextColloc()" style="margin-top:16px">다음 문제 →</button>
 <div style="margin-top:16px"><button class="btn btn-secondary btn-sm" onclick="confirmEndColloc()">학습 종료</button></div>
 </div>
@@ -346,8 +346,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="expr-cloze-sentence" style="font-size:18px;text-align:center;padding:16px;line-height:1.6"></div>
 <div style="font-size:14px;color:var(--expr);text-align:center" id="expr-cloze-hint"></div>
 </div>
-<div class="quiz-options" id="expr-cloze-options"></div>
 <div id="expr-cloze-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateExprClozeItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="rateExprClozeItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="rateExprClozeItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="rateExprClozeItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div class="quiz-options" id="expr-cloze-options"></div>
 <div class="quiz-action-bar"><button class="btn btn-secondary btn-sm" onclick="speakExprCloze()">🔊</button><button class="btn btn-secondary btn-sm" id="expr-cloze-bookmark-btn" onclick="toggleExprClozeBookmark()">☆</button><button class="btn btn-secondary btn-sm" id="expr-cloze-production-btn" onclick="toggleExprClozeProduction()">🖊️</button><button class="btn btn-secondary btn-sm" onclick="openExprClozeEdit()">✏️</button></div>
 <div style="margin-top:16px"><button class="btn btn-secondary btn-sm" onclick="confirmEndExprCloze()">학습 종료</button></div>
 </div>
@@ -563,11 +563,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="preset-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
 <div style="display:flex;gap:8px"><input type="text" class="form-input" id="new-tag-input" placeholder="새 태그 입력..." style="flex:1"><button class="btn btn-primary btn-sm" onclick="addCustomTag()" style="width:60px">추가</button></div>
 </div></div>
-<div class="toast hidden" id="toast"></div>
-<div class="modal-overlay" id="complete-modal"><div class="modal"><div class="modal-header"><h3>🎉 학습 완료!</h3><button class="modal-close" onclick="closeModal('complete-modal')">✕</button></div><div class="stat-grid" style="margin-bottom:20px"><div class="stat-item"><div class="stat-value" id="complete-total">0</div><div class="stat-label">학습</div></div><div class="stat-item"><div class="stat-value success" id="complete-known">0</div><div class="stat-label">보통+</div></div><div class="stat-item"><div class="stat-value warning" id="complete-unknown">0</div><div class="stat-label">어려움</div></div><div class="stat-item"><div class="stat-value" id="complete-time">0분</div><div class="stat-label">시간</div></div></div><div id="complete-wrong-info" class="hidden" style="background:var(--bg);padding:12px;border-radius:12px;margin-bottom:16px;text-align:center"><span style="color:var(--danger)">📝 <span id="complete-wrong-count">0</span>개 오답노트 저장</span></div><button class="btn btn-primary" onclick="closeModal('complete-modal');showPage('home',true);">확인</button></div></div>
+<div class="toast" id="toast"></div>
+<div class="modal-overlay" id="complete-modal"><div class="modal"><div class="modal-header"><h3>🎉 학습 완료!</h3><button class="modal-close" onclick="closeModal('complete-modal')">✕</button></div><div class="stat-grid" style="margin-bottom:20px"><div class="stat-item"><div class="stat-value" id="complete-total">0</div><div class="stat-label">학습</div></div><div class="stat-item"><div class="stat-value success" id="complete-known">0</div><div class="stat-label">보통+</div></div><div class="stat-item"><div class="stat-value warning" id="complete-unknown">0</div><div class="stat-label">어려움</div></div><div class="stat-item"><div class="stat-value" id="complete-time">0분</div><div class="stat-label">시간</div></div></div><div id="complete-wrong-info" class="hidden" style="background:var(--bg);padding:12px;border-radius:12px;margin-bottom:16px;text-align:center"><span style="color:var(--danger)">📝 <span id="complete-wrong-count">0</span>개 오답노트 저장</span></div><button class="btn btn-primary" onclick="closeModal('complete-modal');showPage(studyStartPage,true);">확인</button></div></div>
 <div class="modal-overlay" id="quiz-complete-modal"><div class="modal"><div class="modal-header"><h3>🎯 학습 완료!</h3><button class="modal-close" onclick="closeModal('quiz-complete-modal')">✕</button></div><div class="stat-grid" style="margin-bottom:20px"><div class="stat-item"><div class="stat-value" id="qc-total">0</div><div class="stat-label">문제</div></div><div class="stat-item"><div class="stat-value success" id="qc-correct">0</div><div class="stat-label">정답</div></div><div class="stat-item"><div class="stat-value danger" id="qc-wrong">0</div><div class="stat-label">오답</div></div><div class="stat-item"><div class="stat-value" id="qc-acc">0%</div><div class="stat-label">정답률</div></div></div><div id="qc-wrong-info" class="hidden" style="background:var(--bg);padding:12px;border-radius:12px;margin-bottom:16px;text-align:center"><span style="color:var(--danger)">📝 <span id="qc-wrong-count">0</span>개 오답노트 저장</span></div>
 <div style="display:flex;gap:8px;margin-bottom:12px"><button class="btn btn-secondary" id="qc-wrong-btn" onclick="closeModal('quiz-complete-modal');startWrongReview(lastStudyType||'vocab');" style="flex:1;padding:14px">📝 오답복습</button><button class="btn btn-secondary" id="qc-prod-btn" onclick="closeModal('quiz-complete-modal');startProductionStudy(lastStudyType||'vocab');" style="flex:1;padding:14px">🖊️ 산출연습</button></div>
-<button class="btn btn-primary" onclick="closeModal('quiz-complete-modal');showPage('home',true);" style="padding:16px;font-size:16px">🏠 홈으로</button></div></div>
+<button class="btn btn-primary" onclick="closeModal('quiz-complete-modal');showPage(studyStartPage,true);" style="padding:16px;font-size:16px">✓ 돌아가기</button></div></div>
 <div class="modal-overlay" id="confirm-modal" style="z-index:1100"><div class="modal"><div class="modal-header"><h3 id="confirm-title">확인</h3><button class="modal-close" onclick="closeModal('confirm-modal')">✕</button></div><p id="confirm-msg" style="margin-bottom:20px;color:var(--muted)"></p><div style="display:flex;gap:10px"><button class="btn btn-secondary" onclick="closeModal('confirm-modal')" style="flex:1">취소</button><button class="btn btn-primary" id="confirm-btn" style="flex:1">확인</button></div></div></div>
 <div class="modal-overlay" id="edit-modal"><div class="modal" style="max-height:90vh;overflow-y:auto"><div class="modal-header"><h3>✏️ 단어 편집</h3><button class="modal-close" onclick="closeModal('edit-modal')">✕</button></div>
 <div class="form-group"><label class="form-label">단어/구동사</label><input type="text" class="form-input" id="edit-word" readonly style="background:var(--border)"></div>
@@ -587,7 +587,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </select></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">CEFR</label><select class="form-select" id="edit-cefr"><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select></div>
-<div class="form-group" style="margin-bottom:8px"><label class="form-label">📊 COCA 장르</label><input type="text" class="form-input" id="edit-coca" placeholder="academic, spoken..."></div>
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">📚 토플 연관성</label><select class="form-select" id="edit-toefl"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">🔢 빈도</label><select class="form-select" id="edit-freq"><option value="">선택</option><option value="K1">K1</option><option value="K2">K2</option><option value="K3">K3</option><option value="K4">K4</option><option value="K5+">K5+</option></select></div>
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">⭐ 우선순위</label><select class="form-select" id="edit-priority"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">👔 격식도</label><select class="form-select" id="edit-formality"><option value="Formal">Formal</option><option value="Neutral">Neutral</option><option value="Informal">Informal</option></select></div>
@@ -613,7 +617,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">⏳ 시대성</label><select class="form-select" id="edit-pv-currency"><option value="Current">Current</option><option value="Dated">Dated</option><option value="Archaic">Archaic</option></select></div>
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">📡 매체</label><select class="form-select" id="edit-pv-medium"><option value="Both">Both</option><option value="Written">Written</option><option value="Spoken">Spoken</option></select></div>
 </div>
-<div class="form-group"><label class="form-label">📊 COCA 장르</label><input type="text" class="form-input" id="edit-pv-coca" placeholder="academic, spoken, fiction"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">📚 토플 연관성</label><select class="form-select" id="edit-pv-toefl"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">⭐ 우선순위</label><select class="form-select" id="edit-pv-priority"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+</div>
 <div class="form-group"><label class="form-label">Formal Equivalent</label><input type="text" class="form-input" id="edit-formal-equiv" placeholder="격식체 대체 표현"></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">🔄 동의어</label><input type="text" class="form-input" id="edit-pv-synonyms" placeholder="쉼표로 구분" style="text-align:left"></div>
@@ -622,7 +629,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <div class="form-group"><label class="form-label">🏷️ 태그</label>
 <div class="chip-multi chip-small" id="edit-suggested-tags" style="margin-bottom:8px"><span class="chip" data-value="Academic">Academic</span><span class="chip" data-value="Literary">Literary</span><span class="chip" data-value="Legal">Legal</span><span class="chip" data-value="Business">Business</span><span class="chip" data-value="Technical">Technical</span><span class="chip" data-value="Medical">Medical</span><span class="chip" data-value="BrE">BrE</span><span class="chip" data-value="AmE">AmE</span><span class="chip" data-value="Idiom">Idiom</span><span class="chip" data-value="TOEFL">TOEFL</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
 <input type="text" class="form-input" id="edit-tags" placeholder="추가 태그 (쉼표로 구분)" style="text-align:left">
+<input type="text" class="form-input" id="edit-coca" placeholder="📊 COCA 장르 (academic, spoken...)" style="text-align:left">
+</div>
 </div>
 <div style="background:var(--bg);padding:12px;border-radius:12px;margin-bottom:16px">
 <div class="card-title" style="margin-bottom:12px">📊 학습 통계</div>
@@ -654,11 +664,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="form-group"><label class="form-label">예문 1</label><textarea class="form-input" id="expr-edit-example1" rows="2" style="text-align:left"></textarea></div>
 <div class="form-group"><label class="form-label">예문 2</label><textarea class="form-input" id="expr-edit-example2" rows="2" style="text-align:left"></textarea></div>
 <div class="form-group"><label class="form-label">유사 표현</label><input type="text" class="form-input" id="expr-edit-similar"></div>
-<div class="form-group"><label class="form-label">📊 COCA 장르</label><input type="text" class="form-input" id="expr-edit-coca" placeholder="예: academic, spoken, fiction"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">📚 토플 연관성</label><select class="form-select" id="expr-edit-toefl"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">⭐ 우선순위</label><select class="form-select" id="expr-edit-priority"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+</div>
 <div class="form-group"><label class="form-label">태그 L1 / L2 / L3</label><div style="display:flex;gap:8px"><input type="text" class="form-input" id="expr-edit-l1" placeholder="L1" style="flex:1;width:auto"><input type="text" class="form-input" id="expr-edit-l2" placeholder="L2" style="flex:1;width:auto"><input type="text" class="form-input" id="expr-edit-l3" placeholder="L3" style="flex:1;width:auto"></div></div>
 <div class="form-group"><label class="form-label">🏷️ 태그</label>
 <div class="chip-multi chip-small" id="expr-edit-suggested-tags" style="margin-bottom:8px"><span class="chip" data-value="Academic">Academic</span><span class="chip" data-value="Literary">Literary</span><span class="chip" data-value="Legal">Legal</span><span class="chip" data-value="Business">Business</span><span class="chip" data-value="Technical">Technical</span><span class="chip" data-value="Medical">Medical</span><span class="chip" data-value="BrE">BrE</span><span class="chip" data-value="AmE">AmE</span><span class="chip" data-value="Idiom">Idiom</span><span class="chip" data-value="TOEFL">TOEFL</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
 <input type="text" class="form-input" id="expr-edit-tags" placeholder="추가 태그 (쉼표로 구분)" style="text-align:left">
+<input type="text" class="form-input" id="expr-edit-coca" placeholder="📊 COCA 장르 (academic, spoken...)" style="text-align:left">
+</div>
 </div>
 <div style="background:var(--bg);padding:12px;border-radius:12px;margin-bottom:16px">
 <div class="card-title" style="margin-bottom:12px">📊 학습 통계</div>
@@ -1247,6 +1263,7 @@ let db=null,wordOffset=0,currentDataType='vocab',currentStudyType='vocab',curren
 // 플래시카드 상태
 let fcState={words:[],idx:0,flipped:false,start:null,timer:null,stats:{again:0,hard:0,good:0,easy:0},transitioning:false,retryQueue:[],phase:'normal',type:'vocab',savedToWrong:0,allWords:[],originalCount:0,completed:0,firstTryCorrect:0,firstTryWrong:0};
 let lastStudyType='vocab';
+let studyStartPage='home'; // 학습 시작 페이지 추적
 // 퀴즈 상태
 let quizState={words:[],allWords:[],idx:0,correct:0,wrong:0,answered:false,start:null,mode:'quiz',type:'vocab',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:0,completed:0,firstTryCorrect:0,firstTryWrong:0};
 // 타이핑 상태
@@ -1360,6 +1377,60 @@ const recencyBonus=daysSinceWrong<7?10:0;
 return(acc+recencyBonus)<60;
 }
 function isWrong(i){return(i?.consecutiveWrong||0)>=1;}
+
+// ★★★ 산출 연습 진입/해제 공통 함수 (모듈화) ★★★
+// mode: 'flashcard', 'quiz', 'typing', 'cloze', 'collocation', 'listening', 'dictation', 'expr-fc', 'expr-quiz', 'expr-cloze', 'expr-typing', 'pv-particle', 'pv-meaning'
+// 반환값: { shouldToast: boolean, message: string }
+function updateProductionStatus(item, isCorrect, mode) {
+  if(!item) return { shouldToast: false };
+  
+  const outputModes = ['typing', 'expr-typing', 'dictation'];
+  const flashcardModes = ['flashcard', 'expr-fc'];
+  const inputModes = ['quiz', 'reverse', 'cloze', 'collocation', 'listening', 'pv-particle', 'pv-meaning', 'expr-quiz', 'expr-cloze'];
+  
+  // 1. 타이핑/받아쓰기(산출 연습)에서 성공 → 해제
+  if(outputModes.includes(mode)) {
+    if(isCorrect) {
+      item.productionSuccessCount = (item.productionSuccessCount || 0) + 1;
+      // 2회 연속 성공 시 해제
+      if(item.productionSuccessCount >= 2 && item.needsProduction) {
+        item.needsProduction = false;
+        item.productionSuccessCount = 0;
+        return { shouldToast: true, message: '✅ 산출 연습 완료!' };
+      }
+    } else {
+      // 실패 시 카운트 리셋 (needsProduction 유지)
+      item.productionSuccessCount = 0;
+    }
+    return { shouldToast: false };
+  }
+  
+  // 2. 플래시카드는 순수 인풋 - 산출 연습 진입 안 함
+  if(flashcardModes.includes(mode)) {
+    // 아무것도 안 함 (틀려도 산출 연습 안 감)
+    return { shouldToast: false };
+  }
+  
+  // 3. 인풋 모드(퀴즈, 빈칸 등)에서 정답
+  if(inputModes.includes(mode) || !outputModes.includes(mode)) {
+    if(isCorrect && !item.needsProduction) {
+      item.consecutiveCorrect = (item.consecutiveCorrect || 0) + 1;
+      // 조건: 3연속 정답 + interval 7일 이상 (충분히 기억한 것)
+      const intervalOK = (item.interval || 0) >= 7;
+      if(item.consecutiveCorrect >= 3 && intervalOK) {
+        item.needsProduction = true;
+        item.consecutiveCorrect = 0;
+        return { shouldToast: true, message: '🖊️ 산출 연습 목록에 추가됨' };
+      }
+    } else if(!isCorrect) {
+      // 오답 시 연속 정답 리셋 (산출 연습 안 감!)
+      item.consecutiveCorrect = 0;
+    }
+  }
+  
+  return { shouldToast: false };
+}
+
 // 취약도 점수 (낮을수록 취약)
 function getWeaknessScore(i){
 const acc=getAcc(i)??50;
@@ -1538,9 +1609,19 @@ u.rate=0.9;
 speechSynthesis.speak(u);
 },50);
 }
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.remove('hidden');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+let toastTimer=null;
+function showToast(m){const t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('show');if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.classList.remove('show');toastTimer=null;},2500);}
 function showModal(id){document.getElementById(id)?.classList.add('show');}
 function closeModal(id){document.getElementById(id)?.classList.remove('show');}
+// ★ 모달 외부(오버레이) 클릭 시 닫기
+document.querySelectorAll('.modal-overlay').forEach(overlay=>{
+  overlay.addEventListener('click',e=>{
+    // confirm 모달은 제외 (중요한 확인 필요)
+    if(overlay.id==='confirm-modal')return;
+    // 클릭이 오버레이 자체에서 발생했을 때만 닫기 (모달 내부 클릭은 무시)
+    if(e.target===overlay)closeModal(overlay.id);
+  });
+});
 function showConfirm(title,msg,fn){const titleEl=document.getElementById('confirm-title');const msgEl=document.getElementById('confirm-msg');const btnEl=document.getElementById('confirm-btn');if(titleEl)titleEl.textContent=title;if(msgEl)msgEl.textContent=msg;if(btnEl)btnEl.onclick=()=>{closeModal('confirm-modal');fn();};showModal('confirm-modal');}
 function getChip(id){return document.querySelector('#'+id+' .chip.active')?.dataset.value||'all';}
 // ★ 다중 선택 필터 함수들
@@ -1803,9 +1884,9 @@ return true;
 .map(p=>{
 let score=0;
 // 같은 동사 (get up vs get out - 헷갈림)
-const cVerb=correct.Phrasal_Verb.split(' ')[0].toLowerCase();
-const pVerb=p.Phrasal_Verb.split(' ')[0].toLowerCase();
-if(cVerb===pVerb)score+=8;
+const cVerb=(correct.Phrasal_Verb||'').split(' ')[0].toLowerCase();
+const pVerb=(p.Phrasal_Verb||'').split(' ')[0].toLowerCase();
+if(cVerb&&pVerb&&cVerb===pVerb)score+=8;
 // 같은 전치사/부사
 if(p.Particle&&correct.Particle&&p.Particle===correct.Particle)score+=6;
 // 같은 카테고리
@@ -1873,6 +1954,7 @@ switchStatsType(t);
 switchDataType(t);
 }
 async function selectMode(el,t){
+try{
 const container=t==='phrasal'?'#study-phrasal':t==='expr'?'#study-expr':'#study-vocab';
 document.querySelectorAll(container+' .mode-card').forEach(c=>c.classList.remove('active'));
 el.classList.add('active');
@@ -1887,6 +1969,7 @@ if(isOnStudyPage()){
 }else{
   await doSelectMode(t,mode);
 }
+}catch(e){console.error('selectMode error:',e);showToast('❌ 모드 선택 오류');}
 }
 async function doSelectMode(t,mode){
 try{
@@ -1904,6 +1987,8 @@ const w=await getAllWords();if(!w.length){showToast('📤 먼저 어휘 DB를 �
 // ★ 학습탭 슬라이더 값 우선, 없으면 설정값
 const count=parseInt(document.getElementById('study-count')?.value||localStorage.getItem('defaultCount')||'20');
 const now=new Date();
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 // ★ 필터 적용 (다중 선택 및 제외 지원)
 const masteryF=getMultiChip('filter-mastery');
 const cefrF=getMultiChip('filter-cefr');
@@ -1938,16 +2023,18 @@ if(!filtered.length){showToast('⚠️ 필터 조건에 맞는 단어가 없습�
 // ★ FSRS 기반 복습 우선 (순서 유지: DUE → WEAK → NEW)
 const dueCount=Math.ceil(count*0.6),weakCount=Math.ceil(count*0.3),newCount=count-dueCount-weakCount;
 const dueItems=sortByFSRSPriority(filtered.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-const weakItems=shuffle(filtered.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+const weakItems=shuffle(filtered.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
 const newItems=shuffle(filtered.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-// ★ 순서 유지 + 부족하면 나머지에서 채우기
+// ★ 순서 유지 + 부족하면 학습 가능한 단어만 채우기
 let sel=[...dueItems,...weakItems,...newItems];
 if(sel.length<count){
   const usedWords=new Set(sel.map(x=>x.word));
-  const remaining=shuffle(filtered.filter(x=>!usedWords.has(x.word))).slice(0,count-sel.length);
+  // ★ 핵심: nextReview가 미래인 단어 제외!
+  const remaining=shuffle(filtered.filter(x=>!usedWords.has(x.word)&&isAvailable(x))).slice(0,count-sel.length);
   sel=[...sel,...remaining];
 }
-if(!sel.length){showToast('✅ 학습할 단어가 없습니다!');return;}
+console.log('[VocabStudy] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:sel.length,availableInDB:filtered.filter(isAvailable).length});
+if(!sel.length){showToast('✅ 오늘 학습할 단어가 없습니다!');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 if(mode==='flashcard')startFC(sel,w,'vocab');
 else if(mode==='quiz')startQuiz(sel,w,'quiz','vocab');
@@ -1965,6 +2052,8 @@ const p=await getAllPV();if(!p.length){showToast('📤 먼저 구동사 DB를 �
 // ★ 학습탭 슬라이더 값 우선, 없으면 설정값
 const count=parseInt(document.getElementById('pv-study-count')?.value||localStorage.getItem('defaultCount')||'20');
 const now=new Date();
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 // ★ 필터 적용 (다중 선택 및 제외 지원)
 const masteryF=getMultiChip('pv-filter-mastery');
 const cefrF=getMultiChip('pv-filter-cefr');
@@ -1987,16 +2076,18 @@ if(!filtered.length){showToast('⚠️ 필터 조건에 맞는 구동사가 없�
 // ★ FSRS 기반 복습 우선
 const dueCount=Math.ceil(count*0.6),weakCount=Math.ceil(count*0.3),newCount=count-dueCount-weakCount;
 const dueItems=sortByFSRSPriority(filtered.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-const weakItems=shuffle(filtered.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+const weakItems=shuffle(filtered.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
 const newItems=shuffle(filtered.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-// ★ 순서 유지 + 부족하면 나머지에서 채우기
+// ★ 순서 유지 + 부족하면 학습 가능한 단어만 채우기
 let sel=[...dueItems,...weakItems,...newItems];
 if(sel.length<count){
   const usedPVs=new Set(sel.map(x=>x.Phrasal_Verb));
-  const remaining=shuffle(filtered.filter(x=>!usedPVs.has(x.Phrasal_Verb))).slice(0,count-sel.length);
+  // ★ 핵심: nextReview가 미래인 단어 제외!
+  const remaining=shuffle(filtered.filter(x=>!usedPVs.has(x.Phrasal_Verb)&&isAvailable(x))).slice(0,count-sel.length);
   sel=[...sel,...remaining];
 }
-if(!sel.length){showToast('✅ 학습할 구동사가 없습니다!');return;}
+console.log('[PVStudy] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:sel.length,availableInDB:filtered.filter(isAvailable).length});
+if(!sel.length){showToast('✅ 오늘 학습할 구동사가 없습니다!');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 if(mode==='pv-flashcard')startFC(sel,p,'phrasal');
 else if(mode==='pv-particle')startPVP(sel,p);
@@ -2012,6 +2103,8 @@ const e=await getAllExpr();if(!e.length){showToast('📤 먼저 표현 DB를 업
 // ★ 학습탭 슬라이더 값 우선, 없으면 설정값
 const count=parseInt(document.getElementById('expr-study-count')?.value||localStorage.getItem('defaultCount')||'20');
 const now=new Date();
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 // ★ 필터 적용 (다중 선택 및 제외 지원)
 const masteryF=getMultiChip('expr-filter-mastery');
 const cefrF=getMultiChip('expr-filter-cefr');
@@ -2032,16 +2125,18 @@ if(!filtered.length){showToast('⚠️ 필터 조건에 맞는 표현이 없습�
 // ★ FSRS 기반 복습 우선
 const dueCount=Math.ceil(count*0.6),weakCount=Math.ceil(count*0.3),newCount=count-dueCount-weakCount;
 const dueItems=sortByFSRSPriority(filtered.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-const weakItems=shuffle(filtered.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+const weakItems=shuffle(filtered.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
 const newItems=shuffle(filtered.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-// ★ 순서 유지 + 부족하면 나머지에서 채우기
+// ★ 순서 유지 + 부족하면 학습 가능한 단어만 채우기
 let sel=[...dueItems,...weakItems,...newItems];
 if(sel.length<count){
   const usedExprs=new Set(sel.map(x=>x.Expression));
-  const remaining=shuffle(filtered.filter(x=>!usedExprs.has(x.Expression))).slice(0,count-sel.length);
+  // ★ 핵심: nextReview가 미래인 단어 제외!
+  const remaining=shuffle(filtered.filter(x=>!usedExprs.has(x.Expression)&&isAvailable(x))).slice(0,count-sel.length);
   sel=[...sel,...remaining];
 }
-if(!sel.length){showToast('✅ 학습할 표현이 없습니다!');return;}
+console.log('[ExprStudy] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:sel.length,availableInDB:filtered.filter(isAvailable).length});
+if(!sel.length){showToast('✅ 오늘 학습할 표현이 없습니다!');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 if(mode==='expr-fc')startExprFCWithItems(sel,e);
 else if(mode==='expr-quiz')startExprQuiz(sel,e);
@@ -2279,6 +2374,14 @@ showConfirm('학습 종료','학습을 종료하고 이동할까요?\n(진행 �
 });
 return;
 }
+// ★ 학습 페이지 목록 (학습 시작 시 이전 페이지 저장)
+const studyPages=['flashcard','quiz','typing','cloze','collocation','listening','dictation','pv-particle','pv-quiz','expr-fc','expr-quiz','expr-cloze','expr-typing'];
+const tabPages=['home','study','data','stats'];
+// ★ 학습 페이지로 진입 시 현재 탭 저장
+if(studyPages.includes(n)){
+  const currentPage=document.querySelector('.page.active')?.id?.replace('page-','');
+  if(tabPages.includes(currentPage))studyStartPage=currentPage;
+}
 // ★ 수정: 모든 타이머 정리 (메모리 누수 방지)
 cleanupAllTimers();
 document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+n)?.classList.add('active');document.querySelectorAll('.nav-item').forEach(a=>a.classList.toggle('active',a.dataset.page===n));if(n==='home'){updateHomeStats();clearSearchInputs();}if(n==='stats')updateStatsPage();if(n==='data')updateDataPage();if(n==='study')updateStudyPage();}
@@ -2295,7 +2398,12 @@ function cleanupAllTimers(){
   if(exprState?.autoNextTimer){clearTimeout(exprState.autoNextTimer);exprState.autoNextTimer=null;}
   if(typeof listeningRatingTimer!=='undefined'&&listeningRatingTimer){clearTimeout(listeningRatingTimer);listeningRatingTimer=null;}
   if(typeof quizRatingTimer!=='undefined'&&quizRatingTimer){clearTimeout(quizRatingTimer);quizRatingTimer=null;}
+  if(typeof toastTimer!=='undefined'&&toastTimer){clearTimeout(toastTimer);toastTimer=null;}
 }
+// ★ 탭 비활성화 시 타이머 정리 (배터리/메모리 절약)
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){cleanupAllTimers();}
+});
 function clearSearchInputs(){
 const inputs=['quick-search-input','pv-quick-search-input','expr-search-input'];
 inputs.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -2410,18 +2518,21 @@ if(t==='phrasal'){
   const dueCount=Math.ceil(count*0.6);
   const weakCount=Math.ceil(count*0.3);
   const newCount=count-dueCount-weakCount;
+  // ★ 복습 필요 없는 단어(미래) 제외 함수
+  const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
   const dueItems=sortByFSRSPriority(p.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-  const weakItems=shuffle(p.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+  const weakItems=shuffle(p.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
   const newItems=shuffle(p.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-  // ★ 순서 유지 + 부족하면 채우기
+  // ★ 순서 유지 + 부족하면 학습 가능한 단어만 채우기
   let selected=[...dueItems,...weakItems,...newItems];
   if(selected.length<count){
     const usedPVs=new Set(selected.map(x=>x.Phrasal_Verb));
-    const remaining=shuffle(p.filter(x=>!usedPVs.has(x.Phrasal_Verb))).slice(0,count-selected.length);
+    // ★ 핵심 수정: nextReview가 미래인 단어 제외!
+    const remaining=shuffle(p.filter(x=>!usedPVs.has(x.Phrasal_Verb)&&isAvailable(x))).slice(0,count-selected.length);
     selected=[...selected,...remaining];
   }
   console.log('[QuickStudy PV] FSRS기반:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length});
-  if(!selected.length){showToast('✅ 학습할 구동사가 없습니다!');return;}
+  if(!selected.length){showToast('✅ 오늘 학습할 구동사가 없습니다!');return;}
   if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
   startFC(selected,p,'phrasal');
   return;
@@ -2432,24 +2543,33 @@ if(!w.length){showToast('📤 먼저 DB를 업로드하세요');showPage('data')
 const dueCount=Math.ceil(count*0.6);
 const weakCount=Math.ceil(count*0.3);
 const newCount=count-dueCount-weakCount;
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
+// ★ 디버그: 각 단어의 nextReview 상태 확인
+console.log('[QuickStudy] 전체 단어 수:',w.length);
+console.log('[QuickStudy] 학습 가능(isAvailable):',w.filter(isAvailable).length);
+console.log('[QuickStudy] 미래 복습(not available):',w.filter(x=>!isAvailable(x)).map(x=>({word:x.word,nextReview:x.nextReview})));
 const dueItems=sortByFSRSPriority(w.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-const weakItems=shuffle(w.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+const weakItems=shuffle(w.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
 const newItems=shuffle(w.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-// ★ 순서 유지 + 부족하면 채우기
+// ★ 순서 유지 + 부족하면 학습 가능한 단어만 채우기
 let selected=[...dueItems,...weakItems,...newItems];
 if(selected.length<count){
   const usedWords=new Set(selected.map(x=>x.word));
-  const remaining=shuffle(w.filter(x=>!usedWords.has(x.word))).slice(0,count-selected.length);
+  // ★ 핵심 수정: nextReview가 미래인 단어 제외!
+  const remaining=shuffle(w.filter(x=>!usedWords.has(x.word)&&isAvailable(x))).slice(0,count-selected.length);
   selected=[...selected,...remaining];
 }
-console.log('[QuickStudy Vocab] FSRS기반:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length});
-if(!selected.length){showToast('✅ 학습할 단어가 없습니다!');return;}
+console.log('[QuickStudy Vocab] FSRS기반:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,available:w.filter(x=>isAvailable(x)).length});
+if(!selected.length){showToast('✅ 오늘 학습할 단어가 없습니다! 내일 다시 확인하세요.');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 startFC(selected,w,'vocab');
 }
 async function startQuickQuiz(t){
 const now=new Date();
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 if(t==='phrasal'){
   const p=await getAllPV();
   const valid=p.filter(x=>x.Particle?.trim());
@@ -2459,16 +2579,16 @@ if(t==='phrasal'){
   const weakCount=Math.ceil(count*0.3);
   const newCount=count-dueCount-weakCount;
   const dueItems=sortByFSRSPriority(valid.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-  const weakItems=shuffle(valid.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+  const weakItems=shuffle(valid.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
   const newItems=shuffle(valid.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-  // ★ 순서 유지 + 부족하면 채우기
+  // ★ 순서 유지 + 부족하면 학습 가능한 단어만 채우기
   let selected=[...dueItems,...weakItems,...newItems];
   if(selected.length<count){
     const usedPVs=new Set(selected.map(x=>x.Phrasal_Verb));
-    const remaining=shuffle(valid.filter(x=>!usedPVs.has(x.Phrasal_Verb))).slice(0,count-selected.length);
+    const remaining=shuffle(valid.filter(x=>!usedPVs.has(x.Phrasal_Verb)&&isAvailable(x))).slice(0,count-selected.length);
     selected=[...selected,...remaining];
   }
-  if(!selected.length){showToast('✅ 학습할 구동사가 없습니다!');return;}
+  if(!selected.length){showToast('✅ 오늘 학습할 구동사가 없습니다!');return;}
   if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
   startPVP(selected,p);
   return;
@@ -2481,16 +2601,16 @@ const dueCount=Math.ceil(count*0.6);
 const weakCount=Math.ceil(count*0.3);
 const newCount=count-dueCount-weakCount;
 const dueItems=sortByFSRSPriority(valid.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-const weakItems=shuffle(valid.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+const weakItems=shuffle(valid.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
 const newItems=shuffle(valid.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
-// ★ 순서 유지 + 부족하면 채우기
+// ★ 순서 유지 + 부족하면 학습 가능한 단어만 채우기
 let selected=[...dueItems,...weakItems,...newItems];
 if(selected.length<count){
   const usedWords=new Set(selected.map(x=>x.word));
-  const remaining=shuffle(valid.filter(x=>!usedWords.has(x.word))).slice(0,count-selected.length);
+  const remaining=shuffle(valid.filter(x=>!usedWords.has(x.word)&&isAvailable(x))).slice(0,count-selected.length);
   selected=[...selected,...remaining];
 }
-if(!selected.length){showToast('✅ 학습할 단어가 없습니다!');return;}
+if(!selected.length){showToast('✅ 오늘 학습할 단어가 없습니다!');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 startQuiz(selected,w,'quiz','vocab');
 }
@@ -2514,6 +2634,13 @@ sel.value='';
 }
 async function startProductionStudy(t){
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
+if(t==='expr'){
+const e=await getAllExpr();const prod=e.filter(x=>x.needsProduction);
+if(!prod.length){showToast('🖊️ 산출 연습 목록이 비어있습니다!');return;}
+showToast('🖊️ 산출 연습 '+prod.length+'개!');
+// 표현 타이핑 모드로 시작
+startExprTyping(shuffle(prod).slice(0,count),e);return;
+}
 if(t==='phrasal'){
 const p=await getAllPV();const prod=p.filter(x=>x.needsProduction);
 if(!prod.length){showToast('🖊️ 산출 연습 목록이 비어있습니다!');return;}
@@ -2556,8 +2683,10 @@ startFC(shuffle(newW).slice(0,count),w,'vocab');
 // 표현 플래시카드 (items 전달 버전)
 async function startExprFCWithItems(items,all){
 if(!items.length){showToast('💬 학습할 표현이 없습니다!');return;}
-exprState={words:items,allWords:all,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:items.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('expr-fc-total').textContent=items.length;
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...items]);
+exprState={words:shuffled,allWords:all,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('expr-fc-total').textContent=shuffled.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
 showPage('expr-fc');startExprTimer();showExprCard();
@@ -2565,27 +2694,36 @@ showPage('expr-fc');startExprTimer();showExprCard();
 // 표현 5지선다 (items 전달 버전)
 function startExprQuiz(items,all){
 if(items.length<5){showToast('⚠️ 학습할 표현이 부족합니다');return;}
-exprState={words:items,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:items.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('expr-quiz-total').textContent=items.length;
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...items]);
+exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('expr-quiz-total').textContent=shuffled.length;
 document.getElementById('expr-quiz-retry-banner').classList.add('hidden');
 showPage('expr-quiz');showExprQuizQ();
 }
 // 표현 빈칸채우기 (items 전달 버전)
 function startExprClozeWithItems(items,all){
-let valid=items.filter(e=>{const ex=getEx(e);return ex&&ex.toLowerCase().includes(e.Expression.toLowerCase().split(' ')[0]);});
+let valid=items.filter(e=>{const ex=getEx(e);const expr=(e.Expression||'').toLowerCase();return ex&&expr&&ex.toLowerCase().includes(expr.split(' ')[0]);});
 if(!valid.length){showToast('✅ 빈칸채우기 가능한 표현이 없습니다!');return;}
-exprState={words:valid,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('expr-cloze-total').textContent=valid.length;
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...valid]);
+exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('expr-cloze-total').textContent=shuffled.length;
 showPage('expr-cloze');showExprClozeQ();
 }
 // 표현 타이핑 (items 전달 버전)
 function startExprTyping(items,all){
-let valid=items.filter(e=>{const ex=getEx(e);return ex&&ex.toLowerCase().includes(e.Expression.toLowerCase().split(' ')[0]);});
+try{
+let valid=items.filter(e=>{const ex=getEx(e);const expr=(e.Expression||'').toLowerCase();return ex&&expr&&ex.toLowerCase().includes(expr.split(' ')[0]);});
+if(!valid.length){valid=items;} // fallback: 필터 없이 전부
 if(!valid.length){showToast('✅ 타이핑 가능한 표현이 없습니다!');return;}
-exprTypingState={words:valid,allWords:all,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('expr-typing-total').textContent=valid.length;
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...valid]);
+exprTypingState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('expr-typing-total').textContent=shuffled.length;
 document.getElementById('expr-typing-retry-banner').classList.add('hidden');
 showPage('expr-typing');showExprTypingQ();
+}catch(e){console.error('startExprTyping error:',e);showToast('❌ 시작 오류');}
 }
 async function showWeakWords(t){const count=parseInt(localStorage.getItem('defaultCount')||'20');currentWeakType=t;const items=t==='phrasal'?await getAllPV():await getAllWords();const weak=items.filter(i=>isWeak(i)).sort((a,b)=>(getAcc(a)||100)-(getAcc(b)||100));document.getElementById('weak-title').textContent=t==='phrasal'?'취약 구동사':'취약 단어';const list=document.getElementById('weak-list'),empty=document.getElementById('weak-empty'),btn=document.getElementById('weak-study-btn');if(!weak.length){list.innerHTML='';empty.classList.remove('hidden');btn.classList.add('hidden');}else{empty.classList.add('hidden');btn.classList.remove('hidden');list.innerHTML=weak.slice(0,count).map(w=>`<div class="weak-word-item"><div class="weak-word-text"><strong>${displayWord(getW(w))}</strong><span>${getMKO(w)}</span></div><div class="weak-word-stats"><div class="weak-word-rate" style="color:var(--danger)">${getAcc(w)!==null?getAcc(w)+'%':'-'}</div><div class="weak-word-count">${w.reviewCount||0}회</div></div></div>`).join('');}showPage('weak');}
 async function startWeakStudy(){const count=parseInt(localStorage.getItem('defaultCount')||'20');const items=currentWeakType==='phrasal'?await getAllPV():await getAllWords();const weak=items.filter(i=>isWeak(i));if(!weak.length){showToast('취약 단어가 없습니다');return;}if(currentWeakType==='phrasal')startFC(shuffle(weak).slice(0,count),items,'phrasal');else startFC(shuffle(weak).slice(0,count),items,'vocab');}
@@ -2594,10 +2732,11 @@ async function startWeakStudy(){const count=parseInt(localStorage.getItem('defau
 function startFC(items,all,type){
 console.log('startFC called:', {itemsCount: items.length, type, firstItem: items[0]});
 if(fcState.timer)clearInterval(fcState.timer);
-// ★ items는 이미 새 단어 우선으로 정렬되어 있음 - shuffle 하지 않음
-fcState={words:[...items],idx:0,flipped:false,start:Date.now(),timer:null,stats:{again:0,hard:0,good:0,easy:0},transitioning:false,retryQueue:[],phase:'normal',type,savedToWrong:0,allWords:all,originalCount:items.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...items]);
+fcState={words:shuffled,idx:0,flipped:false,start:Date.now(),timer:null,stats:{again:0,hard:0,good:0,easy:0},transitioning:false,retryQueue:[],phase:'normal',type,savedToWrong:0,allWords:all,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
 console.log('fcState.words[0]:', fcState.words[0]);
-document.getElementById('fc-total').textContent=items.length;
+document.getElementById('fc-total').textContent=shuffled.length;
 document.getElementById('fc-current').textContent='0';
 document.getElementById('fc-progress').style.width='0%';
 document.getElementById('fc-retry-banner').classList.add('hidden');
@@ -2771,8 +2910,9 @@ if(!item.isRetry){
   const key=fcState.type==='phrasal'?item.Phrasal_Verb:item.word;
   fcState.completedKeys.add(key);
 }
-// 6. Hard/Again 시 needsProduction 자동 설정
-if(r<=1)item.needsProduction=true;
+// 6. 산출 연습 상태 업데이트 (공통 함수)
+const prodResult = updateProductionStatus(item, r>=2, 'flashcard');
+if(prodResult.shouldToast) showToast(prodResult.message);
 // 5. 세션 내 재학습: 오답 시 5~7문제 후 재출제 (phase='normal'일 때만)
 if(r===0&&fcState.phase==='normal'){
 const insertIdx=Math.min(fcState.idx+5+Math.floor(Math.random()*3),fcState.words.length);
@@ -2787,12 +2927,20 @@ item.reviewCount=(item.reviewCount||0)+1;if(r>=2)item.correctCount=(item.correct
 updateMastery(item,r>=2);
 updateInputOutput(item,false,r>=2); // ★ 플래시카드 = 인풋 모드
 // FSRS 계산 (lastReview는 calcNext 내부에서 설정)
-try{Object.assign(item,calcNext(item,r));if(item.isLeech)showToast('🐌 Leech 카드! '+((fcState.type==='phrasal')?item.Phrasal_Verb:item.word));}catch(calcErr){console.error('calcNext error:',calcErr);item.lastReview=new Date().toISOString();}
+try{
+  const before={nextReview:item.nextReview,interval:item.interval,fsrsState:item.fsrsState};
+  Object.assign(item,calcNext(item,r));
+  console.log('[rateCard] FSRS 업데이트:',{word:item.word||item.Phrasal_Verb,grade:r,before,after:{nextReview:item.nextReview,interval:item.interval,fsrsState:item.fsrsState}});
+  if(item.isLeech)showToast('🐌 Leech 카드! '+((fcState.type==='phrasal')?item.Phrasal_Verb:item.word));
+}catch(calcErr){console.error('calcNext error:',calcErr);item.lastReview=new Date().toISOString();}
 }else{
 // 재출제 카드: reviewCount, correctCount만 업데이트 (FSRS는 건너뜀)
 console.log('[rateCard] isRetry card, skipping FSRS update');
 }
-try{if(fcState.type==='phrasal')await savePV(item);else await saveWord(item);}catch(saveErr){console.error('DB save error:',saveErr);}
+try{
+  if(fcState.type==='phrasal')await savePV(item);else await saveWord(item);
+  console.log('[rateCard] DB 저장 완료:',{word:item.word||item.Phrasal_Verb,nextReview:item.nextReview});
+}catch(saveErr){console.error('DB save error:',saveErr);}
 vibrate(r>=2?10:[50,30,50]);fcState.idx++;
 setTimeout(()=>{fcState.transitioning=false;showCard();},200);
 }catch(e){
@@ -2816,7 +2964,7 @@ function confirmEndFC(){const ev=fcState.stats.again+fcState.stats.hard+fcState.
 async function endFC(skip){
 if(fcState.timer){clearInterval(fcState.timer);fcState.timer=null;}
 const ev=fcState.stats.again+fcState.stats.hard+fcState.stats.good+fcState.stats.easy;
-if(ev===0||skip){showPage('home',true);showToast('학습이 취소되었습니다');return;}
+if(ev===0||skip){showPage(studyStartPage,true);showToast('학습이 취소되었습니다');return;}
 const known=fcState.stats.good+fcState.stats.easy,unknown=fcState.stats.again+fcState.stats.hard,dur=Math.round((Date.now()-fcState.start)/1000);
 const acc=Math.round((known/ev)*100);
 await saveSession({total:ev,known,unknown,accuracy:acc,duration:dur,mode:'flashcard',type:fcState.type,stats:{...fcState.stats},uniqueTotal:fcState.originalCount,firstTryCorrect:fcState.firstTryCorrect,firstTryWrong:fcState.firstTryWrong});
@@ -2832,9 +2980,10 @@ showModal('complete-modal');updateHomeStats();
 // === 퀴즈 (3단계) ===
 function startQuiz(words,all,mode,type){
 const m=words.filter(w=>getMKO(w));if(m.length<5){showToast('⚠️ 뜻이 있는 단어가 부족합니다');return;}
-// ★ words는 이미 새 단어 우선으로 정렬되어 있음 - shuffle 하지 않음
-quizState={words:[...m],allWords:all||words,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode:mode||'quiz',type:type||'vocab',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:m.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('quiz-total').textContent=m.length;
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...m]);
+quizState={words:shuffled,allWords:all||words,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode:mode||'quiz',type:type||'vocab',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('quiz-total').textContent=shuffled.length;
 document.getElementById('quiz-retry-banner').classList.add('hidden');
 showPage('quiz');showQuizQ();updateStreak();
 }
@@ -2909,17 +3058,9 @@ if(!isRetry){
 w.reviewCount=(w.reviewCount||0)+1;if(ok)w.correctCount=(w.correctCount||0)+1;
 updateMastery(w,ok);
 updateInputOutput(w,false,ok); // ★ 퀴즈 = 인풋 모드
-// ★ 인지→산출 자동 전환: 3회 연속 정답 시 산출 연습 필요
-if(ok&&!w.needsProduction){
-  w.consecutiveCorrect=(w.consecutiveCorrect||0)+1;
-  if(w.consecutiveCorrect>=3){
-    w.needsProduction=true;
-    w.consecutiveCorrect=0;
-    showToast('🖊️ 산출 연습 목록에 추가됨');
-  }
-}else if(!ok){
-  w.consecutiveCorrect=0;
-}
+// ★ 산출 연습 상태 업데이트 (공통 함수)
+const prodResult = updateProductionStatus(w, ok, 'quiz');
+if(prodResult.shouldToast) showToast(prodResult.message);
 // ★ FSRS: 오답만 바로 Again(0) 적용, 정답은 rating 선택 시 적용
 if(!ok){
   try{Object.assign(w,calcNext(w,0));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){console.error(e);}
@@ -2967,7 +3108,7 @@ nextQuiz();
 function nextQuiz(){quizState.idx++;showQuizQ();}
 function confirmEndQuiz(){if(quizState.idx<quizState.words.length||quizState.retryQueue.length>0||quizState.finalQueue.length>0)showConfirm('퀴즈 종료','남은 문제가 있습니다. 종료할까요?',endQuiz);else endQuiz();}
 async function endQuiz(){
-const ans=quizState.correct+quizState.wrong;if(ans===0){showPage('home',true);return;}
+const ans=quizState.correct+quizState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((quizState.correct/ans)*100);
 await saveSession({total:ans,correct:quizState.correct,wrong:quizState.wrong,accuracy:acc,mode:quizState.mode,type:quizState.type,duration:Math.round((Date.now()-quizState.start)/1000),uniqueTotal:quizState.originalCount,firstTryCorrect:quizState.firstTryCorrect,firstTryWrong:quizState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=quizState.correct;document.getElementById('qc-wrong').textContent=quizState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
@@ -2978,8 +3119,10 @@ showModal('quiz-complete-modal');updateHomeStats();
 // === 타이핑 (3단계) ===
 function startTyping(words){
 const valid=words.filter(w=>getMKO(w));
-typingState={words:valid,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('typing-total').textContent=valid.length;document.getElementById('typing-retry-banner').classList.add('hidden');
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...valid]);
+typingState={words:shuffled,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('typing-total').textContent=shuffled.length;document.getElementById('typing-retry-banner').classList.add('hidden');
 showPage('typing');showTypingQ();updateStreak();
 }
 function showTypingQ(){
@@ -3017,22 +3160,14 @@ const isRetry=w.isRetry||false; // 재출제 카드 여부
 if(ok&&!typingState.hintUsed){
 if(!isRetry){typingState.correct++;typingState.firstTryCorrect++;}
 if(!isRetry&&typingState.completedKeys)typingState.completedKeys.add(w.word); // 고유 카드 완료
-// ★ 산출 연습 강화: 3회 이상 성공해야 해제 (연구: 산출은 인식보다 더 많은 반복 필요)
-w.productionSuccessCount=(w.productionSuccessCount||0)+1;
-if(w.needsProduction){
-  if(w.productionSuccessCount>=3){
-    w.needsProduction=false;
-    w.productionSuccessCount=0; // 리셋
-    showToast('✅ 산출 3회 성공! 목록에서 제거');
-  }else{
-    showToast(`🖊️ 산출 ${w.productionSuccessCount}/3 성공`);
-  }
-}
+// ★ 산출 연습 상태 업데이트 (공통 함수)
+const prodResult = updateProductionStatus(w, true, 'typing');
+if(prodResult.shouldToast) showToast(prodResult.message);
 }
 else{
 if(!isRetry){typingState.wrong++;typingState.firstTryWrong++;}
-// 오답 시 productionSuccessCount 리셋 (연속 성공 필요)
-if(w.needsProduction)w.productionSuccessCount=0;
+// ★ 오답 시 산출 연습 상태 업데이트 (공통 함수)
+updateProductionStatus(w, false, 'typing');
 if(typingState.phase==='normal')typingState.retryQueue.push({...w,isRetry:true});
 else if(typingState.phase==='retry')typingState.finalQueue.push({...w,isRetry:true});
 else{updateWrong(w,false);typingState.savedToWrong++;if(!isRetry&&typingState.completedKeys)typingState.completedKeys.add(w.word);} // final에서 틀려도 완료
@@ -3060,7 +3195,7 @@ document.getElementById('typing-input')?.addEventListener('keypress',e=>{if(e.ke
 function nextTyping(){typingState.idx++;showTypingQ();}
 function confirmEndTyping(){if(typingState.idx<typingState.words.length||typingState.retryQueue.length>0||typingState.finalQueue.length>0)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endTyping);else endTyping();}
 async function endTyping(){
-const ans=typingState.correct+typingState.wrong;if(ans===0){showPage('home',true);return;}
+const ans=typingState.correct+typingState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((typingState.correct/ans)*100);
 await saveSession({total:ans,correct:typingState.correct,wrong:typingState.wrong,accuracy:acc,mode:'typing',type:'vocab',duration:Math.round((Date.now()-typingState.start)/1000),uniqueTotal:typingState.originalCount,firstTryCorrect:typingState.firstTryCorrect,firstTryWrong:typingState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=typingState.correct;document.getElementById('qc-wrong').textContent=typingState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
@@ -3080,9 +3215,10 @@ const regex=new RegExp('\\b'+escapeRegex(w.word)+'\\b','i');
 return allEx.some(e=>regex.test(e));
 });
 if(valid.length<5){showToast('⚠️ 유효한 예문이 있는 단어가 부족합니다 (5개 이상 필요)');return;}
-// ★ shuffle 적용
-clozeState={words:shuffle(valid),allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,autoNextTimer:null,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('cloze-total').textContent=valid.length;
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...valid]);
+clozeState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,autoNextTimer:null,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('cloze-total').textContent=shuffled.length;
 document.getElementById('cloze-retry-banner').classList.add('hidden');
 showPage('cloze');showClozeQ();
 }
@@ -3154,11 +3290,9 @@ if(!isRetry){
 w.reviewCount=(w.reviewCount||0)+1;if(ok)w.correctCount=(w.correctCount||0)+1;
 updateMastery(w,ok);
 updateInputOutput(w,false,ok); // ★ 클로즈 = 인풋 모드
-// ★ 인지→산출 자동 전환
-if(ok&&!w.needsProduction){
-  w.consecutiveCorrect=(w.consecutiveCorrect||0)+1;
-  if(w.consecutiveCorrect>=3){w.needsProduction=true;w.consecutiveCorrect=0;showToast('🖊️ 산출 연습 목록에 추가됨');}
-}else if(!ok){w.consecutiveCorrect=0;}
+// ★ 산출 연습 상태 업데이트 (공통 함수)
+const prodResult = updateProductionStatus(w, ok, 'cloze');
+if(prodResult.shouldToast) showToast(prodResult.message);
 // ★ FSRS: 오답만 바로 Again(0) 적용, 정답은 rating 선택 시 적용
 if(!ok){
   try{Object.assign(w,calcNext(w,0));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){console.error(e);}
@@ -3197,7 +3331,7 @@ rateClozeItem(2);
 function nextCloze(){clozeState.idx++;showClozeQ();}
 function confirmEndCloze(){if(clozeState.idx<clozeState.words.length||clozeState.retryQueue.length>0||clozeState.finalQueue.length>0)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endCloze);else endCloze();}
 async function endCloze(){
-const ans=clozeState.correct+clozeState.wrong;if(ans===0){showPage('home',true);return;}
+const ans=clozeState.correct+clozeState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((clozeState.correct/ans)*100);
 await saveSession({total:ans,correct:clozeState.correct,wrong:clozeState.wrong,accuracy:acc,mode:'cloze',type:'vocab',duration:Math.round((Date.now()-clozeState.start)/1000),uniqueTotal:clozeState.originalCount,firstTryCorrect:clozeState.firstTryCorrect,firstTryWrong:clozeState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=clozeState.correct;document.getElementById('qc-wrong').textContent=clozeState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
@@ -3214,8 +3348,10 @@ const regex=new RegExp('\\b'+escapeRegex(w.word)+'\\b','i');
 return colls.some(c=>regex.test(c));
 });
 if(valid.length<5){showToast('⚠️ 유효한 Collocation이 있는 단어가 부족합니다 (5개 이상 필요)');return;}
-collocState={words:valid,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('colloc-total').textContent=valid.length;
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...valid]);
+collocState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('colloc-total').textContent=shuffled.length;
 document.getElementById('colloc-retry-banner').classList.add('hidden');
 showPage('collocation');showCollocQ();
 }
@@ -3288,11 +3424,9 @@ if(!isRetry){
 w.reviewCount=(w.reviewCount||0)+1;if(ok)w.correctCount=(w.correctCount||0)+1;
 updateMastery(w,ok);
 updateInputOutput(w,false,ok); // ★ 연어 = 인풋 모드
-// ★ 인지→산출 자동 전환
-if(ok&&!w.needsProduction){
-  w.consecutiveCorrect=(w.consecutiveCorrect||0)+1;
-  if(w.consecutiveCorrect>=3){w.needsProduction=true;w.consecutiveCorrect=0;showToast('🖊️ 산출 연습 목록에 추가됨');}
-}else if(!ok){w.consecutiveCorrect=0;}
+// ★ 산출 연습 상태 업데이트 (공통 함수)
+const prodResult = updateProductionStatus(w, ok, 'collocation');
+if(prodResult.shouldToast) showToast(prodResult.message);
 // ★ FSRS: 오답만 바로 Again(0) 적용, 정답은 rating 선택 시 적용
 if(!ok){
   try{Object.assign(w,calcNext(w,0));if(w.isLeech)showToast('🐌 Leech: '+w.word);await saveWord(w);}catch(e){console.error(e);}
@@ -3331,7 +3465,7 @@ rateCollocItem(2);
 function nextColloc(){collocState.idx++;showCollocQ();}
 function confirmEndColloc(){if(collocState.idx<collocState.words.length||collocState.retryQueue.length>0||collocState.finalQueue.length>0)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endColloc);else endColloc();}
 async function endColloc(){
-const ans=collocState.correct+collocState.wrong;if(ans===0){showPage('home',true);return;}
+const ans=collocState.correct+collocState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((collocState.correct/ans)*100);
 await saveSession({total:ans,correct:collocState.correct,wrong:collocState.wrong,accuracy:acc,mode:'collocation',type:'vocab',duration:Math.round((Date.now()-collocState.start)/1000),uniqueTotal:collocState.originalCount,firstTryCorrect:collocState.firstTryCorrect,firstTryWrong:collocState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=collocState.correct;document.getElementById('qc-wrong').textContent=collocState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
@@ -3347,8 +3481,10 @@ let listeningState={words:[],all:[],idx:0,correct:0,wrong:0,answered:false,start
 function startListening(items,all,type){
 type=type||'vocab';
 currentListeningType=type;
-listeningState={words:items,all:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),currentWord:null,type:type,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:items.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('listening-total').textContent=items.length;
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...items]);
+listeningState={words:shuffled,all:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),currentWord:null,type:type,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('listening-total').textContent=shuffled.length;
 document.getElementById('listening-correct').textContent=0;
 document.getElementById('listening-wrong').textContent=0;
 document.getElementById('listening-retry-banner').classList.add('hidden');
@@ -3374,7 +3510,7 @@ showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',en
 
 async function endCurrentListening(){
 const ans=listeningState.correct+listeningState.wrong;
-if(ans===0){showPage('home',true);return;}
+if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((listeningState.correct/ans)*100);
 await saveSession({total:ans,correct:listeningState.correct,wrong:listeningState.wrong,accuracy:acc,mode:'listening',type:currentListeningType,duration:Math.round((Date.now()-listeningState.start)/1000),uniqueTotal:listeningState.originalCount,firstTryCorrect:listeningState.firstTryCorrect,firstTryWrong:listeningState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;
@@ -3469,7 +3605,7 @@ showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',en
 
 async function endCurrentDictation(){
 const ans=dictationState.correct+dictationState.wrong;
-if(ans===0){showPage('home',true);return;}
+if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((dictationState.correct/ans)*100);
 await saveSession({total:ans,correct:dictationState.correct,wrong:dictationState.wrong,accuracy:acc,mode:'dictation',type:currentDictationType,duration:Math.round((Date.now()-dictationState.start)/1000),uniqueTotal:dictationState.originalCount,firstTryCorrect:dictationState.firstTryCorrect,firstTryWrong:dictationState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;
@@ -3607,14 +3743,12 @@ if(w){
     updateMastery(w,true);
     updateWrong(w,true);
     updateInputOutput(w,false,true); // ★ 리스닝 = 인풋 모드
-    // 인지→산출 자동 전환
-    if(!w.needsProduction){
-      w.consecutiveCorrect=(w.consecutiveCorrect||0)+1;
-      if(w.consecutiveCorrect>=3){w.needsProduction=true;w.consecutiveCorrect=0;showToast('🖊️ 산출 연습 목록에 추가됨');}
-    }
+    // ★ 산출 연습 상태 업데이트 (공통 함수)
+    const prodResult = updateProductionStatus(w, true, 'listening');
+    if(prodResult.shouldToast) showToast(prodResult.message);
     try{await saveWord(w);}catch(e){} // 통계만 저장
   }else{
-    w.consecutiveCorrect=0;
+    updateProductionStatus(w, false, 'listening');
     updateInputOutput(w,false,false); // ★ 리스닝 오답
     updateMastery(w,false);
     updateWrong(w,false);
@@ -3630,13 +3764,12 @@ if(pv){
     updateMastery(pv,true);
     updateWrong(pv,true);
     updateInputOutput(pv,false,true); // ★ 리스닝 = 인풋 모드
-    if(!pv.needsProduction){
-      pv.consecutiveCorrect=(pv.consecutiveCorrect||0)+1;
-      if(pv.consecutiveCorrect>=3){pv.needsProduction=true;pv.consecutiveCorrect=0;showToast('🖊️ 산출 연습 목록에 추가됨');}
-    }
+    // ★ 산출 연습 상태 업데이트 (공통 함수)
+    const prodResult = updateProductionStatus(pv, true, 'listening');
+    if(prodResult.shouldToast) showToast(prodResult.message);
     try{await savePV(pv);}catch(e){}
   }else{
-    pv.consecutiveCorrect=0;
+    updateProductionStatus(pv, false, 'listening');
     updateMastery(pv,false);
     updateWrong(pv,false);
     updateInputOutput(pv,false,false); // ★ 리스닝 오답
@@ -3746,8 +3879,10 @@ let dictationState={words:[],idx:0,correct:0,wrong:0,answered:false,hintUsed:fal
 function startDictation(items,all,type){
 type=type||'vocab';
 currentDictationType=type;
-dictationState={words:items,allWords:all,idx:0,correct:0,wrong:0,answered:false,hintUsed:false,start:Date.now(),currentWord:null,type:type,originalCount:items.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('dictation-total').textContent=items.length;
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...items]);
+dictationState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,hintUsed:false,start:Date.now(),currentWord:null,type:type,originalCount:shuffled.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('dictation-total').textContent=shuffled.length;
 document.getElementById('dictation-current').textContent='0';
 document.getElementById('dictation-correct').textContent=0;
 document.getElementById('dictation-wrong').textContent=0;
@@ -3841,8 +3976,11 @@ w.reviewCount=(w.reviewCount||0)+1;
 if(ok)w.correctCount=(w.correctCount||0)+1;
 updateMastery(w,ok);
 updateInputOutput(w,true,ok&&!dictationState.hintUsed); // ★ 받아쓰기 = 아웃풋 모드
+// ★ 산출 연습 상태 업데이트 (공통 함수)
+const prodResultW = updateProductionStatus(w, ok&&!dictationState.hintUsed, 'dictation');
+if(prodResultW.shouldToast) showToast(prodResultW.message);
 if(ok){updateWrong(w,true);Object.assign(w,calcNext(w,dictationState.hintUsed?2:3));}
-else{updateWrong(w,false);Object.assign(w,calcNext(w,0));if(w.isLeech)showToast('🐌 Leech: '+w.word);w.needsProduction=true;}
+else{updateWrong(w,false);Object.assign(w,calcNext(w,0));if(w.isLeech)showToast('🐌 Leech: '+w.word);}
 try{await saveWord(w);}catch(e){console.error(e);}
 }
 }else if(type==='phrasal'){
@@ -3852,8 +3990,11 @@ p.reviewCount=(p.reviewCount||0)+1;
 if(ok)p.correctCount=(p.correctCount||0)+1;
 updateMastery(p,ok);
 updateInputOutput(p,true,ok&&!dictationState.hintUsed); // ★ 받아쓰기 = 아웃풋 모드
+// ★ 산출 연습 상태 업데이트 (공통 함수)
+const prodResultP = updateProductionStatus(p, ok&&!dictationState.hintUsed, 'dictation');
+if(prodResultP.shouldToast) showToast(prodResultP.message);
 if(ok){updateWrong(p,true);Object.assign(p,calcNext(p,dictationState.hintUsed?2:3));}
-else{updateWrong(p,false);Object.assign(p,calcNext(p,0));if(p.isLeech)showToast('🐌 Leech: '+p.Phrasal_Verb);p.needsProduction=true;}
+else{updateWrong(p,false);Object.assign(p,calcNext(p,0));if(p.isLeech)showToast('🐌 Leech: '+p.Phrasal_Verb);}
 try{await savePV(p);}catch(e){console.error(e);}
 }
 }else{
@@ -3863,8 +4004,11 @@ e.reviewCount=(e.reviewCount||0)+1;
 if(ok)e.correctCount=(e.correctCount||0)+1;
 updateMastery(e,ok);
 updateInputOutput(e,true,ok&&!dictationState.hintUsed); // ★ 받아쓰기 = 아웃풋 모드
+// ★ 산출 연습 상태 업데이트 (공통 함수)
+const prodResultE = updateProductionStatus(e, ok&&!dictationState.hintUsed, 'dictation');
+if(prodResultE.shouldToast) showToast(prodResultE.message);
 if(ok){updateWrong(e,true);Object.assign(e,calcNext(e,dictationState.hintUsed?2:3));}
-else{updateWrong(e,false);Object.assign(e,calcNext(e,0));if(e.isLeech)showToast('🐌 Leech: '+e.Expression);e.needsProduction=true;}
+else{updateWrong(e,false);Object.assign(e,calcNext(e,0));if(e.isLeech)showToast('🐌 Leech: '+e.Expression);}
 try{await saveExpr(e);}catch(e2){console.error(e2);}
 }
 }
@@ -3875,7 +4019,7 @@ document.getElementById('dictation-submit-btn').textContent='다음 →';
 }
 function confirmEndDictation(){if(dictationState.idx<dictationState.words.length)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endDictation);else endDictation();}
 async function endDictation(){
-const ans=dictationState.correct+dictationState.wrong;if(ans===0){showPage('home',true);return;}
+const ans=dictationState.correct+dictationState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((dictationState.correct/ans)*100);
 const type=dictationState.type||'vocab';
 await saveSession({total:ans,correct:dictationState.correct,wrong:dictationState.wrong,accuracy:acc,mode:'dictation',type:type,duration:Math.round((Date.now()-dictationState.start)/1000),uniqueTotal:dictationState.originalCount,firstTryCorrect:dictationState.firstTryCorrect,firstTryWrong:dictationState.firstTryWrong});
@@ -3954,9 +4098,10 @@ else if(mode==='pv-dictation')startDictation(sel,p,'phrasal');
 // PV Particle
 function startPVP(items,all){
 const v=items.filter(x=>x.Particle?.trim());if(v.length<5){showToast('⚠️ Particle이 있는 구동사가 부족합니다');return;}
-// ★ items는 이미 새 단어 우선으로 정렬되어 있음
-pvState={words:[...v],allWords:all||items,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode:'particle',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:v.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('pvp-total').textContent=v.length;document.getElementById('pvp-retry-banner').classList.add('hidden');
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...v]);
+pvState={words:shuffled,allWords:all||items,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode:'particle',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('pvp-total').textContent=shuffled.length;document.getElementById('pvp-retry-banner').classList.add('hidden');
 showPage('pv-particle');showPVPQ();updateStreak();
 }
 function showPVPQ(){
@@ -4047,9 +4192,10 @@ function nextPVP(){pvState.idx++;showPVPQ();}
 // PV Quiz
 function startPVQ(items,all,mode){
 const m=items.filter(x=>getMKO(x));if(m.length<5){showToast('⚠️ 뜻이 있는 구동사가 부족합니다');return;}
-// ★ items는 이미 새 단어 우선으로 정렬되어 있음
-pvState={words:[...m],allWords:all||items,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:m.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
-document.getElementById('pvq-total').textContent=m.length;document.getElementById('pvq-retry-banner').classList.add('hidden');
+// ★ 매번 셔플하여 순서 무작위화
+const shuffled=shuffle([...m]);
+pvState={words:shuffled,allWords:all||items,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+document.getElementById('pvq-total').textContent=shuffled.length;document.getElementById('pvq-retry-banner').classList.add('hidden');
 showPage('pv-quiz');showPVQQ();updateStreak();
 }
 function showPVQQ(){
@@ -4144,7 +4290,7 @@ ratePVQItem(2);
 function nextPVQ(){pvState.idx++;if(pvState.mode==='particle')showPVPQ();else showPVQQ();}
 function confirmEndPVQuiz(){if(pvState.idx<pvState.words.length||pvState.retryQueue.length>0||pvState.finalQueue.length>0)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endPVQuiz);else endPVQuiz();}
 async function endPVQuiz(){
-const ans=pvState.correct+pvState.wrong;if(ans===0){showPage('home',true);return;}
+const ans=pvState.correct+pvState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((pvState.correct/ans)*100);
 await saveSession({total:ans,correct:pvState.correct,wrong:pvState.wrong,accuracy:acc,mode:'pv-'+pvState.mode,type:'phrasal',duration:Math.round((Date.now()-pvState.start)/1000),uniqueTotal:pvState.originalCount,firstTryCorrect:pvState.firstTryCorrect,firstTryWrong:pvState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=pvState.correct;document.getElementById('qc-wrong').textContent=pvState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
@@ -4688,20 +4834,24 @@ if(!exprs.length){showToast('💬 표현 DB가 비어있습니다!');return;}
 let filtered=exprFormalityFilter==='all'?exprs:exprs.filter(e=>e.Formality===exprFormalityFilter);
 const now=new Date();
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 // ★ FSRS 기반 복습 우선: DUE 60% → WEAK 30% → NEW 10%
 const dueCount=Math.ceil(count*0.6);
 const weakCount=Math.ceil(count*0.3);
 const newCount=count-dueCount-weakCount;
 const dueItems=sortByFSRSPriority(filtered.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-const weakItems=shuffle(filtered.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+const weakItems=shuffle(filtered.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
 const newItems=shuffle(filtered.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
 let selected=[...dueItems,...weakItems,...newItems];
 if(selected.length<count){
   const usedExprs=new Set(selected.map(x=>x.Expression));
-  const remaining=shuffle(filtered.filter(x=>!usedExprs.has(x.Expression))).slice(0,count-selected.length);
+  // ★ 핵심: nextReview가 미래인 단어 제외!
+  const remaining=shuffle(filtered.filter(x=>!usedExprs.has(x.Expression)&&isAvailable(x))).slice(0,count-selected.length);
   selected=[...selected,...remaining];
 }
-if(!selected.length){showToast('✅ 학습할 표현이 없습니다!');return;}
+console.log('[ExprFC] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:filtered.filter(isAvailable).length});
+if(!selected.length){showToast('✅ 오늘 학습할 표현이 없습니다!');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
 document.getElementById('expr-fc-total').textContent=selected.length;
@@ -4715,20 +4865,24 @@ let valid=exprs.filter(e=>{const ex=getEx(e);return ex&&ex.toLowerCase().include
 if(!valid.length){showToast('✅ 빈칸채우기 가능한 표현이 없습니다!');return;}
 const now=new Date();
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 // ★ FSRS 기반 복습 우선: DUE 60% → WEAK 30% → NEW 10%
 const dueCount=Math.ceil(count*0.6);
 const weakCount=Math.ceil(count*0.3);
 const newCount=count-dueCount-weakCount;
 const dueItems=sortByFSRSPriority(valid.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-const weakItems=shuffle(valid.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+const weakItems=shuffle(valid.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
 const newItems=shuffle(valid.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
 let selected=[...dueItems,...weakItems,...newItems];
 if(selected.length<count){
   const usedExprs=new Set(selected.map(x=>x.Expression));
-  const remaining=shuffle(valid.filter(x=>!usedExprs.has(x.Expression))).slice(0,count-selected.length);
+  // ★ 핵심: nextReview가 미래인 단어 제외!
+  const remaining=shuffle(valid.filter(x=>!usedExprs.has(x.Expression)&&isAvailable(x))).slice(0,count-selected.length);
   selected=[...selected,...remaining];
 }
-if(selected.length<5){showToast('⚠️ 학습할 빈칸채우기가 부족합니다');return;}
+console.log('[ExprCloze] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:valid.filter(isAvailable).length});
+if(selected.length<5){showToast('⚠️ 오늘 학습할 빈칸채우기가 부족합니다');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
 document.getElementById('expr-cloze-total').textContent=selected.length;
@@ -4741,20 +4895,24 @@ let filtered=exprFormalityFilter==='all'?valid:valid.filter(e=>e.Formality===exp
 if(filtered.length<5){showToast('⚠️ 학습할 표현이 부족합니다');return;}
 const now=new Date();
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 // ★ FSRS 기반 복습 우선: DUE 60% → WEAK 30% → NEW 10%
 const dueCount=Math.ceil(count*0.6);
 const weakCount=Math.ceil(count*0.3);
 const newCount=count-dueCount-weakCount;
 const dueItems=sortByFSRSPriority(filtered.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-const weakItems=shuffle(filtered.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+const weakItems=shuffle(filtered.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
 const newItems=shuffle(filtered.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
 let selected=[...dueItems,...weakItems,...newItems];
 if(selected.length<count){
   const usedExprs=new Set(selected.map(x=>x.Expression));
-  const remaining=shuffle(filtered.filter(x=>!usedExprs.has(x.Expression))).slice(0,count-selected.length);
+  // ★ 핵심: nextReview가 미래인 단어 제외!
+  const remaining=shuffle(filtered.filter(x=>!usedExprs.has(x.Expression)&&isAvailable(x))).slice(0,count-selected.length);
   selected=[...selected,...remaining];
 }
-if(selected.length<5){showToast('⚠️ 학습할 표현이 부족합니다');return;}
+console.log('[ExprQuizQuick] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:filtered.filter(isAvailable).length});
+if(selected.length<5){showToast('⚠️ 오늘 학습할 표현이 부족합니다');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
 document.getElementById('expr-quiz-total').textContent=selected.length;
@@ -4809,20 +4967,24 @@ const now=new Date();
 const valid=exprs.filter(e=>{const ex=getEx(e);return ex&&ex.toLowerCase().includes(e.Expression.toLowerCase().split(' ')[0]);});
 if(valid.length<5){showToast('⚠️ 빈칸채우기 가능한 표현이 부족합니다');return;}
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 // ★ FSRS 기반 복습 우선: DUE 60% → WEAK 30% → NEW 10%
 const dueCount=Math.ceil(count*0.6);
 const weakCount=Math.ceil(count*0.3);
 const newCount=count-dueCount-weakCount;
 const dueItems=sortByFSRSPriority(valid.filter(x=>x.nextReview&&new Date(x.nextReview)<=now),now).slice(0,dueCount);
-const weakItems=shuffle(valid.filter(x=>isWeak(x)&&!(x.nextReview&&new Date(x.nextReview)<=now))).slice(0,weakCount);
+const weakItems=shuffle(valid.filter(x=>isWeak(x)&&isAvailable(x)&&!dueItems.includes(x))).slice(0,weakCount);
 const newItems=shuffle(valid.filter(x=>!x.reviewCount||x.reviewCount===0)).slice(0,newCount);
 let selected=[...dueItems,...weakItems,...newItems];
 if(selected.length<count){
   const usedExprs=new Set(selected.map(x=>x.Expression));
-  const remaining=shuffle(valid.filter(x=>!usedExprs.has(x.Expression))).slice(0,count-selected.length);
+  // ★ 핵심: nextReview가 미래인 단어 제외!
+  const remaining=shuffle(valid.filter(x=>!usedExprs.has(x.Expression)&&isAvailable(x))).slice(0,count-selected.length);
   selected=[...selected,...remaining];
 }
-if(selected.length<5){showToast('⚠️ 학습할 빈칸채우기가 부족합니다');return;}
+console.log('[ExprClozeQuick] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:valid.filter(isAvailable).length});
+if(selected.length<5){showToast('⚠️ 오늘 학습할 빈칸채우기가 부족합니다');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
 document.getElementById('expr-cloze-total').textContent=selected.length;
@@ -4975,8 +5137,9 @@ if(!e.isRetry){
 if(!e.isRetry&&exprState.completedKeys){
   exprState.completedKeys.add(e.Expression);
 }
-// 6. Hard/Again 시 needsProduction 자동 설정
-if(r<=1)e.needsProduction=true;
+// 6. 산출 연습 상태 업데이트 (공통 함수)
+const prodResultExpr = updateProductionStatus(e, r>=2, 'expr-fc');
+if(prodResultExpr.shouldToast) showToast(prodResultExpr.message);
 // 5. 세션 내 재학습: 오답 시 5~7문제 후 재출제
 if(r===0&&exprState.phase==='normal'){
 const insertIdx=Math.min(exprState.idx+5+Math.floor(Math.random()*3),exprState.words.length);
@@ -4991,7 +5154,7 @@ const fresh=await getExpr(e.Expression);
 if(fresh){
 fresh.reviewCount=(fresh.reviewCount||0)+1;
 if(r>=2)fresh.correctCount=(fresh.correctCount||0)+1;
-if(r<=1)fresh.needsProduction=true;
+// ★ 산출 연습 상태 업데이트 (공통 함수, e에서 이미 처리됨)
 updateMastery(fresh,r>=2);
 updateInputOutput(fresh,false,r>=2); // ★ Expr 플래시카드 = 인풋 모드
 Object.assign(fresh,calcNext(fresh,r));
@@ -5018,7 +5181,7 @@ else endExprFC();
 async function endExprFC(skip){
 if(exprState.timer){clearInterval(exprState.timer);exprState.timer=null;}
 const total=exprState.stats.again+exprState.stats.hard+exprState.stats.good+exprState.stats.easy;
-if(total===0||skip){showPage('home',true);showToast('학습이 취소되었습니다');return;}
+if(total===0||skip){showPage(studyStartPage,true);showToast('학습이 취소되었습니다');return;}
 const known=exprState.stats.good+exprState.stats.easy;
 const acc=Math.round((known/total)*100);
 await saveSession({total:total,accuracy:acc,mode:'expr-fc',type:'expr',stats:exprState.stats,duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
@@ -5191,7 +5354,7 @@ else endExprQuiz();
 }
 async function endExprQuiz(){
 const total=exprState.correct+exprState.wrong;
-if(!total){showPage('home',true);return;}
+if(!total){showPage(studyStartPage,true);return;}
 const acc=Math.round((exprState.correct/total)*100);
 await saveSession({total,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-quiz',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
 document.getElementById('qc-total').textContent=total;
@@ -5427,7 +5590,7 @@ function skipExprClozeRating(){
 rateExprClozeItem(2);
 }
 async function endExprCloze(){
-const ans=exprState.correct+exprState.wrong;if(!ans){showPage('home',true);return;}
+const ans=exprState.correct+exprState.wrong;if(!ans){showPage(studyStartPage,true);return;}
 const acc=Math.round((exprState.correct/ans)*100);
 await saveSession({total:ans,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-cloze',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=exprState.correct;document.getElementById('qc-wrong').textContent=exprState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
@@ -5478,20 +5641,22 @@ await openExprEditModal(e.Expression);
 // === 표현 쓰기 모드 ===
 // ★ exprTypingState는 상단에서 선언됨 (중복 제거)
 function showExprTypingQ(){
+try{
 // ★ 재출제 로직
 if(exprTypingState.idx>=exprTypingState.words.length){
   if(exprTypingState.retryQueue.length>0&&exprTypingState.phase==='normal'){
     exprTypingState.words=[...exprTypingState.retryQueue];exprTypingState.retryQueue=[];exprTypingState.idx=0;exprTypingState.phase='retry';
-    document.getElementById('expr-typing-retry-banner').classList.remove('hidden');
-    document.getElementById('expr-typing-retry-count').textContent=exprTypingState.words.length;
+    document.getElementById('expr-typing-retry-banner')?.classList.remove('hidden');
+    const retryCount=document.getElementById('expr-typing-retry-count');if(retryCount)retryCount.textContent=exprTypingState.words.length;
     showToast('🔄 오답 '+exprTypingState.words.length+'개 재출제!');
   }else if(exprTypingState.finalQueue.length>0&&exprTypingState.phase==='retry'){
     exprTypingState.words=[...exprTypingState.finalQueue];exprTypingState.finalQueue=[];exprTypingState.idx=0;exprTypingState.phase='final';
-    document.getElementById('expr-typing-retry-count').textContent=exprTypingState.words.length;
+    const retryCount=document.getElementById('expr-typing-retry-count');if(retryCount)retryCount.textContent=exprTypingState.words.length;
     showToast('⚠️ 최종 '+exprTypingState.words.length+'개 재출제!');
   }else{endExprTyping();return;}
 }
 const e=exprTypingState.words[exprTypingState.idx];
+if(!e){endExprTyping();return;} // ★ null 체크
 exprTypingState.hintUsed=false;
 exprTypingState.answered=false;
 // ★ 진행바: 완료된 고유 카드 / 원래 카드 수
@@ -5500,20 +5665,19 @@ document.getElementById('expr-typing-total').textContent=exprTypingState.origina
 document.getElementById('expr-typing-correct').textContent=exprTypingState.correct;
 document.getElementById('expr-typing-wrong').textContent=exprTypingState.wrong;
 document.getElementById('expr-typing-progress').style.width=((exprTypingState.completed/exprTypingState.originalCount)*100)+'%';
-if(exprTypingState.phase!=='normal')document.getElementById('expr-typing-retry-count').textContent=exprTypingState.words.length-exprTypingState.idx;
+if(exprTypingState.phase!=='normal'){const rc=document.getElementById('expr-typing-retry-count');if(rc)rc.textContent=exprTypingState.words.length-exprTypingState.idx;}
 document.getElementById('expr-typing-meaning').textContent=getMKO(e)||'';
 document.getElementById('expr-typing-func').textContent=e.Function||'';
 document.getElementById('expr-typing-formality').textContent=e.Formality?`[${e.Formality}]`:'';
 const ex=getEx(e);
-if(ex){document.getElementById('expr-typing-example').textContent=ex.replace(new RegExp(escapeRegex(e.Expression),'gi'),'_____');document.getElementById('expr-typing-example').classList.remove('hidden');}
-else document.getElementById('expr-typing-example').classList.add('hidden');
-document.getElementById('expr-typing-input').value='';
-document.getElementById('expr-typing-input').disabled=false;
-document.getElementById('expr-typing-input').focus();
-document.getElementById('expr-typing-answer').classList.add('hidden');
-document.getElementById('expr-typing-submit-btn').textContent='확인';
-document.getElementById('expr-typing-submit-btn').onclick=checkExprTyping;
-document.getElementById('expr-typing-hint-btn').disabled=false;
+const exEl=document.getElementById('expr-typing-example');
+if(ex&&exEl){exEl.textContent=ex.replace(new RegExp(escapeRegex(e.Expression||''),'gi'),'_____');exEl.classList.remove('hidden');}
+else if(exEl)exEl.classList.add('hidden');
+const inp=document.getElementById('expr-typing-input');if(inp){inp.value='';inp.disabled=false;inp.focus();}
+document.getElementById('expr-typing-answer')?.classList.add('hidden');
+const btn=document.getElementById('expr-typing-submit-btn');if(btn){btn.textContent='확인';btn.onclick=checkExprTyping;}
+const hintBtn=document.getElementById('expr-typing-hint-btn');if(hintBtn)hintBtn.disabled=false;
+}catch(err){console.error('showExprTypingQ error:',err);showToast('❌ 문제 표시 오류');endExprTyping();}
 }
 function showExprTypingHint(){
 if(exprTypingState.hintUsed)return;
@@ -5526,11 +5690,14 @@ document.getElementById('expr-typing-hint-btn').disabled=true;
 showToast('💡 힌트: '+hint);
 }
 async function checkExprTyping(){
+try{
 if(exprTypingState.answered){exprTypingState.idx++;showExprTypingQ();return;}
 const e=exprTypingState.words[exprTypingState.idx];
+if(!e){showToast('⚠️ 문제 오류');endExprTyping();return;} // ★ null 체크
 // ★ normalizeAnswer 적용 (허용 변이 처리)
-const input=normalizeAnswer(document.getElementById('expr-typing-input').value);
-const correct=normalizeAnswer(e.Expression);
+const inp=document.getElementById('expr-typing-input');
+const input=normalizeAnswer(inp?.value||'');
+const correct=normalizeAnswer(e.Expression||'');
 // ★ Alternatives 지원: ","와 ";" 둘 다 구분자로 허용
 const alternatives=(e.Alternatives||'').split(/[,;]/).map(a=>normalizeAnswer(a)).filter(a=>a);
 const allCorrect=[correct,...alternatives];
@@ -5578,6 +5745,9 @@ if(isCorrect){
 fresh.correctCount=(fresh.correctCount||0)+1;
 updateMastery(fresh,true);
 updateInputOutput(fresh,true,!exprTypingState.hintUsed); // ★ Expr 타이핑 = 아웃풋 모드
+// ★ 산출 연습 상태 업데이트 (공통 함수)
+const prodResult = updateProductionStatus(fresh, !exprTypingState.hintUsed, 'expr-typing');
+if(prodResult.shouldToast) showToast(prodResult.message);
 if(!exprTypingState.hintUsed){
 updateWrong(fresh,true);
 // ★ Free Recall 정답 = Easy(3)
@@ -5589,9 +5759,10 @@ Object.assign(fresh,calcNext(fresh,2)); // 힌트 사용 = Good
 updateMastery(fresh,false);
 updateWrong(fresh,false);
 updateInputOutput(fresh,true,false); // ★ 아웃풋 오답
+// ★ 산출 연습 상태 업데이트 (공통 함수) - 오답이라고 산출 연습 안 감
+updateProductionStatus(fresh, false, 'expr-typing');
 Object.assign(fresh,calcNext(fresh,0)); // Again
 if(fresh.isLeech)showToast('🐌 Leech: '+fresh.Expression);
-fresh.needsProduction=true; // 6. 오답 시 산출 연습 필요 표시
 }
 await saveExpr(fresh);
 Object.assign(e,fresh);
@@ -5600,19 +5771,22 @@ Object.assign(e,fresh);
 document.getElementById('expr-typing-correct').textContent=exprTypingState.correct;
 document.getElementById('expr-typing-wrong').textContent=exprTypingState.wrong;
 document.getElementById('expr-typing-submit-btn').textContent='다음 →';
+}catch(err){console.error('checkExprTyping error:',err);showToast('❌ 확인 오류');}
 }
 function confirmEndExprTyping(){
 if(exprTypingState.idx<exprTypingState.words.length||exprTypingState.retryQueue.length>0||exprTypingState.finalQueue.length>0){
-  if(confirm('남은 문제가 있습니다. 종료하시겠습니까?'))endExprTyping();
+  showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endExprTyping);
 }else endExprTyping();
 }
 async function endExprTyping(){
-const ans=exprTypingState.correct+exprTypingState.wrong;if(!ans){showPage('home',true);return;}
+try{
+const ans=exprTypingState.correct+exprTypingState.wrong;if(!ans){showPage(studyStartPage,true);return;}
 const acc=Math.round((exprTypingState.correct/ans)*100);
-await saveSession({total:ans,correct:exprTypingState.correct,wrong:exprTypingState.wrong,accuracy:acc,mode:'expr-typing',type:'expr',duration:Math.round((Date.now()-exprTypingState.start)/1000),uniqueTotal:exprTypingState.originalCount,firstTryCorrect:exprTypingState.firstTryCorrect,firstTryWrong:exprTypingState.firstTryWrong});
+await saveSession({total:ans,correct:exprTypingState.correct,wrong:exprTypingState.wrong,accuracy:acc,mode:'expr-typing',type:'expr',duration:Math.round((Date.now()-(exprTypingState.start||Date.now()))/1000),uniqueTotal:exprTypingState.originalCount,firstTryCorrect:exprTypingState.firstTryCorrect,firstTryWrong:exprTypingState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=exprTypingState.correct;document.getElementById('qc-wrong').textContent=exprTypingState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
-document.getElementById('qc-wrong-info').classList.add('hidden');
+document.getElementById('qc-wrong-info')?.classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
+}catch(e){console.error('endExprTyping error:',e);showPage(studyStartPage,true);showToast('❌ 종료 처리 오류');}
 }
 // 학습 설정에서 표현 학습 시작
 async function startExprStudySession(){
@@ -5742,6 +5916,7 @@ const dbP=document.getElementById('due-badge-pv');if(dbP){if(dueP>0){dbP.textCon
 document.getElementById('expr-stat-total').textContent=e.length;document.getElementById('expr-stat-mastered').textContent=e.filter(x=>(x.mastery||0)>=80).length;document.getElementById('expr-stat-weak').textContent=e.filter(x=>isWeak(x)).length;document.getElementById('expr-stat-due').textContent=e.filter(x=>x.nextReview&&new Date(x.nextReview)<=now).length;
 const wE=e.filter(x=>isWrong(x)).length,bE=document.getElementById('wrong-badge-expr');if(wE>0){bE.textContent=wE;bE.classList.remove('hidden');}else bE.classList.add('hidden');
 const sE=e.filter(x=>x.starred).length;document.getElementById('star-badge-expr').textContent=sE;
+const pE=e.filter(x=>x.needsProduction).length,pbE=document.getElementById('prod-badge-expr');if(pbE){if(pE>0){pbE.textContent=pE;pbE.classList.remove('hidden');}else pbE.classList.add('hidden');}
 // ★ 새 단어 뱃지 (표현): 오늘 추가된 것
 const newE=e.filter(x=>x.addedDate&&new Date(x.addedDate).toDateString()===today&&(!x.reviewCount||x.reviewCount===0)).length;
 const nbE=document.getElementById('new-badge-expr');if(nbE){if(newE>0){nbE.textContent=newE;nbE.classList.remove('hidden');}else nbE.classList.add('hidden');}
@@ -6228,6 +6403,8 @@ document.getElementById('expr-edit-example1').value=e.Example1||'';
 document.getElementById('expr-edit-example2').value=e.Example2||'';
 document.getElementById('expr-edit-similar').value=e.Similar_Expr||'';
 document.getElementById('expr-edit-coca').value=e.COCA_Genre||'';
+document.getElementById('expr-edit-toefl').value=e.TOEFL_Rel||'';
+document.getElementById('expr-edit-priority').value=e.Priority||'';
 document.getElementById('expr-edit-l1').value=e.L1||'';
 document.getElementById('expr-edit-l2').value=e.L2||'';
 document.getElementById('expr-edit-l3').value=e.L3||'';
@@ -6264,6 +6441,8 @@ editingExpr.Example1=document.getElementById('expr-edit-example1').value;
 editingExpr.Example2=document.getElementById('expr-edit-example2').value;
 editingExpr.Similar_Expr=document.getElementById('expr-edit-similar').value;
 editingExpr.COCA_Genre=document.getElementById('expr-edit-coca').value;
+editingExpr.TOEFL_Rel=document.getElementById('expr-edit-toefl').value;
+editingExpr.Priority=document.getElementById('expr-edit-priority').value;
 editingExpr.L1=document.getElementById('expr-edit-l1').value;
 editingExpr.L2=document.getElementById('expr-edit-l2').value;
 editingExpr.L3=document.getElementById('expr-edit-l3').value;
@@ -6895,7 +7074,7 @@ modalUploadZone?.addEventListener('drop',e=>{e.preventDefault();e.stopPropagatio
 // === 데이터 관리 ===
 async function clearDB(store){const name=store==='phrasal_verbs'?'구동사':store==='expressions'?'표현':'어휘';showConfirm(name+' 초기화',name+' 데이터가 삭제됩니다. 계속할까요?',async()=>{const tx=db.transaction([store],'readwrite');tx.objectStore(store).clear();await new Promise(r=>{tx.oncomplete=r;});showToast('🗑️ '+name+' 초기화 완료');updateHomeStats();updateDataPage();});}
 async function resetWrongNotes(){showConfirm('오답노트 초기화','모든 오답 기록이 초기화됩니다. 계속할까요?',async()=>{const w=await getAllWords(),p=await getAllPV();for(const x of w){x.consecutiveWrong=0;x.wrongCount=0;x.lastWrongDate=null;await saveWord(x);}for(const x of p){x.consecutiveWrong=0;x.wrongCount=0;x.lastWrongDate=null;await savePV(x);}showToast('🧹 오답노트 초기화 완료');updateHomeStats();});}
-async function exportAllData(){const w=await getAllWords(),p=await getAllPV(),e=await getAllExpr(),s=await getSessions();const data={words:w,phrasal_verbs:p,expressions:e,sessions:s,exportDate:new Date().toISOString(),version:'7.0'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cems_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();showToast('📥 백업 파일 다운로드');}
+async function exportAllData(){try{const w=await getAllWords(),p=await getAllPV(),e=await getAllExpr(),s=await getSessions();const data={words:w,phrasal_verbs:p,expressions:e,sessions:s,exportDate:new Date().toISOString(),version:'7.0'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cems_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();showToast('📥 백업 파일 다운로드');}catch(e){console.error('exportAllData error:',e);showToast('❌ 백업 실패: '+e.message);}}
 function importData(){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=async ev=>{try{const txt=await ev.target.files[0].text(),data=JSON.parse(txt);if(data.words?.length){const tx=db.transaction('words','readwrite');data.words.forEach(w=>tx.objectStore('words').put(w));await new Promise(r=>{tx.oncomplete=r;});}if(data.phrasal_verbs?.length){const tx=db.transaction('phrasal_verbs','readwrite');data.phrasal_verbs.forEach(p=>tx.objectStore('phrasal_verbs').put(p));await new Promise(r=>{tx.oncomplete=r;});}if(data.expressions?.length){const tx=db.transaction('expressions','readwrite');data.expressions.forEach(e=>tx.objectStore('expressions').put(e));await new Promise(r=>{tx.oncomplete=r;});}if(data.sessions?.length){const tx=db.transaction('sessions','readwrite');data.sessions.forEach(s=>{delete s.id;tx.objectStore('sessions').add(s);});await new Promise(r=>{tx.oncomplete=r;});}showToast('✅ 데이터 복원 완료');updateHomeStats();updateDataPage();}catch(err){console.error(err);showToast('❌ 복원 실패: '+err.message);}};input.click();}
 function resetAllData(){showConfirm('전체 초기화','모든 데이터가 영구 삭제됩니다. 정말 초기화할까요?',()=>{indexedDB.deleteDatabase(DB_NAME);localStorage.clear();showToast('🗑️ 초기화 완료');setTimeout(()=>location.reload(),1000);});}
 
@@ -6918,7 +7097,9 @@ document.getElementById('edit-pv-cefr').value=editingItem.CEFR||'B1';
 document.getElementById('edit-pv-formality').value=editingItem.Formality||'Neutral';
 document.getElementById('edit-pv-currency').value=editingItem.Currency||'Current';
 document.getElementById('edit-pv-medium').value=editingItem.Medium||'Both';
-document.getElementById('edit-pv-coca').value=editingItem.COCA_Genre||'';
+document.getElementById('edit-pv-toefl').value=editingItem.TOEFL_Rel||'';
+document.getElementById('edit-pv-priority').value=editingItem.Priority||'';
+document.getElementById('edit-coca').value=editingItem.COCA_Genre||'';
 document.getElementById('edit-formal-equiv').value=editingItem.Formal_Equivalent||'';
 const pvSyn=editingItem.Synonyms;
 document.getElementById('edit-pv-synonyms').value=Array.isArray(pvSyn)?pvSyn.join(', '):(pvSyn||'');
@@ -6932,6 +7113,9 @@ document.getElementById('edit-example').value=getEx(editingItem)||'';
 document.getElementById('edit-pos').value=editingItem.POS||'';
 document.getElementById('edit-l2').value=editingItem.L2||'Core';
 document.getElementById('edit-cefr').value=editingItem.CEFR||'B1';
+document.getElementById('edit-toefl').value=editingItem.TOEFL_Rel||'';
+document.getElementById('edit-freq').value=editingItem.Frequency||'';
+document.getElementById('edit-priority').value=editingItem.Priority||'';
 document.getElementById('edit-coca').value=editingItem.COCA_Genre||'';
 document.getElementById('edit-formality').value=editingItem.Formality||'Neutral';
 document.getElementById('edit-currency').value=editingItem.Currency||'Current';
@@ -6983,7 +7167,9 @@ editingItem.CEFR=document.getElementById('edit-pv-cefr').value;
 editingItem.Formality=document.getElementById('edit-pv-formality').value;
 editingItem.Currency=document.getElementById('edit-pv-currency').value;
 editingItem.Medium=document.getElementById('edit-pv-medium').value;
-editingItem.COCA_Genre=document.getElementById('edit-pv-coca').value;
+editingItem.TOEFL_Rel=document.getElementById('edit-pv-toefl').value;
+editingItem.Priority=document.getElementById('edit-pv-priority').value;
+editingItem.COCA_Genre=document.getElementById('edit-coca').value;
 editingItem.Formal_Equivalent=document.getElementById('edit-formal-equiv').value;
 const pvSynStr=document.getElementById('edit-pv-synonyms').value.trim();
 editingItem.Synonyms=pvSynStr?pvSynStr.split(',').map(s=>s.trim()).filter(s=>s):[];
@@ -7009,6 +7195,9 @@ editingItem.L2=l2;
 editingItem.L1=l1;
 editingItem.L0=L1_DOMAIN[l1]||'Academic';
 editingItem.CEFR=document.getElementById('edit-cefr').value;
+editingItem.TOEFL_Rel=document.getElementById('edit-toefl').value;
+editingItem.Frequency=document.getElementById('edit-freq').value;
+editingItem.Priority=document.getElementById('edit-priority').value;
 editingItem.COCA_Genre=document.getElementById('edit-coca').value;
 editingItem.Formality=document.getElementById('edit-formality').value;
 editingItem.Currency=document.getElementById('edit-currency').value;
@@ -7677,7 +7866,11 @@ const rr=localStorage.getItem('requestRetention')||'90';
 FSRS.requestRetention=parseInt(rr)/100;
 document.getElementById('setting-retention').value=rr;
 try{await openDB();await updateHomeStats();}catch(e){console.error('Init error:',e);showToast('❌ 초기화 오류: '+e.message);}
-setTimeout(()=>document.getElementById('splash').classList.add('hidden'),800);
+// 로딩 완료 후 하단 네비 및 앱 표시
+setTimeout(()=>{
+  document.getElementById('splash').classList.add('hidden');
+  document.querySelector('.bottom-nav')?.classList.add('visible');
+},800);
 }
 
 // ========== 오늘 학습 & 붙여넣기 ==========
