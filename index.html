@@ -99,14 +99,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--muted)">전체 <span id="daily-done">0</span> / <span id="daily-target">40</span>개</span><span id="daily-percent" style="font-size:18px;font-weight:700;color:var(--primary)">0%</span></div></div>
 <div class="type-tabs"><div class="type-tab active" data-type="vocab" onclick="switchGlobalType('vocab')">📖 어휘</div><div class="type-tab phrasal" data-type="phrasal" onclick="switchGlobalType('phrasal')">🔗 구동사</div><div class="type-tab expr" data-type="expr" onclick="switchGlobalType('expr')">💬 표현</div></div>
 <div id="home-vocab">
-<div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between">⚡ 빠른 시작<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:normal;color:var(--muted)"><span>🎯필터</span><div class="filter-toggle" id="quick-filter-vocab" onclick="toggleQuickFilter('vocab')"></div></div></div><div class="quick-actions"><div class="quick-action" onclick="safeStart(()=>quickStartMode('vocab','flashcard'))"><div class="quick-action-icon">🃏</div><div class="quick-action-label">플래시카드</div><span class="quick-action-badge hidden" id="due-badge-vocab" style="background:var(--primary)">0</span></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('vocab','quiz'))"><div class="quick-action-icon">❓</div><div class="quick-action-label">5지선다</div></div><div class="quick-action" onclick="safeStart(()=>startProductionStudy('vocab'))"><div class="quick-action-icon">🖊️</div><div class="quick-action-label">산출 연습</div><span class="quick-action-badge hidden" id="prod-badge-vocab">0</span></div><div class="quick-action" onclick="safeStart(()=>startWrongReview('vocab'))"><div class="quick-action-icon">📝</div><div class="quick-action-label">오답노트</div><span class="quick-action-badge hidden" id="wrong-badge-vocab">0</span></div></div></div>
+<div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between">⚡ 빠른 시작<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:normal;color:var(--muted)"><span>🎯필터</span><div class="filter-toggle" id="quick-filter-vocab" onclick="toggleQuickFilter('vocab')"></div></div></div><div class="quick-actions"><div class="quick-action" onclick="safeStart(()=>quickStartMode('vocab','flashcard'))"><div class="quick-action-icon">🃏</div><div class="quick-action-label">플래시카드</div><span class="quick-action-badge hidden" id="due-badge-vocab">0</span></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('vocab','quiz'))"><div class="quick-action-icon">❓</div><div class="quick-action-label">5지선다</div></div><div class="quick-action" onclick="safeStart(()=>startProductionStudy('vocab'))"><div class="quick-action-icon">🖊️</div><div class="quick-action-label">산출 연습</div><span class="quick-action-badge hidden" id="prod-badge-vocab">0</span></div><div class="quick-action" onclick="safeStart(()=>startWrongReview('vocab'))"><div class="quick-action-icon">📝</div><div class="quick-action-label">오답노트</div><span class="quick-action-badge hidden" id="wrong-badge-vocab">0</span></div></div></div>
 <div class="card"><div class="card-title">🆕 새 단어 & ⭐ 북마크</div>
 <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-<button class="btn btn-primary" onclick="safeStart(()=>startNewWordsStudy('vocab'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;position:relative">🆕 신규 학습<span class="quick-action-badge hidden" id="new-badge-vocab" style="background:var(--warning)">0</span></button>
+<button class="btn" onclick="safeStart(()=>startNewWordsStudy('vocab'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;position:relative;background:rgba(99,102,241,0.25);color:#fff;border:1px solid rgba(99,102,241,0.4)">🆕 신규 학습<span class="quick-action-badge hidden" id="new-badge-vocab">0</span></button>
 <button class="btn btn-secondary" onclick="safeStart(()=>startStarredStudy('vocab'))" style="width:auto;min-width:50px;height:44px;flex:0 0 auto;padding:0 12px;font-size:14px;border-radius:12px" title="⭐ 북마크 학습">⭐ <span id="star-badge-vocab">0</span></button>
 <select class="form-select" id="home-tag-select" onchange="startTagStudy('vocab')" style="width:100px;flex:0 0 auto;height:44px;font-size:14px"><option value="">🏷️ 태그</option></select>
 </div>
-<div style="display:flex;gap:8px;align-items:center"><button class="btn btn-primary" onclick="openPasteModal('vocab')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px">➕ 추가</button><input type="text" id="quick-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')quickSearch()"><button class="btn btn-secondary" onclick="quickSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
+<div style="display:flex;gap:8px;align-items:center"><button class="btn" onclick="openPasteModal('vocab')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(99,102,241,0.25);color:#fff;border:1px solid rgba(99,102,241,0.4)">➕ 추가</button><input type="text" id="quick-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')quickSearch()"><button class="btn btn-secondary" onclick="quickSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
 <div id="quick-search-result" style="display:none;background:var(--bg);border-radius:12px;padding:12px;margin-top:12px;position:relative">
 <button onclick="document.getElementById('quick-search-result').style.display='none'" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted)">✕</button>
 <div id="quick-search-found" style="display:none">
@@ -132,14 +132,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="card"><div class="card-title">📊 어휘 현황</div><div class="stat-grid"><div class="stat-item"><div class="stat-value" id="stat-total">0</div><div class="stat-label">전체</div></div><div class="stat-item"><div class="stat-value success" id="stat-mastered">0</div><div class="stat-label">마스터</div></div><div class="stat-item" onclick="showWeakWords('vocab')"><div class="stat-value warning" id="stat-weak">0</div><div class="stat-label">취약</div></div><div class="stat-item" onclick="safeStart(()=>startReviewDue('vocab'))"><div class="stat-value danger" id="stat-due">0</div><div class="stat-label">복습</div></div></div></div>
 </div>
 <div id="home-phrasal" class="hidden">
-<div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between">⚡ 빠른 시작<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:normal;color:var(--muted)"><span>🎯필터</span><div class="filter-toggle" id="quick-filter-phrasal" onclick="toggleQuickFilter('phrasal')"></div></div></div><div class="quick-actions"><div class="quick-action" onclick="safeStart(()=>quickStartMode('phrasal','pv-flashcard'))"><div class="quick-action-icon">🃏</div><div class="quick-action-label">플래시카드</div><span class="quick-action-badge hidden" id="due-badge-pv" style="background:var(--phrasal)">0</span></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('phrasal','pv-particle'))"><div class="quick-action-icon">🧩</div><div class="quick-action-label">Particle</div></div><div class="quick-action" onclick="safeStart(()=>startProductionStudy('phrasal'))"><div class="quick-action-icon">🖊️</div><div class="quick-action-label">산출 연습</div><span class="quick-action-badge hidden" id="prod-badge-pv">0</span></div><div class="quick-action" onclick="safeStart(()=>startWrongReview('phrasal'))"><div class="quick-action-icon">📝</div><div class="quick-action-label">오답노트</div><span class="quick-action-badge hidden" id="wrong-badge-pv">0</span></div></div></div>
+<div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between">⚡ 빠른 시작<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:normal;color:var(--muted)"><span>🎯필터</span><div class="filter-toggle" id="quick-filter-phrasal" onclick="toggleQuickFilter('phrasal')"></div></div></div><div class="quick-actions"><div class="quick-action" onclick="safeStart(()=>quickStartMode('phrasal','pv-flashcard'))"><div class="quick-action-icon">🃏</div><div class="quick-action-label">플래시카드</div><span class="quick-action-badge hidden" id="due-badge-pv">0</span></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('phrasal','pv-particle'))"><div class="quick-action-icon">🧩</div><div class="quick-action-label">Particle</div></div><div class="quick-action" onclick="safeStart(()=>startProductionStudy('phrasal'))"><div class="quick-action-icon">🖊️</div><div class="quick-action-label">산출 연습</div><span class="quick-action-badge hidden" id="prod-badge-pv">0</span></div><div class="quick-action" onclick="safeStart(()=>startWrongReview('phrasal'))"><div class="quick-action-icon">📝</div><div class="quick-action-label">오답노트</div><span class="quick-action-badge hidden" id="wrong-badge-pv">0</span></div></div></div>
 <div class="card"><div class="card-title">🆕 새 단어 & ⭐ 북마크</div>
 <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-<button class="btn btn-primary" onclick="safeStart(()=>startNewWordsStudy('phrasal'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--phrasal);position:relative">🆕 신규 학습<span class="quick-action-badge hidden" id="new-badge-pv" style="background:var(--warning)">0</span></button>
+<button class="btn" onclick="safeStart(()=>startNewWordsStudy('phrasal'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;position:relative;background:rgba(236,72,153,0.25);color:#fff;border:1px solid rgba(236,72,153,0.4)">🆕 신규 학습<span class="quick-action-badge hidden" id="new-badge-pv">0</span></button>
 <button class="btn btn-secondary" onclick="safeStart(()=>startStarredStudy('phrasal'))" style="width:auto;min-width:50px;height:44px;flex:0 0 auto;padding:0 12px;font-size:14px;border-radius:12px" title="⭐ 북마크 학습">⭐ <span id="star-badge-pv">0</span></button>
 <select class="form-select" id="home-pv-tag-select" onchange="startTagStudy('phrasal')" style="width:100px;flex:0 0 auto;height:44px;font-size:14px"><option value="">🏷️ 태그</option></select>
 </div>
-<div style="display:flex;gap:8px;align-items:center"><button class="btn btn-primary" onclick="openPasteModal('phrasal')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:var(--phrasal)">➕ 추가</button><input type="text" id="pv-quick-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')pvQuickSearch()"><button class="btn btn-secondary" onclick="pvQuickSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
+<div style="display:flex;gap:8px;align-items:center"><button class="btn" onclick="openPasteModal('phrasal')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(236,72,153,0.25);color:#fff;border:1px solid rgba(236,72,153,0.4)">➕ 추가</button><input type="text" id="pv-quick-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')pvQuickSearch()"><button class="btn btn-secondary" onclick="pvQuickSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
 <div id="pv-quick-search-result" style="display:none;background:var(--bg);border-radius:12px;padding:12px;margin-top:12px;position:relative">
 <button onclick="document.getElementById('pv-quick-search-result').style.display='none'" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted)">✕</button>
 <div id="pv-qs-found" style="display:none">
@@ -166,14 +166,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="card"><div class="card-title">🔗 구동사 현황</div><div class="stat-grid"><div class="stat-item"><div class="stat-value phrasal" id="pv-stat-total">0</div><div class="stat-label">전체</div></div><div class="stat-item"><div class="stat-value success" id="pv-stat-mastered">0</div><div class="stat-label">마스터</div></div><div class="stat-item" onclick="showWeakWords('phrasal')"><div class="stat-value warning" id="pv-stat-weak">0</div><div class="stat-label">취약</div></div><div class="stat-item" onclick="safeStart(()=>startReviewDue('phrasal'))"><div class="stat-value danger" id="pv-stat-due">0</div><div class="stat-label">복습</div></div></div></div>
 </div>
 <div id="home-expr" class="hidden">
-<div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between">⚡ 빠른 시작<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:normal;color:var(--muted)"><span>🎯필터</span><div class="filter-toggle" id="quick-filter-expr" onclick="toggleQuickFilter('expr')"></div></div></div><div class="quick-actions"><div class="quick-action" onclick="safeStart(()=>quickStartMode('expr','expr-fc'))"><div class="quick-action-icon">🃏</div><div class="quick-action-label">플래시카드</div><span class="quick-action-badge hidden" id="due-badge-expr" style="background:var(--expr)">0</span></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('expr','expr-quiz'))"><div class="quick-action-icon">❓</div><div class="quick-action-label">5지선다</div></div><div class="quick-action" onclick="safeStart(()=>startProductionStudy('expr'))"><div class="quick-action-icon">🖊️</div><div class="quick-action-label">산출 연습</div><span class="quick-action-badge hidden" id="prod-badge-expr" style="background:var(--success)">0</span></div><div class="quick-action" onclick="safeStart(startExprWrong)"><div class="quick-action-icon">📝</div><div class="quick-action-label">오답노트</div><span class="quick-action-badge hidden" id="wrong-badge-expr">0</span></div></div></div>
+<div class="card"><div class="card-title" style="display:flex;align-items:center;justify-content:space-between">⚡ 빠른 시작<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:normal;color:var(--muted)"><span>🎯필터</span><div class="filter-toggle" id="quick-filter-expr" onclick="toggleQuickFilter('expr')"></div></div></div><div class="quick-actions"><div class="quick-action" onclick="safeStart(()=>quickStartMode('expr','expr-fc'))"><div class="quick-action-icon">🃏</div><div class="quick-action-label">플래시카드</div><span class="quick-action-badge hidden" id="due-badge-expr">0</span></div><div class="quick-action" onclick="safeStart(()=>quickStartMode('expr','expr-quiz'))"><div class="quick-action-icon">❓</div><div class="quick-action-label">5지선다</div></div><div class="quick-action" onclick="safeStart(()=>startProductionStudy('expr'))"><div class="quick-action-icon">🖊️</div><div class="quick-action-label">산출 연습</div><span class="quick-action-badge hidden" id="prod-badge-expr">0</span></div><div class="quick-action" onclick="safeStart(startExprWrong)"><div class="quick-action-icon">📝</div><div class="quick-action-label">오답노트</div><span class="quick-action-badge hidden" id="wrong-badge-expr">0</span></div></div></div>
 <div class="card"><div class="card-title">🆕 새 단어 & ⭐ 북마크</div>
 <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-<button class="btn btn-primary" onclick="safeStart(()=>startNewWordsStudy('expr'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--expr);position:relative">🆕 신규 학습<span class="quick-action-badge hidden" id="new-badge-expr" style="background:var(--warning)">0</span></button>
+<button class="btn" onclick="safeStart(()=>startNewWordsStudy('expr'))" style="flex:1;height:44px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;position:relative;background:rgba(249,115,22,0.25);color:#fff;border:1px solid rgba(249,115,22,0.4)">🆕 신규 학습<span class="quick-action-badge hidden" id="new-badge-expr">0</span></button>
 <button class="btn btn-secondary" onclick="safeStart(startExprStarred)" style="width:auto;min-width:50px;height:44px;flex:0 0 auto;padding:0 12px;font-size:14px;border-radius:12px" title="⭐ 북마크 학습">⭐ <span id="star-badge-expr">0</span></button>
 <select class="form-select" id="home-expr-tag-select" onchange="safeStart(startExprTagStudy)" style="width:100px;flex:0 0 auto;height:44px;font-size:14px"><option value="">🏷️ 태그</option></select>
 </div>
-<div style="display:flex;gap:8px;align-items:center"><button class="btn btn-primary" onclick="openPasteModal('expr')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:var(--expr)">➕ 추가</button><input type="text" id="expr-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')exprSearch()"><button class="btn btn-secondary" onclick="exprSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
+<div style="display:flex;gap:8px;align-items:center"><button class="btn" onclick="openPasteModal('expr')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(249,115,22,0.25);color:#fff;border:1px solid rgba(249,115,22,0.4)">➕ 추가</button><input type="text" id="expr-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')exprSearch()"><button class="btn btn-secondary" onclick="exprSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
 <div id="expr-search-result" style="display:none;background:var(--bg);border-radius:12px;padding:12px;margin-top:12px;position:relative">
 <button onclick="document.getElementById('expr-search-result').style.display='none'" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted)">✕</button>
 <div id="expr-qs-found" style="display:none">
@@ -207,17 +207,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="study-vocab">
 <div class="card"><div class="card-title">🎮 학습 모드</div><div class="mode-selector"><div class="mode-card active" data-mode="flashcard" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div><div class="mode-card-desc">카드 뒤집기</div></div><div class="mode-card" data-mode="quiz" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">❓</div><div class="mode-card-title">5지선다</div><div class="mode-card-desc">의미 맞추기</div></div></div><div class="mode-selector"><div class="mode-card" data-mode="reverse" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🔄</div><div class="mode-card-title">역방향</div><div class="mode-card-desc">뜻→영어</div></div><div class="mode-card" data-mode="typing" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">⌨️</div><div class="mode-card-title">타이핑</div><div class="mode-card-desc">스펠링</div></div></div><div class="mode-selector"><div class="mode-card" data-mode="cloze" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">📝</div><div class="mode-card-title">빈칸채우기</div><div class="mode-card-desc">문장 완성</div></div><div class="mode-card" data-mode="collocation" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🔗</div><div class="mode-card-title">Collocation</div><div class="mode-card-desc">연어 학습</div></div></div><div class="mode-selector"><div class="mode-card" data-mode="listening" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🎧</div><div class="mode-card-title">리스닝</div><div class="mode-card-desc">듣고 뜻 맞추기</div></div><div class="mode-card" data-mode="dictation" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">✍️</div><div class="mode-card-title">받아쓰기</div><div class="mode-card-desc">듣고 스펠링</div></div></div></div>
 <div class="card"><div class="card-title">📝 학습 분량</div><div class="range-container"><input type="range" class="range-slider" id="study-count" min="5" max="20" value="20" step="1" oninput="document.getElementById('study-count-val').textContent=this.value"><div class="range-value"><span id="study-count-val">20</span>개</div></div></div>
-<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">📊 빈도</label><div class="chip-multi chip-small" id="filter-freq"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="K1">K1</span><span class="chip" data-value="K2">K2</span><span class="chip" data-value="K3">K3</span><span class="chip" data-value="K4">K4</span><span class="chip" data-value="K5">K5</span><span class="chip" data-value="K6">K6</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도 (Formality)</label><div class="chip-multi chip-small" id="filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성 (Currency)</label><div class="chip-multi chip-small" id="filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체 (Medium)</label><div class="chip-multi chip-small" id="filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group" style="margin-bottom:0"><label class="form-label">📁 카테고리</label><select class="form-select" id="filter-l1"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🏷️ 태그</label><select class="form-select" id="filter-tag"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎓 TOEFL</label><select class="form-select" id="filter-toefl"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📰 COCA</label><select class="form-select" id="filter-coca"><option value="all">전체</option></select></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('vocab')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('vocab')">💾 필터 저장</button></div></div>
+<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">📊 빈도</label><div class="chip-multi chip-small" id="filter-freq"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="K1">K1</span><span class="chip" data-value="K2">K2</span><span class="chip" data-value="K3">K3</span><span class="chip" data-value="K4">K4</span><span class="chip" data-value="K5">K5</span><span class="chip" data-value="K6">K6</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도 (Formality)</label><div class="chip-multi chip-small" id="filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성 (Currency)</label><div class="chip-multi chip-small" id="filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체 (Medium)</label><div class="chip-multi chip-small" id="filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group" style="margin-bottom:0"><label class="form-label">📁 카테고리</label><select class="form-select" id="filter-l1"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎓 TOEFL</label><select class="form-select" id="filter-toefl"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📰 COCA</label><select class="form-select" id="filter-coca"><option value="all">전체</option></select></div></div><div class="form-group" style="margin-top:8px"><label class="form-label">🏷️ 태그</label><div class="chip-multi chip-small" id="filter-tag"><span class="chip checked" data-value="all">전체</span></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('vocab')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('vocab')">💾 필터 저장</button></div></div>
 </div>
 <div id="study-phrasal" class="hidden">
 <div class="card"><div class="card-title">🎮 구동사 학습 모드</div><div class="mode-selector"><div class="mode-card phrasal active" data-mode="pv-flashcard" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div><div class="mode-card-desc">카드 뒤집기</div></div><div class="mode-card phrasal" data-mode="pv-particle" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🧩</div><div class="mode-card-title">Particle</div><div class="mode-card-desc">figure ___?</div></div></div><div class="mode-selector"><div class="mode-card phrasal" data-mode="pv-meaning" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">💡</div><div class="mode-card-title">의미 맞추기</div><div class="mode-card-desc">구동사→뜻</div></div><div class="mode-card phrasal" data-mode="pv-reverse" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🔄</div><div class="mode-card-title">역방향</div><div class="mode-card-desc">뜻→구동사</div></div></div><div class="mode-selector"><div class="mode-card phrasal" data-mode="pv-listening" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🎧</div><div class="mode-card-title">리스닝</div><div class="mode-card-desc">듣고 뜻 맞추기</div></div><div class="mode-card phrasal" data-mode="pv-dictation" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">✍️</div><div class="mode-card-title">받아쓰기</div><div class="mode-card-desc">듣고 스펠링</div></div></div></div>
 <div class="card"><div class="card-title">📝 학습 분량</div><div class="range-container"><input type="range" class="range-slider" id="pv-study-count" min="5" max="20" value="15" step="1" oninput="document.getElementById('pv-study-count-val').textContent=this.value"><div class="range-value"><span id="pv-study-count-val">15</span>개</div></div></div>
-<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="pv-filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="pv-filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="pv-filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도</label><div class="chip-multi chip-small" id="pv-filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성</label><div class="chip-multi chip-small" id="pv-filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체</label><div class="chip-multi chip-small" id="pv-filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div class="form-group"><label class="form-label">📁 카테고리</label><select class="form-select" id="pv-filter-cat"><option value="all">전체</option></select></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('phrasal')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('phrasal')">💾 필터 저장</button></div></div>
+<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="pv-filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="pv-filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="pv-filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도</label><div class="chip-multi chip-small" id="pv-filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성</label><div class="chip-multi chip-small" id="pv-filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체</label><div class="chip-multi chip-small" id="pv-filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div class="form-group"><label class="form-label">📁 카테고리</label><select class="form-select" id="pv-filter-cat"><option value="all">전체</option></select></div><div class="form-group"><label class="form-label">🏷️ 태그</label><div class="chip-multi chip-small" id="pv-filter-tag"><span class="chip checked" data-value="all">전체</span></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('phrasal')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('phrasal')">💾 필터 저장</button></div></div>
 </div>
 <div id="study-expr" class="hidden">
 <div class="card"><div class="card-title">🎮 표현 학습 모드</div><div class="mode-selector"><div class="mode-card expr active" data-mode="expr-fc" onclick="selectMode(this,'expr')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div><div class="mode-card-desc">표현 암기</div></div><div class="mode-card expr" data-mode="expr-quiz" onclick="selectMode(this,'expr')"><div class="mode-card-icon">❓</div><div class="mode-card-title">5지선다</div><div class="mode-card-desc">뜻 맞추기</div></div><div class="mode-card expr" data-mode="expr-cloze" onclick="selectMode(this,'expr')"><div class="mode-card-icon">📝</div><div class="mode-card-title">빈칸채우기</div><div class="mode-card-desc">문맥 학습</div></div><div class="mode-card expr" data-mode="expr-typing" onclick="selectMode(this,'expr')"><div class="mode-card-icon">⌨️</div><div class="mode-card-title">쓰기 연습</div><div class="mode-card-desc">표현 타이핑</div></div></div><div class="mode-selector"><div class="mode-card expr" data-mode="expr-listening" onclick="selectMode(this,'expr')"><div class="mode-card-icon">🎧</div><div class="mode-card-title">리스닝</div><div class="mode-card-desc">듣고 뜻 맞추기</div></div><div class="mode-card expr" data-mode="expr-dictation" onclick="selectMode(this,'expr')"><div class="mode-card-icon">✍️</div><div class="mode-card-title">받아쓰기</div><div class="mode-card-desc">듣고 스펠링</div></div></div></div>
 <div class="card"><div class="card-title">📝 학습 분량</div><div class="range-container"><input type="range" class="range-slider" id="expr-study-count" min="5" max="20" value="20" step="1" oninput="document.getElementById('expr-study-count-val').textContent=this.value"><div class="range-value"><span id="expr-study-count-val">20</span>개</div></div></div>
-<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="expr-filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 표현</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="expr-filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="expr-filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도</label><div class="chip-multi chip-small" id="expr-filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성</label><div class="chip-multi chip-small" id="expr-filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체</label><div class="chip-multi chip-small" id="expr-filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('expr')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('expr')">💾 필터 저장</button></div></div>
+<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="expr-filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 표현</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="expr-filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="expr-filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도</label><div class="chip-multi chip-small" id="expr-filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성</label><div class="chip-multi chip-small" id="expr-filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체</label><div class="chip-multi chip-small" id="expr-filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div class="form-group"><label class="form-label">🏷️ 태그</label><div class="chip-multi chip-small" id="expr-filter-tag"><span class="chip checked" data-value="all">전체</span></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('expr')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('expr')">💾 필터 저장</button></div></div>
 </div>
 <div class="card"><div class="card-title">🔀 순서</div><div class="toggle-row"><span class="toggle-label">학습 순서</span><select class="form-select" id="option-order" style="width:auto"><option value="fsrs">FSRS 우선</option><option value="weak">취약 우선</option><option value="random">랜덤</option></select></div></div>
 </div>
@@ -467,13 +467,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <select id="data-filter-special" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
 <option value="all">전체</option>
 <option value="new-today">📅 오늘 추가</option>
-<option value="duplicate">📑 중복단어(1,2,3)</option>
+<option value="duplicate">📑 중복단어</option>
 <option value="starred">⭐ 북마크</option>
 <option value="wrong">❌ 오답노트</option>
 <option value="no-review">🆕 미학습</option>
 </select>
+<select id="data-filter-cefr" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+<option value="all">📚 CEFR</option>
+<option value="A2">A2</option>
+<option value="B1">B1</option>
+<option value="B2">B2</option>
+<option value="C1">C1</option>
+<option value="C2">C2</option>
+</select>
+<select id="data-filter-priority" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+<option value="all">🎯 우선순위</option>
+<option value="P1">P1</option>
+<option value="P2">P2</option>
+<option value="P3">P3</option>
+</select>
 <select id="data-filter-l2" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
-<option value="all">L2 전체</option>
+<option value="all">📁 L2 도메인</option>
+</select>
+<select id="data-filter-formality" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+<option value="all">👔 격식도</option>
+<option value="Formal">Formal</option>
+<option value="Neutral">Neutral</option>
+<option value="Informal">Informal</option>
+</select>
+<select id="data-filter-currency" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+<option value="all">⏳ 시대성</option>
+<option value="Current">Current</option>
+<option value="Dated">Dated</option>
+<option value="Archaic">Archaic</option>
+</select>
+<select id="data-filter-medium" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+<option value="all">📡 매체</option>
+<option value="Both">Both</option>
+<option value="Written">Written</option>
+<option value="Spoken">Spoken</option>
+</select>
+<select id="tag-filter-container" onchange="filterByTag(this.value)" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
+<option value="all">🏷️ 태그</option>
 </select>
 <select id="data-sort" onchange="applyDataFilter()" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px">
 <option value="alpha">가나다순</option>
@@ -485,7 +520,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <option value="added-desc">최근추가↑</option>
 </select>
 </div>
-<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;font-size:12px" id="tag-filter-container"></div>
 <div class="table-container"><table class="word-table"><thead><tr><th id="col1-h">단어</th><th>뜻</th><th style="width:60px">정답률</th></tr></thead><tbody id="word-table-body"></tbody></table></div><button class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="loadMoreWords()">더 보기</button></div>
 <div class="card" style="padding:12px">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -512,7 +546,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 </div>
 <div class="card"><div class="card-title">📤 엑셀 업로드</div><div class="upload-zone" id="upload-zone"><div class="upload-zone-icon">📄</div><p>탭하거나 파일을 드래그하세요<br><small>Vocabulary / Phrasal_Verbs / Expressions 시트 자동 감지</small></p></div><input type="file" accept=".xlsx,.xls" hidden id="file-input"><div class="upload-result hidden" id="upload-result"></div></div>
-<div class="card"><div class="card-title">⚙️ 데이터 관리</div><button class="btn btn-primary" style="margin-bottom:10px" onclick="exportWithStats()">📊 학습기록 포함 엑셀 Export</button><button class="btn btn-secondary" style="margin-bottom:10px" onclick="exportAllData()">📤 전체 백업 (JSON)</button><button class="btn btn-secondary" style="margin-bottom:10px" onclick="importData()">📥 데이터 복원</button><button class="btn btn-secondary" style="margin-bottom:10px" onclick="resetWrongNotes()">🧹 오답노트 초기화</button><button class="btn btn-secondary" style="margin-bottom:10px;color:var(--warning)" onclick="clearDB('words')">🗑️ 어휘 초기화</button><button class="btn btn-secondary" style="margin-bottom:10px;color:var(--phrasal)" onclick="clearDB('phrasal_verbs')">🗑️ 구동사 초기화</button><button class="btn btn-secondary" style="margin-bottom:10px;color:var(--expr)" onclick="clearDB('expressions')">🗑️ 표현 초기화</button><button class="btn btn-secondary" style="color:var(--danger)" onclick="resetAllData()">⚠️ 전체 초기화</button></div>
+<div class="card"><div class="card-title">⚙️ 데이터 관리</div><button class="btn btn-primary" style="margin-bottom:10px" onclick="exportWithStats()">📊 학습기록 포함 엑셀 Export</button><button class="btn btn-secondary" style="margin-bottom:10px" onclick="exportAllData()">📤 전체 백업 (JSON)</button><button class="btn btn-secondary" style="margin-bottom:10px" onclick="document.getElementById('restore-file-input').click()">📥 데이터 복원</button><input type="file" accept=".json" hidden id="restore-file-input" onchange="handleRestoreFile(this)"><button class="btn btn-secondary" style="margin-bottom:10px" onclick="resetWrongNotes()">🧹 오답노트 초기화</button><button class="btn btn-secondary" style="margin-bottom:10px;color:var(--warning)" onclick="clearDB('words')">🗑️ 어휘 초기화</button><button class="btn btn-secondary" style="margin-bottom:10px;color:var(--phrasal)" onclick="clearDB('phrasal_verbs')">🗑️ 구동사 초기화</button><button class="btn btn-secondary" style="margin-bottom:10px;color:var(--expr)" onclick="clearDB('expressions')">🗑️ 표현 초기화</button><button class="btn btn-secondary" style="color:var(--danger)" onclick="resetAllData()">⚠️ 전체 초기화</button></div>
 </div>
 <!-- 설정 -->
 <div id="page-settings" class="page">
@@ -1501,7 +1535,7 @@ homeExprTagSelect.innerHTML+=`<option value="${t}">${t} (${count})</option>`;
 });
 }
 }
-function updateTagFilters(words,pvs){
+function updateTagFilters(words,pvs,exprs){
 // TOEFL 연관성 필터 동적 업데이트
 const toeflSet=new Set();
 words.forEach(w=>{if(w.TOEFL_Rel)toeflSet.add(w.TOEFL_Rel);});
@@ -1528,27 +1562,35 @@ cocaSelect.innerHTML+=`<option value="${g}">${g} (${count})</option>`;
 });
 cocaSelect.value=current;
 }
-// 태그 필터 동적 업데이트
+// 어휘 태그 필터 동적 업데이트 (chip-multi)
 const vocabTags=new Set();
 words.forEach(w=>(w.tags||[]).forEach(t=>vocabTags.add(t)));
-const tagSelect=document.getElementById('filter-tag');
-if(tagSelect){
-const current=tagSelect.value;
-tagSelect.innerHTML='<option value="all">전체</option>';
-[...vocabTags].sort().forEach(t=>{
-tagSelect.innerHTML+=`<option value="${t}">${t} (${words.filter(w=>(w.tags||[]).includes(t)).length})</option>`;
-});
-tagSelect.value=current;
+const tagContainer=document.getElementById('filter-tag');
+if(tagContainer){
+const tagsArr=[...vocabTags].sort();
+tagContainer.innerHTML='<span class="chip checked" data-value="all">전체</span>'+
+tagsArr.map(t=>`<span class="chip" data-value="${t}">${t}</span>`).join('');
+initChipMultiEvents(tagContainer);
 }
-// 구동사 태그 필터 (있다면)
-const pvTagSelect=document.getElementById('pv-filter-tag');
-if(pvTagSelect){
+// 구동사 태그 필터 (chip-multi)
+const pvTagContainer=document.getElementById('pv-filter-tag');
+if(pvTagContainer&&pvs){
 const pvTags=new Set();
 pvs.forEach(p=>(p.tags||[]).forEach(t=>pvTags.add(t)));
-pvTagSelect.innerHTML='<option value="all">전체</option>';
-[...pvTags].sort().forEach(t=>{
-pvTagSelect.innerHTML+=`<option value="${t}">${t}</option>`;
-});
+const tagsArr=[...pvTags].sort();
+pvTagContainer.innerHTML='<span class="chip checked" data-value="all">전체</span>'+
+tagsArr.map(t=>`<span class="chip" data-value="${t}">${t}</span>`).join('');
+initChipMultiEvents(pvTagContainer);
+}
+// 표현 태그 필터 (chip-multi)
+const exprTagContainer=document.getElementById('expr-filter-tag');
+if(exprTagContainer&&exprs){
+const exprTags=new Set();
+exprs.forEach(e=>(e.tags||[]).forEach(t=>exprTags.add(t)));
+const tagsArr=[...exprTags].sort();
+exprTagContainer.innerHTML='<span class="chip checked" data-value="all">전체</span>'+
+tagsArr.map(t=>`<span class="chip" data-value="${t}">${t}</span>`).join('');
+initChipMultiEvents(exprTagContainer);
 }
 }
 // ★ 오답노트 업데이트 (어휘/구동사/표현 공통)
@@ -1638,6 +1680,8 @@ function getMultiChip(id){
   // ★ UI 상태 그대로 반환 (필터 적용 시 checkMultiFilter에서 처리)
   return {include,exclude};
 }
+// getMultiFilterValue는 getMultiChip의 별칭
+const getMultiFilterValue=getMultiChip;
 function getFilterValue(id){
   const sel=document.getElementById(id);
   const mode=document.querySelector(`.filter-mode[data-for="${id}"]`);
@@ -1651,10 +1695,10 @@ function toggleFilterMode(el){
 }
 function resetFilters(type){
   const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
-  // chip-multi 초기화 (학습상태, CEFR, 빈도, 우선순위, Formality, Currency, Medium)
-  const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium']:
-                   type==='phrasal'?['mastery','cefr','priority','formality','currency','medium']:
-                   ['mastery','cefr','priority','formality','currency','medium'];
+  // chip-multi 초기화 (학습상태, CEFR, 빈도, 우선순위, Formality, Currency, Medium, 태그)
+  const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium','tag']:
+                   type==='phrasal'?['mastery','cefr','priority','formality','currency','medium','tag']:
+                   ['mastery','cefr','priority','formality','currency','medium','tag'];
   chipGroups.forEach(g=>{
     const container=document.getElementById(prefix+'-'+g);
     if(container){
@@ -1664,8 +1708,8 @@ function resetFilters(type){
       });
     }
   });
-  // 셀렉트 박스 초기화 (카테고리, 태그 등 동적 필터)
-  const selects=type==='vocab'?['l1','tag','toefl','coca']:
+  // 셀렉트 박스 초기화 (카테고리 등 동적 필터)
+  const selects=type==='vocab'?['l1','toefl','coca']:
                 type==='phrasal'?['cat']:[];
   selects.forEach(s=>{
     const sel=document.getElementById(prefix+'-'+s);
@@ -1679,15 +1723,15 @@ function saveFilters(type){
   try{
     const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
     const data={};
-    // chip-multi 저장
-    const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium']:
-                     type==='phrasal'?['mastery','cefr','priority','formality','currency','medium']:
-                     ['mastery','cefr','priority','formality','currency','medium'];
+    // chip-multi 저장 (태그 포함)
+    const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium','tag']:
+                     type==='phrasal'?['mastery','cefr','priority','formality','currency','medium','tag']:
+                     ['mastery','cefr','priority','formality','currency','medium','tag'];
     chipGroups.forEach(g=>{
       data[g]=getMultiChip(prefix+'-'+g);
     });
     // 셀렉트 박스 저장
-    const selects=type==='vocab'?['l1','tag','toefl','coca']:
+    const selects=type==='vocab'?['l1','toefl','coca']:
                   type==='phrasal'?['cat']:[];
     selects.forEach(s=>{
       const sel=document.getElementById(prefix+'-'+s);
@@ -1706,10 +1750,10 @@ function loadFilters(type){
   try{
     const data=JSON.parse(saved);
     const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
-    // chip-multi 복원
-    const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium']:
-                     type==='phrasal'?['mastery','cefr','priority','formality','currency','medium']:
-                     ['mastery','cefr','priority','formality','currency','medium'];
+    // chip-multi 복원 (태그 포함)
+    const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium','tag']:
+                     type==='phrasal'?['mastery','cefr','priority','formality','currency','medium','tag']:
+                     ['mastery','cefr','priority','formality','currency','medium','tag'];
     chipGroups.forEach(g=>{
       const container=document.getElementById(prefix+'-'+g);
       if(!container)return;
@@ -1750,7 +1794,7 @@ function loadFilters(type){
       }
     });
     // 셀렉트 박스 복원
-    const selects=type==='vocab'?['l1','tag','toefl','coca']:
+    const selects=type==='vocab'?['l1','toefl','coca']:
                   type==='phrasal'?['cat']:[];
     selects.forEach(s=>{
       if(data[s]){
@@ -1812,6 +1856,16 @@ function checkMultiFilter(itemValue,multiChip){
   // 제외 조건 체크
   if(exclude.includes(itemValue))return false;
   return true;
+}
+// ★ 태그 필터 체크 (배열 vs chip-multi)
+function checkTagFilter(itemTags,multiChip){
+  const {include,exclude}=multiChip;
+  // 제외 체크: 아이템 태그 중 하나라도 제외 목록에 있으면 제외
+  if(exclude.length>0 && itemTags.some(t=>exclude.includes(t)))return false;
+  // 포함이 비어있거나 'all'이면 통과
+  if(include.length===0 || include.includes('all'))return true;
+  // 포함 체크: 아이템 태그 중 하나라도 포함 목록에 있어야 통과
+  return itemTags.some(t=>include.includes(t));
 }
 function getDistractors(correct,pool,n=4){
 console.log('[getDistractors] pool size:',pool.length,'correct POS:',correct.POS);
@@ -1945,7 +1999,7 @@ return shuffle([...shuffle(scored.slice(0,cutoff)).slice(0,n-1),...shuffle(score
 function switchHomeType(t){currentHomeType=t;document.querySelectorAll('#page-home .type-tab').forEach(e=>e.classList.toggle('active',e.dataset.type===t));document.getElementById('home-vocab')?.classList.toggle('hidden',t!=='vocab');document.getElementById('home-phrasal')?.classList.toggle('hidden',t!=='phrasal');document.getElementById('home-expr')?.classList.toggle('hidden',t!=='expr');}
 function switchStudyType(t){currentStudyType=t;document.querySelectorAll('#study-type-tabs .type-tab').forEach(e=>e.classList.toggle('active',e.dataset.type===t));document.getElementById('study-vocab')?.classList.toggle('hidden',t!=='vocab');document.getElementById('study-phrasal')?.classList.toggle('hidden',t!=='phrasal');document.getElementById('study-expr')?.classList.toggle('hidden',t!=='expr');}
 function switchStatsType(t){document.querySelectorAll('#page-stats .type-tab').forEach(e=>e.classList.toggle('active',e.dataset.type===t));document.getElementById('stats-vocab')?.classList.toggle('hidden',t!=='vocab');document.getElementById('stats-phrasal')?.classList.toggle('hidden',t!=='phrasal');document.getElementById('stats-expr')?.classList.toggle('hidden',t!=='expr');if(t==='phrasal')updatePVStats();if(t==='expr')updateExprStats();}
-function switchDataType(t){currentDataType=t;currentSearchQuery='';currentTagFilter='all';const wordSearch=document.getElementById('word-search');if(wordSearch)wordSearch.value='';const dataFilterSpecial=document.getElementById('data-filter-special');if(dataFilterSpecial)dataFilterSpecial.value='all';const dataFilterL2=document.getElementById('data-filter-l2');if(dataFilterL2)dataFilterL2.value='all';const dataSort=document.getElementById('data-sort');if(dataSort)dataSort.value='alpha';document.querySelectorAll('#page-data .type-tab').forEach(e=>e.classList.toggle('active',e.dataset.type===t));const col1h=document.getElementById('col1-h');if(col1h)col1h.textContent=t==='phrasal'?'구동사':t==='expr'?'표현':'단어';wordOffset=0;updateWordTable();switchDbTab(t==='phrasal'?'pv':t);}
+function switchDataType(t){currentDataType=t;currentSearchQuery='';currentTagFilter='all';const wordSearch=document.getElementById('word-search');if(wordSearch)wordSearch.value='';const dataFilterSpecial=document.getElementById('data-filter-special');if(dataFilterSpecial)dataFilterSpecial.value='all';const dataFilterCefr=document.getElementById('data-filter-cefr');if(dataFilterCefr)dataFilterCefr.value='all';const dataFilterPriority=document.getElementById('data-filter-priority');if(dataFilterPriority)dataFilterPriority.value='all';const dataFilterL2=document.getElementById('data-filter-l2');if(dataFilterL2)dataFilterL2.value='all';const dataFilterFormality=document.getElementById('data-filter-formality');if(dataFilterFormality)dataFilterFormality.value='all';const dataFilterCurrency=document.getElementById('data-filter-currency');if(dataFilterCurrency)dataFilterCurrency.value='all';const dataFilterMedium=document.getElementById('data-filter-medium');if(dataFilterMedium)dataFilterMedium.value='all';const dataSort=document.getElementById('data-sort');if(dataSort)dataSort.value='alpha';document.querySelectorAll('#page-data .type-tab').forEach(e=>e.classList.toggle('active',e.dataset.type===t));const col1h=document.getElementById('col1-h');if(col1h)col1h.textContent=t==='phrasal'?'구동사':t==='expr'?'표현':'단어';wordOffset=0;updateWordTable();switchDbTab(t==='phrasal'?'pv':t);}
 // ★ 전역 타입 연동 - 모든 탭 동시 전환
 function switchGlobalType(t){
 switchHomeType(t);
@@ -2001,7 +2055,7 @@ const mediumF=getMultiChip('filter-medium');
 const l1Val=document.getElementById('filter-l1')?.value||'all';
 const toeflVal=document.getElementById('filter-toefl')?.value||'all';
 const cocaVal=document.getElementById('filter-coca')?.value||'all';
-const tagVal=document.getElementById('filter-tag')?.value||'all';
+const tagF=getMultiFilterValue('filter-tag');
 let filtered=w.filter(x=>{
   // 학습 상태 필터 (다중 선택)
   if(!checkMasteryFilter(x,masteryF))return false;
@@ -2012,11 +2066,12 @@ let filtered=w.filter(x=>{
   if(!checkMultiFilter(x.Formality||'Neutral',formalityF))return false;
   if(!checkMultiFilter(x.Currency||'Current',currencyF))return false;
   if(!checkMultiFilter(x.Medium||'Both',mediumF))return false;
+  // 태그 필터 (chip-multi) - 아이템의 태그 중 하나라도 매칭되면 통과
+  if(!checkTagFilter(x.tags||[],tagF))return false;
   // 동적 셀렉트 필터
   if(l1Val!=='all'&&x.L1!==l1Val)return false;
   if(toeflVal!=='all'&&(x.TOEFL_Rel||'').toLowerCase()!==toeflVal.toLowerCase())return false;
   if(cocaVal!=='all'&&!(x.COCA_Genre||'').toLowerCase().includes(cocaVal.toLowerCase()))return false;
-  if(tagVal!=='all'&&!(x.tags||[]).includes(tagVal))return false;
   return true;
 });
 if(!filtered.length){showToast('⚠️ 필터 조건에 맞는 단어가 없습니다');return;}
@@ -2112,6 +2167,7 @@ const priorityF=getMultiChip('expr-filter-priority');
 const formalityF=getMultiChip('expr-filter-formality');
 const currencyF=getMultiChip('expr-filter-currency');
 const mediumF=getMultiChip('expr-filter-medium');
+const tagF=getMultiFilterValue('expr-filter-tag');
 let filtered=e.filter(x=>{
   if(!checkMasteryFilter(x,masteryF))return false;
   if(!checkMultiFilter(x.CEFR||'B1',cefrF))return false;
@@ -2119,6 +2175,7 @@ let filtered=e.filter(x=>{
   if(!checkMultiFilter(x.Formality||'Neutral',formalityF))return false;
   if(!checkMultiFilter(x.Currency||'Current',currencyF))return false;
   if(!checkMultiFilter(x.Medium||'Both',mediumF))return false;
+  if(!checkTagFilter(x.tags||[],tagF))return false;
   return true;
 });
 if(!filtered.length){showToast('⚠️ 필터 조건에 맞는 표현이 없습니다');return;}
@@ -2192,6 +2249,35 @@ async function quickStartMode(type, mode){
 }
 document.querySelectorAll('.chip-group').forEach(g=>{g.addEventListener('click',e=>{if(e.target.classList.contains('chip')){g.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));e.target.classList.add('active');}});});
 // ★ 다중 선택 칩 그룹 이벤트
+// 동적으로 추가된 chip-multi에 이벤트 재등록
+function initChipMultiEvents(g){
+  g.addEventListener('click',e=>{
+    if(!e.target.classList.contains('chip'))return;
+    const chip=e.target;
+    const val=chip.dataset.value;
+    const allChip=g.querySelector('.chip[data-value="all"]');
+    if(val==='all'){
+      g.querySelectorAll('.chip').forEach(c=>{c.classList.remove('checked','excluded');});
+      chip.classList.add('checked');
+      return;
+    }
+    if(allChip)allChip.classList.remove('checked','excluded');
+    if(chip.classList.contains('excluded')){chip.classList.remove('excluded');}
+    else if(chip.classList.contains('checked')){chip.classList.remove('checked');chip.classList.add('excluded');}
+    else{chip.classList.add('checked');}
+    const anySelected=g.querySelector('.chip.checked,.chip.excluded');
+    if(!anySelected&&allChip)allChip.classList.add('checked');
+  });
+  g.addEventListener('dblclick',e=>{
+    if(!e.target.classList.contains('chip'))return;
+    const chip=e.target;
+    if(chip.dataset.value==='all')return;
+    const allChip=g.querySelector('.chip[data-value="all"]');
+    if(allChip)allChip.classList.remove('checked','excluded');
+    chip.classList.remove('checked');
+    chip.classList.add('excluded');
+  });
+}
 document.querySelectorAll('.chip-multi').forEach(g=>{
   // 추천 태그는 단순 토글 (add-suggested-tags, edit-suggested-tags)
   if(g.id&&g.id.includes('suggested-tags')){
@@ -2410,7 +2496,7 @@ inputs.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 const results=['quick-search-result','pv-quick-search-result','expr-search-result'];
 results.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
 }
-async function updateStudyPage(){const w=await getAllWords(),p=await getAllPV();if(w.length){const l1s=[...new Set(w.map(x=>x.L1).filter(Boolean))].sort();const filterL1=document.getElementById('filter-l1');if(filterL1)filterL1.innerHTML='<option value="all">전체</option>'+l1s.map(l=>`<option value="${l}">${l}</option>`).join('');updateTagFilters(w,p);}if(p.length){const cats=[...new Set(p.map(x=>x.Category).filter(Boolean))].sort();const pvFilterCat=document.getElementById('pv-filter-cat');if(pvFilterCat)pvFilterCat.innerHTML='<option value="all">전체</option>'+cats.map(c=>`<option value="${c}">${c}</option>`).join('');}}
+async function updateStudyPage(){const w=await getAllWords(),p=await getAllPV(),e=await getAllExpr();if(w.length){const l1s=[...new Set(w.map(x=>x.L1).filter(Boolean))].sort();const filterL1=document.getElementById('filter-l1');if(filterL1)filterL1.innerHTML='<option value="all">전체</option>'+l1s.map(l=>`<option value="${l}">${l}</option>`).join('');}if(p.length){const cats=[...new Set(p.map(x=>x.Category).filter(Boolean))].sort();const pvFilterCat=document.getElementById('pv-filter-cat');if(pvFilterCat)pvFilterCat.innerHTML='<option value="all">전체</option>'+cats.map(c=>`<option value="${c}">${c}</option>`).join('');}updateTagFilters(w,p,e);}
 
 // === 학습 시작 ===
 async function startStudySession(){
@@ -2429,7 +2515,7 @@ const mediumF=getMultiChip('filter-medium');
 const l1Val=document.getElementById('filter-l1')?.value||'all';
 const toeflVal=document.getElementById('filter-toefl')?.value||'all';
 const cocaVal=document.getElementById('filter-coca')?.value||'all';
-const tagVal=document.getElementById('filter-tag')?.value||'all';
+const tagF=getMultiFilterValue('filter-tag');
 const now=new Date();
 const today=now.toDateString();
 const mode=document.querySelector('#study-vocab .mode-card.active')?.dataset.mode||'flashcard';
@@ -2447,11 +2533,12 @@ if(!checkMultiFilter(w.Priority||'P2',priorityF))return false;
 if(!checkMultiFilter(w.Formality||'Neutral',formalityF))return false;
 if(!checkMultiFilter(w.Currency||'Current',currencyF))return false;
 if(!checkMultiFilter(w.Medium||'Both',mediumF))return false;
+// 태그 필터 (chip-multi)
+if(!checkTagFilter(w.tags||[],tagF))return false;
 // 동적 셀렉트 필터
 if(l1Val!=='all'&&w.L1!==l1Val)return false;
 if(toeflVal!=='all'&&(w.TOEFL_Rel||'').toLowerCase()!==toeflVal.toLowerCase())return false;
 if(cocaVal!=='all'&&!(w.COCA_Genre||'').toLowerCase().includes(cocaVal.toLowerCase()))return false;
-if(tagVal!=='all'&&!(w.tags||[]).includes(tagVal))return false;
 return true;
 });
 if(!filtered.length){showToast('⚠️ 학습할 단어가 없습니다');return;}
@@ -4040,6 +4127,7 @@ const priorityF=getMultiChip('pv-filter-priority');
 const formalityF=getMultiChip('pv-filter-formality');
 const currencyF=getMultiChip('pv-filter-currency');
 const mediumF=getMultiChip('pv-filter-medium');
+const tagF=getMultiFilterValue('pv-filter-tag');
 const catVal=document.getElementById('pv-filter-cat')?.value||'all';
 const now=new Date();
 const today=now.toDateString();
@@ -4050,6 +4138,7 @@ if(!checkMultiFilter(x.Priority||'P2',priorityF))return false;
 if(!checkMultiFilter(x.Formality||'Neutral',formalityF))return false;
 if(!checkMultiFilter(x.Currency||'Current',currencyF))return false;
 if(!checkMultiFilter(x.Medium||'Both',mediumF))return false;
+if(!checkTagFilter(x.tags||[],tagF))return false;
 if(catVal!=='all'&&x.Category!==catVal)return false;
 return true;
 });
@@ -5928,7 +6017,7 @@ const streak=parseInt(localStorage.getItem('streak')||'0');if(streak>0){document
 // 홈 화면 태그 드롭다운 업데이트
 updateHomeTagSelects(w,p,e);
 // 태그 필터 업데이트
-updateTagFilters(w,p);
+updateTagFilters(w,p,e);
 await updateDailyGoal();
 }catch(e){console.error(e);}}
 async function updateStatsPage(){
@@ -6573,20 +6662,32 @@ speechSynthesis.speak(u);
 async function updateL2FilterOptions(){
 const select=document.getElementById('data-filter-l2');
 if(currentDataType==='vocab'){
-  // 어휘: L2 필터
+  // 어휘: L2 (도메인 분류) 필터 - 보이기
+  select.style.display='';
+  const currentVal=select.value; // 현재 선택값 저장
   const w=await getAllWords();
   const l2s=[...new Set(w.map(x=>x.L2).filter(Boolean))].sort();
-  select.innerHTML='<option value="all">L2 전체</option>'+l2s.map(l=>`<option value="${l}">${l}</option>`).join('');
+  select.innerHTML='<option value="all">📁 L2 도메인</option>'+l2s.map(l=>`<option value="${l}">${l}</option>`).join('');
+  // 이전 선택값 복원 (존재하면)
+  if(currentVal && [...select.options].some(o=>o.value===currentVal)){
+    select.value=currentVal;
+  }
 }else{
-  // 구동사/표현: Register 필터
-  select.innerHTML='<option value="all">격식도 전체</option><option value="Formal">Formal</option><option value="Neutral">Neutral</option><option value="Casual">Casual</option>';
+  // 구동사/표현: L2 필터 숨기기 (격식도 필터 별도 존재)
+  select.style.display='none';
+  select.value='all';
 }
 }
 async function updateWordTable(){
 const query=currentSearchQuery.toLowerCase().trim();
 const tagF=currentTagFilter;
 const specialF=document.getElementById('data-filter-special')?.value||'all';
+const cefrF=document.getElementById('data-filter-cefr')?.value||'all';
+const priorityF=document.getElementById('data-filter-priority')?.value||'all';
 const l2F=document.getElementById('data-filter-l2')?.value||'all';
+const formalityF=document.getElementById('data-filter-formality')?.value||'all';
+const currencyF=document.getElementById('data-filter-currency')?.value||'all';
+const mediumF=document.getElementById('data-filter-medium')?.value||'all';
 const sortBy=document.getElementById('data-sort')?.value||'alpha';
 const today=new Date().toISOString().slice(0,10);
 
@@ -6614,8 +6715,18 @@ else if(specialF==='duplicate')e=e.filter(x=>/[¹²³]/.test(x.Expression)||/[12
 else if(specialF==='starred')e=e.filter(x=>x.starred);
 else if(specialF==='wrong')e=e.filter(x=>x.wrongNote);
 else if(specialF==='no-review')e=e.filter(x=>!x.reviewCount);
-// Formality 필터 (표현)
-if(l2F!=='all')e=e.filter(x=>(x.Formality||'Neutral')===l2F);
+// CEFR 필터
+if(cefrF!=='all')e=e.filter(x=>(x.CEFR||'B1')===cefrF);
+// Priority 필터
+if(priorityF!=='all')e=e.filter(x=>(x.Priority||'P2')===priorityF);
+// Formality 필터
+if(formalityF!=='all')e=e.filter(x=>(x.Formality||'Neutral')===formalityF);
+// Currency 필터
+if(currencyF!=='all')e=e.filter(x=>(x.Currency||'Current')===currencyF);
+// Medium 필터
+if(mediumF!=='all')e=e.filter(x=>(x.Medium||'Both')===mediumF);
+// 태그 필터
+if(tagF!=='all')e=e.filter(x=>(x.tags||[]).includes(tagF));
 // 정렬
 if(!query){
 if(sortBy==='acc-asc')e=e.filter(x=>x.reviewCount>0).sort((a,b)=>(getAcc(a)||100)-(getAcc(b)||100));
@@ -6630,10 +6741,9 @@ document.getElementById('word-count').textContent=e.length+'개';
 document.getElementById('word-table-body').innerHTML=e.slice(0,wordOffset+50).map(x=>{
 const a=getAcc(x),as=a!==null?a+'%':'-',c=a===null?'':a>=80?'color:var(--success)':a<50?'color:var(--danger)':'color:var(--warning)';
 const star=x.starred?'⭐ ':'';
-const form=x.Formality?`<span style="background:var(--expr);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:4px">${x.Formality}</span>`:'';
 const expr=x.Expression.replace(/'/g,"\\'");
 const meaning=getMKO(x)||x.Function||'';
-return`<tr><td onclick="openExprEditModal('${expr}')" style="cursor:pointer"><strong>${star}${x.Expression}</strong>${form}</td><td onclick="openExprEditModal('${expr}')" style="cursor:pointer;word-break:break-word;white-space:normal">${meaning}</td><td onclick="speakDataWord('${expr}')" style="${c};cursor:pointer;min-width:50px" title="🔊 클릭하여 발음">${as}</td></tr>`;
+return`<tr><td onclick="openExprEditModal('${expr}')" style="cursor:pointer"><strong>${star}${x.Expression}</strong></td><td onclick="openExprEditModal('${expr}')" style="cursor:pointer;word-break:break-word;white-space:normal">${meaning}</td><td onclick="speakDataWord('${expr}')" style="${c};cursor:pointer;min-width:50px" title="🔊 클릭하여 발음">${as}</td></tr>`;
 }).join('');
 
 }else if(currentDataType==='phrasal'){
@@ -6660,8 +6770,16 @@ else if(specialF==='duplicate')p=p.filter(x=>/[¹²³]/.test(x.Phrasal_Verb)||/[
 else if(specialF==='starred')p=p.filter(x=>x.starred);
 else if(specialF==='wrong')p=p.filter(x=>x.wrongNote);
 else if(specialF==='no-review')p=p.filter(x=>!x.reviewCount);
-// Formality 필터 (구동사)
-if(l2F!=='all')p=p.filter(x=>(x.Formality||'Neutral')===l2F);
+// CEFR 필터
+if(cefrF!=='all')p=p.filter(x=>(x.CEFR||'B1')===cefrF);
+// Priority 필터
+if(priorityF!=='all')p=p.filter(x=>(x.Priority||'P2')===priorityF);
+// Formality 필터
+if(formalityF!=='all')p=p.filter(x=>(x.Formality||'Neutral')===formalityF);
+// Currency 필터
+if(currencyF!=='all')p=p.filter(x=>(x.Currency||'Current')===currencyF);
+// Medium 필터
+if(mediumF!=='all')p=p.filter(x=>(x.Medium||'Both')===mediumF);
 // 태그 필터
 if(tagF!=='all')p=p.filter(x=>(x.tags||[]).includes(tagF));
 // 정렬
@@ -6707,8 +6825,18 @@ else if(specialF==='duplicate')w=w.filter(x=>/[¹²³]/.test(x.word)||/[123]$/.t
 else if(specialF==='starred')w=w.filter(x=>x.starred);
 else if(specialF==='wrong')w=w.filter(x=>x.wrongNote);
 else if(specialF==='no-review')w=w.filter(x=>!x.reviewCount);
-// L2 필터 (어휘 전용)
-if(l2F!=='all')w=w.filter(x=>x.L2===l2F);
+// CEFR 필터
+if(cefrF!=='all')w=w.filter(x=>(x.CEFR||'B1')===cefrF);
+// Priority 필터
+if(priorityF!=='all')w=w.filter(x=>(x.Priority||'P2')===priorityF);
+// L2 도메인 필터 (어휘 전용)
+if(l2F!=='all')w=w.filter(x=>(x.L2||'')===l2F);
+// Formality 필터
+if(formalityF!=='all')w=w.filter(x=>(x.Formality||'Neutral')===formalityF);
+// Currency 필터
+if(currencyF!=='all')w=w.filter(x=>(x.Currency||'Current')===currencyF);
+// Medium 필터
+if(mediumF!=='all')w=w.filter(x=>(x.Medium||'Both')===mediumF);
 // 태그 필터
 if(tagF!=='all')w=w.filter(x=>(x.tags||[]).includes(tagF));
 // 정렬
@@ -6746,9 +6874,10 @@ const allTags=new Set();
 items.forEach(x=>(x.tags||[]).forEach(t=>allTags.add(t)));
 const container=document.getElementById('tag-filter-container');
 const tagsArr=[...allTags].sort();
-if(tagsArr.length===0||currentDataType==='expr'){container.innerHTML='';return;}
-container.innerHTML=`<span class="chip ${currentTagFilter==='all'?'active':''}" onclick="filterByTag('all')">전체</span>`+
-tagsArr.map(t=>`<span class="chip ${currentTagFilter===t?'active':''}" onclick="filterByTag('${t.replace(/'/g,"\\'")}')">${t}</span>`).join('');
+if(!container)return;
+const current=currentTagFilter;
+container.innerHTML='<option value="all">🏷️ 태그</option>'+
+tagsArr.map(t=>`<option value="${t}"${current===t?' selected':''}>${t}</option>`).join('');
 }
 function filterByTag(tag){currentTagFilter=tag;wordOffset=0;updateWordTable();}
 
@@ -7075,7 +7204,21 @@ modalUploadZone?.addEventListener('drop',e=>{e.preventDefault();e.stopPropagatio
 async function clearDB(store){const name=store==='phrasal_verbs'?'구동사':store==='expressions'?'표현':'어휘';showConfirm(name+' 초기화',name+' 데이터가 삭제됩니다. 계속할까요?',async()=>{const tx=db.transaction([store],'readwrite');tx.objectStore(store).clear();await new Promise(r=>{tx.oncomplete=r;});showToast('🗑️ '+name+' 초기화 완료');updateHomeStats();updateDataPage();});}
 async function resetWrongNotes(){showConfirm('오답노트 초기화','모든 오답 기록이 초기화됩니다. 계속할까요?',async()=>{const w=await getAllWords(),p=await getAllPV();for(const x of w){x.consecutiveWrong=0;x.wrongCount=0;x.lastWrongDate=null;await saveWord(x);}for(const x of p){x.consecutiveWrong=0;x.wrongCount=0;x.lastWrongDate=null;await savePV(x);}showToast('🧹 오답노트 초기화 완료');updateHomeStats();});}
 async function exportAllData(){try{const w=await getAllWords(),p=await getAllPV(),e=await getAllExpr(),s=await getSessions();const data={words:w,phrasal_verbs:p,expressions:e,sessions:s,exportDate:new Date().toISOString(),version:'7.0'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cems_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();showToast('📥 백업 파일 다운로드');}catch(e){console.error('exportAllData error:',e);showToast('❌ 백업 실패: '+e.message);}}
-function importData(){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=async ev=>{try{const txt=await ev.target.files[0].text(),data=JSON.parse(txt);if(data.words?.length){const tx=db.transaction('words','readwrite');data.words.forEach(w=>tx.objectStore('words').put(w));await new Promise(r=>{tx.oncomplete=r;});}if(data.phrasal_verbs?.length){const tx=db.transaction('phrasal_verbs','readwrite');data.phrasal_verbs.forEach(p=>tx.objectStore('phrasal_verbs').put(p));await new Promise(r=>{tx.oncomplete=r;});}if(data.expressions?.length){const tx=db.transaction('expressions','readwrite');data.expressions.forEach(e=>tx.objectStore('expressions').put(e));await new Promise(r=>{tx.oncomplete=r;});}if(data.sessions?.length){const tx=db.transaction('sessions','readwrite');data.sessions.forEach(s=>{delete s.id;tx.objectStore('sessions').add(s);});await new Promise(r=>{tx.oncomplete=r;});}showToast('✅ 데이터 복원 완료');updateHomeStats();updateDataPage();}catch(err){console.error(err);showToast('❌ 복원 실패: '+err.message);}};input.click();}
+async function handleRestoreFile(input){
+try{
+  const file=input.files[0];
+  if(!file)return;
+  const txt=await file.text();
+  const data=JSON.parse(txt);
+  if(data.words?.length){const tx=db.transaction('words','readwrite');data.words.forEach(w=>tx.objectStore('words').put(w));await new Promise(r=>{tx.oncomplete=r;});}
+  if(data.phrasal_verbs?.length){const tx=db.transaction('phrasal_verbs','readwrite');data.phrasal_verbs.forEach(p=>tx.objectStore('phrasal_verbs').put(p));await new Promise(r=>{tx.oncomplete=r;});}
+  if(data.expressions?.length){const tx=db.transaction('expressions','readwrite');data.expressions.forEach(e=>tx.objectStore('expressions').put(e));await new Promise(r=>{tx.oncomplete=r;});}
+  if(data.sessions?.length){const tx=db.transaction('sessions','readwrite');data.sessions.forEach(s=>{delete s.id;tx.objectStore('sessions').add(s);});await new Promise(r=>{tx.oncomplete=r;});}
+  showToast('✅ 데이터 복원 완료');
+  updateHomeStats();updateDataPage();
+}catch(err){console.error(err);showToast('❌ 복원 실패: '+err.message);}
+finally{input.value='';} // 같은 파일 다시 선택 가능하게
+}
 function resetAllData(){showConfirm('전체 초기화','모든 데이터가 영구 삭제됩니다. 정말 초기화할까요?',()=>{indexedDB.deleteDatabase(DB_NAME);localStorage.clear();showToast('🗑️ 초기화 완료');setTimeout(()=>location.reload(),1000);});}
 
 // === 단어 편집 ===
