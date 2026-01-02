@@ -207,17 +207,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="study-vocab">
 <div class="card"><div class="card-title">🎮 학습 모드</div><div class="mode-selector"><div class="mode-card active" data-mode="flashcard" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div><div class="mode-card-desc">카드 뒤집기</div></div><div class="mode-card" data-mode="quiz" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">❓</div><div class="mode-card-title">5지선다</div><div class="mode-card-desc">의미 맞추기</div></div></div><div class="mode-selector"><div class="mode-card" data-mode="reverse" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🔄</div><div class="mode-card-title">역방향</div><div class="mode-card-desc">뜻→영어</div></div><div class="mode-card" data-mode="typing" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">⌨️</div><div class="mode-card-title">타이핑</div><div class="mode-card-desc">스펠링</div></div></div><div class="mode-selector"><div class="mode-card" data-mode="cloze" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">📝</div><div class="mode-card-title">빈칸채우기</div><div class="mode-card-desc">문장 완성</div></div><div class="mode-card" data-mode="collocation" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🔗</div><div class="mode-card-title">Collocation</div><div class="mode-card-desc">연어 학습</div></div></div><div class="mode-selector"><div class="mode-card" data-mode="listening" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">🎧</div><div class="mode-card-title">리스닝</div><div class="mode-card-desc">듣고 뜻 맞추기</div></div><div class="mode-card" data-mode="dictation" onclick="selectMode(this,'vocab')"><div class="mode-card-icon">✍️</div><div class="mode-card-title">받아쓰기</div><div class="mode-card-desc">듣고 스펠링</div></div></div></div>
 <div class="card"><div class="card-title">📝 학습 분량</div><div class="range-container"><input type="range" class="range-slider" id="study-count" min="5" max="20" value="20" step="1" oninput="document.getElementById('study-count-val').textContent=this.value"><div class="range-value"><span id="study-count-val">20</span>개</div></div></div>
-<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">📊 빈도</label><div class="chip-multi chip-small" id="filter-freq"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="K1">K1</span><span class="chip" data-value="K2">K2</span><span class="chip" data-value="K3">K3</span><span class="chip" data-value="K4">K4</span><span class="chip" data-value="K5">K5</span><span class="chip" data-value="K6">K6</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도 (Formality)</label><div class="chip-multi chip-small" id="filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성 (Currency)</label><div class="chip-multi chip-small" id="filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체 (Medium)</label><div class="chip-multi chip-small" id="filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group" style="margin-bottom:0"><label class="form-label">📁 카테고리</label><select class="form-select" id="filter-l1"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎓 TOEFL</label><select class="form-select" id="filter-toefl"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📰 COCA</label><select class="form-select" id="filter-coca"><option value="all">전체</option></select></div></div><div class="form-group" style="margin-top:8px"><label class="form-label">🏷️ 태그</label><div class="chip-multi chip-small" id="filter-tag"><span class="chip checked" data-value="all">전체</span></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('vocab')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('vocab')">💾 필터 저장</button></div></div>
+<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">📊 빈도</label><div class="chip-multi chip-small" id="filter-freq"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="K1">K1</span><span class="chip" data-value="K2">K2</span><span class="chip" data-value="K3">K3</span><span class="chip" data-value="K4">K4</span><span class="chip" data-value="K5">K5</span><span class="chip" data-value="K6">K6</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도 (Formality)</label><div class="chip-multi chip-small" id="filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성 (Currency)</label><div class="chip-multi chip-small" id="filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체 (Medium)</label><div class="chip-multi chip-small" id="filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group" style="margin-bottom:0"><label class="form-label">📁 카테고리</label><select class="form-select" id="filter-l1"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">🎓 TOEFL</label><select class="form-select" id="filter-toefl"><option value="all">전체</option></select></div><div class="form-group" style="margin-bottom:0"><label class="form-label">📰 COCA</label><select class="form-select" id="filter-coca"><option value="all">전체</option></select></div></div><div class="form-group" style="margin-top:8px"><label class="form-label">🏷️ 태그</label><div class="chip-multi chip-small" id="filter-tag"><span class="chip checked" data-value="all">전체</span></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('vocab')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('vocab')">💾 필터 저장</button></div></div>
 </div>
 <div id="study-phrasal" class="hidden">
 <div class="card"><div class="card-title">🎮 구동사 학습 모드</div><div class="mode-selector"><div class="mode-card phrasal active" data-mode="pv-flashcard" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div><div class="mode-card-desc">카드 뒤집기</div></div><div class="mode-card phrasal" data-mode="pv-particle" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🧩</div><div class="mode-card-title">Particle</div><div class="mode-card-desc">figure ___?</div></div></div><div class="mode-selector"><div class="mode-card phrasal" data-mode="pv-meaning" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">💡</div><div class="mode-card-title">의미 맞추기</div><div class="mode-card-desc">구동사→뜻</div></div><div class="mode-card phrasal" data-mode="pv-reverse" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🔄</div><div class="mode-card-title">역방향</div><div class="mode-card-desc">뜻→구동사</div></div></div><div class="mode-selector"><div class="mode-card phrasal" data-mode="pv-listening" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">🎧</div><div class="mode-card-title">리스닝</div><div class="mode-card-desc">듣고 뜻 맞추기</div></div><div class="mode-card phrasal" data-mode="pv-dictation" onclick="selectMode(this,'phrasal')"><div class="mode-card-icon">✍️</div><div class="mode-card-title">받아쓰기</div><div class="mode-card-desc">듣고 스펠링</div></div></div></div>
 <div class="card"><div class="card-title">📝 학습 분량</div><div class="range-container"><input type="range" class="range-slider" id="pv-study-count" min="5" max="20" value="15" step="1" oninput="document.getElementById('pv-study-count-val').textContent=this.value"><div class="range-value"><span id="pv-study-count-val">15</span>개</div></div></div>
-<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="pv-filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="pv-filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="pv-filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도</label><div class="chip-multi chip-small" id="pv-filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성</label><div class="chip-multi chip-small" id="pv-filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체</label><div class="chip-multi chip-small" id="pv-filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div class="form-group"><label class="form-label">📁 카테고리</label><select class="form-select" id="pv-filter-cat"><option value="all">전체</option></select></div><div class="form-group"><label class="form-label">🏷️ 태그</label><div class="chip-multi chip-small" id="pv-filter-tag"><span class="chip checked" data-value="all">전체</span></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('phrasal')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('phrasal')">💾 필터 저장</button></div></div>
+<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="pv-filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 단어</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="pv-filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">📊 빈도</label><div class="chip-multi chip-small" id="pv-filter-freq"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="K1">K1</span><span class="chip" data-value="K2">K2</span><span class="chip" data-value="K3">K3</span><span class="chip" data-value="K4">K4</span><span class="chip" data-value="K5">K5</span><span class="chip" data-value="K6">K6</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="pv-filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도</label><div class="chip-multi chip-small" id="pv-filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성</label><div class="chip-multi chip-small" id="pv-filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체</label><div class="chip-multi chip-small" id="pv-filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div class="form-group"><label class="form-label">📁 카테고리</label><select class="form-select" id="pv-filter-cat"><option value="all">전체</option></select></div><div class="form-group"><label class="form-label">🏷️ 태그</label><div class="chip-multi chip-small" id="pv-filter-tag"><span class="chip checked" data-value="all">전체</span></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('phrasal')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('phrasal')">💾 필터 저장</button></div></div>
 </div>
 <div id="study-expr" class="hidden">
 <div class="card"><div class="card-title">🎮 표현 학습 모드</div><div class="mode-selector"><div class="mode-card expr active" data-mode="expr-fc" onclick="selectMode(this,'expr')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div><div class="mode-card-desc">표현 암기</div></div><div class="mode-card expr" data-mode="expr-quiz" onclick="selectMode(this,'expr')"><div class="mode-card-icon">❓</div><div class="mode-card-title">5지선다</div><div class="mode-card-desc">뜻 맞추기</div></div><div class="mode-card expr" data-mode="expr-cloze" onclick="selectMode(this,'expr')"><div class="mode-card-icon">📝</div><div class="mode-card-title">빈칸채우기</div><div class="mode-card-desc">문맥 학습</div></div><div class="mode-card expr" data-mode="expr-typing" onclick="selectMode(this,'expr')"><div class="mode-card-icon">⌨️</div><div class="mode-card-title">쓰기 연습</div><div class="mode-card-desc">표현 타이핑</div></div></div><div class="mode-selector"><div class="mode-card expr" data-mode="expr-listening" onclick="selectMode(this,'expr')"><div class="mode-card-icon">🎧</div><div class="mode-card-title">리스닝</div><div class="mode-card-desc">듣고 뜻 맞추기</div></div><div class="mode-card expr" data-mode="expr-dictation" onclick="selectMode(this,'expr')"><div class="mode-card-icon">✍️</div><div class="mode-card-title">받아쓰기</div><div class="mode-card-desc">듣고 스펠링</div></div></div></div>
 <div class="card"><div class="card-title">📝 학습 분량</div><div class="range-container"><input type="range" class="range-slider" id="expr-study-count" min="5" max="20" value="20" step="1" oninput="document.getElementById('expr-study-count-val').textContent=this.value"><div class="range-value"><span id="expr-study-count-val">20</span>개</div></div></div>
-<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="expr-filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 표현</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span><span class="chip" data-value="leech">🐌Leech</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="expr-filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="expr-filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도</label><div class="chip-multi chip-small" id="expr-filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성</label><div class="chip-multi chip-small" id="expr-filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체</label><div class="chip-multi chip-small" id="expr-filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div class="form-group"><label class="form-label">🏷️ 태그</label><div class="chip-multi chip-small" id="expr-filter-tag"><span class="chip checked" data-value="all">전체</span></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('expr')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('expr')">💾 필터 저장</button></div></div>
+<div class="card"><div class="card-title">🎯 필터 <span style="font-size:11px;color:var(--muted);font-weight:normal">(클릭: 포함 / 더블클릭: 제외)</span></div><div class="form-group"><label class="form-label">학습 상태</label><div class="chip-multi" id="expr-filter-mastery"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="new">새 표현</span><span class="chip" data-value="weak">취약</span><span class="chip" data-value="wrong">오답</span><span class="chip" data-value="starred">⭐북마크</span></div></div><div class="form-group"><label class="form-label">📚 CEFR</label><div class="chip-multi chip-small" id="expr-filter-cefr"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="A2">A2</span><span class="chip" data-value="B1">B1</span><span class="chip" data-value="B2">B2</span><span class="chip" data-value="C1">C1</span><span class="chip" data-value="C2">C2</span></div></div><div class="form-group"><label class="form-label">📊 빈도</label><div class="chip-multi chip-small" id="expr-filter-freq"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="K1">K1</span><span class="chip" data-value="K2">K2</span><span class="chip" data-value="K3">K3</span><span class="chip" data-value="K4">K4</span><span class="chip" data-value="K5">K5</span><span class="chip" data-value="K6">K6</span></div></div><div class="form-group"><label class="form-label">🎯 우선순위</label><div class="chip-multi chip-small" id="expr-filter-priority"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="P1">P1</span><span class="chip" data-value="P2">P2</span><span class="chip" data-value="P3">P3</span></div></div><div class="form-group"><label class="form-label">👔 격식도</label><div class="chip-multi chip-small" id="expr-filter-formality"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Formal">Formal</span><span class="chip" data-value="Neutral">Neutral</span><span class="chip" data-value="Informal">Informal</span></div></div><div class="form-group"><label class="form-label">⏳ 시대성</label><div class="chip-multi chip-small" id="expr-filter-currency"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Current">Current</span><span class="chip" data-value="Dated">Dated</span><span class="chip" data-value="Archaic">Archaic</span></div></div><div class="form-group"><label class="form-label">📡 매체</label><div class="chip-multi chip-small" id="expr-filter-medium"><span class="chip checked" data-value="all">전체</span><span class="chip" data-value="Both">Both</span><span class="chip" data-value="Written">Written</span><span class="chip" data-value="Spoken">Spoken</span></div></div><div class="form-group"><label class="form-label">🏷️ 태그</label><div class="chip-multi chip-small" id="expr-filter-tag"><span class="chip checked" data-value="all">전체</span></div></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" style="flex:1;padding:8px;font-size:12px" onclick="resetFilters('expr')">🔄 필터 초기화</button><button class="btn btn-secondary" style="flex:1;padding:8px;font-size:12px" onclick="saveFilters('expr')">💾 필터 저장</button></div></div>
 </div>
 <div class="card"><div class="card-title">🔀 순서</div><div class="toggle-row"><span class="toggle-label">학습 순서</span><select class="form-select" id="option-order" style="width:auto"><option value="fsrs">FSRS 우선</option><option value="weak">취약 우선</option><option value="random">랜덤</option></select></div></div>
 </div>
@@ -611,6 +611,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="form-group"><label class="form-label">예문</label><textarea class="form-input" id="edit-example" rows="2" style="text-align:left"></textarea></div>
 <div class="form-group" id="edit-pos-group"><label class="form-label" id="edit-pos-label">품사 (POS)</label><input type="text" class="form-input" id="edit-pos" placeholder="예: noun, verb, adj"></div>
 <div id="edit-vocab-fields">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">🔄 동의어</label><input type="text" class="form-input" id="edit-synonyms" placeholder="쉼표로 구분" style="text-align:left"></div>
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">↔️ 반의어</label><input type="text" class="form-input" id="edit-antonyms" placeholder="쉼표로 구분" style="text-align:left"></div>
+</div>
 <div class="form-group"><label class="form-label">📁 분류 (L2)</label><select class="form-select" id="edit-l2" onchange="autoSetL1L0()">
 <optgroup label="📚 Academic > Science"><option value="Life">Life (생명)</option><option value="Physical">Physical (물리)</option><option value="Earth">Earth (지구)</option><option value="Applied">Applied (응용)</option></optgroup>
 <optgroup label="📚 Academic > Society"><option value="Psychology">Psychology (심리)</option><option value="Culture">Culture (문화)</option><option value="Economy">Economy (경제)</option><option value="Politics">Politics (정치)</option><option value="History">History (역사)</option></optgroup>
@@ -625,8 +629,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">📚 토플 연관성</label><select class="form-select" id="edit-toefl"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-<div class="form-group" style="margin-bottom:8px"><label class="form-label">🔢 빈도</label><select class="form-select" id="edit-freq"><option value="">선택</option><option value="K1">K1</option><option value="K2">K2</option><option value="K3">K3</option><option value="K4">K4</option><option value="K5+">K5+</option></select></div>
-<div class="form-group" style="margin-bottom:8px"><label class="form-label">⭐ 우선순위</label><select class="form-select" id="edit-priority"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">🔢 빈도</label><select class="form-select" id="edit-freq"><option value="">선택</option><option value="K1">K1</option><option value="K2">K2</option><option value="K3">K3</option><option value="K4">K4</option><option value="K5">K5</option><option value="K6">K6</option><option value="K5+">K5+</option></select></div>
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">⭐ 우선순위</label><select class="form-select" id="edit-priority"><option value="">선택</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select></div>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">👔 격식도</label><select class="form-select" id="edit-formality"><option value="Formal">Formal</option><option value="Neutral">Neutral</option><option value="Informal">Informal</option></select></div>
@@ -634,15 +638,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">📡 매체</label><select class="form-select" id="edit-medium"><option value="Both">Both</option><option value="Written">Written</option><option value="Spoken">Spoken</option></select></div>
 </div>
 <div class="form-group"><label class="form-label">Key Collocation</label><input type="text" class="form-input" id="edit-collocation"></div>
-<div class="form-group"><label class="form-label">📝 나만의 예문 (줄바꿈으로 구분)</label><textarea class="form-input" id="edit-user-examples" rows="2" placeholder="I analyzed the data carefully." style="text-align:left;font-size:13px"></textarea></div>
-<div class="form-group"><label class="form-label">🔗 추가 Collocations (쉼표로 구분)</label><input type="text" class="form-input" id="edit-user-collocs" placeholder="analyze data, carefully analyze" style="text-align:left"></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-<div class="form-group" style="margin-bottom:8px"><label class="form-label">🔄 동의어</label><input type="text" class="form-input" id="edit-synonyms" placeholder="쉼표로 구분" style="text-align:left"></div>
-<div class="form-group" style="margin-bottom:8px"><label class="form-label">↔️ 반의어</label><input type="text" class="form-input" id="edit-antonyms" placeholder="쉼표로 구분" style="text-align:left"></div>
-</div>
+<div class="form-group"><label class="form-label">📝 비고 (Error)</label><input type="text" class="form-input" id="edit-error" placeholder="흔한 오류, 메모 등"></div>
 </div>
 <div id="edit-pv-fields" style="display:none">
 <div class="form-group"><label class="form-label">Base Verb</label><input type="text" class="form-input" id="edit-base-verb" placeholder="예: figure, pick, take"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">🔄 동의어</label><input type="text" class="form-input" id="edit-pv-synonyms" placeholder="쉼표로 구분" style="text-align:left"></div>
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">↔️ 반의어</label><input type="text" class="form-input" id="edit-pv-antonyms" placeholder="쉼표로 구분" style="text-align:left"></div>
+</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">Category</label><select class="form-select" id="edit-pv-category"><option value="General">General</option><option value="Academic">Academic</option><option value="Daily">Daily</option></select></div>
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">CEFR</label><select class="form-select" id="edit-pv-cefr"><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select></div>
@@ -654,13 +657,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">📚 토플 연관성</label><select class="form-select" id="edit-pv-toefl"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
-<div class="form-group" style="margin-bottom:8px"><label class="form-label">⭐ 우선순위</label><select class="form-select" id="edit-pv-priority"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">⭐ 우선순위</label><select class="form-select" id="edit-pv-priority"><option value="">선택</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select></div>
 </div>
 <div class="form-group"><label class="form-label">Formal Equivalent</label><input type="text" class="form-input" id="edit-formal-equiv" placeholder="격식체 대체 표현"></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-<div class="form-group" style="margin-bottom:8px"><label class="form-label">🔄 동의어</label><input type="text" class="form-input" id="edit-pv-synonyms" placeholder="쉼표로 구분" style="text-align:left"></div>
-<div class="form-group" style="margin-bottom:8px"><label class="form-label">↔️ 반의어</label><input type="text" class="form-input" id="edit-pv-antonyms" placeholder="쉼표로 구분" style="text-align:left"></div>
-</div>
+<div class="form-group"><label class="form-label">📝 비고 (Error)</label><input type="text" class="form-input" id="edit-pv-error" placeholder="흔한 오류, 메모 등"></div>
 </div>
 <div class="form-group"><label class="form-label">🏷️ 태그</label>
 <div class="chip-multi chip-small" id="edit-suggested-tags" style="margin-bottom:8px"><span class="chip" data-value="Academic">Academic</span><span class="chip" data-value="Literary">Literary</span><span class="chip" data-value="Legal">Legal</span><span class="chip" data-value="Business">Business</span><span class="chip" data-value="Technical">Technical</span><span class="chip" data-value="Medical">Medical</span><span class="chip" data-value="BrE">BrE</span><span class="chip" data-value="AmE">AmE</span><span class="chip" data-value="Idiom">Idiom</span><span class="chip" data-value="TOEFL">TOEFL</span></div>
@@ -699,11 +699,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="form-group"><label class="form-label">예문 1</label><textarea class="form-input" id="expr-edit-example1" rows="2" style="text-align:left"></textarea></div>
 <div class="form-group"><label class="form-label">예문 2</label><textarea class="form-input" id="expr-edit-example2" rows="2" style="text-align:left"></textarea></div>
 <div class="form-group"><label class="form-label">유사 표현</label><input type="text" class="form-input" id="expr-edit-similar"></div>
+<div class="form-group"><label class="form-label">📝 비고 (Error)</label><input type="text" class="form-input" id="expr-edit-error" placeholder="흔한 오류, 메모 등"></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
 <div class="form-group" style="margin-bottom:8px"><label class="form-label">📚 토플 연관성</label><select class="form-select" id="expr-edit-toefl"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
-<div class="form-group" style="margin-bottom:8px"><label class="form-label">⭐ 우선순위</label><select class="form-select" id="expr-edit-priority"><option value="">선택</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+<div class="form-group" style="margin-bottom:8px"><label class="form-label">⭐ 우선순위</label><select class="form-select" id="expr-edit-priority"><option value="">선택</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select></div>
 </div>
-<div class="form-group"><label class="form-label">태그 L1 / L2 / L3</label><div style="display:flex;gap:8px"><input type="text" class="form-input" id="expr-edit-l1" placeholder="L1" style="flex:1;width:auto"><input type="text" class="form-input" id="expr-edit-l2" placeholder="L2" style="flex:1;width:auto"><input type="text" class="form-input" id="expr-edit-l3" placeholder="L3" style="flex:1;width:auto"></div></div>
+<div class="form-group"><label class="form-label">📂 분류 (L1/L2/L3)</label><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px"><input type="text" class="form-input" id="expr-edit-l1" placeholder="L1" style="padding:8px;font-size:13px"><input type="text" class="form-input" id="expr-edit-l2" placeholder="L2" style="padding:8px;font-size:13px"><input type="text" class="form-input" id="expr-edit-l3" placeholder="L3" style="padding:8px;font-size:13px"></div></div>
 <div class="form-group"><label class="form-label">🏷️ 태그</label>
 <div class="chip-multi chip-small" id="expr-edit-suggested-tags" style="margin-bottom:8px"><span class="chip" data-value="Academic">Academic</span><span class="chip" data-value="Literary">Literary</span><span class="chip" data-value="Legal">Legal</span><span class="chip" data-value="Business">Business</span><span class="chip" data-value="Technical">Technical</span><span class="chip" data-value="Medical">Medical</span><span class="chip" data-value="BrE">BrE</span><span class="chip" data-value="AmE">AmE</span><span class="chip" data-value="Idiom">Idiom</span><span class="chip" data-value="TOEFL">TOEFL</span></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -2197,6 +2198,7 @@ const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 // ★ 필터 적용 (다중 선택 및 제외 지원)
 const masteryF=getMultiChip('pv-filter-mastery');
 const cefrF=getMultiChip('pv-filter-cefr');
+const freqF=getMultiChip('pv-filter-freq');
 const priorityF=getMultiChip('pv-filter-priority');
 const formalityF=getMultiChip('pv-filter-formality');
 const currencyF=getMultiChip('pv-filter-currency');
@@ -2206,6 +2208,7 @@ const catVal=document.getElementById('pv-filter-cat')?.value||'all';
 let filtered=p.filter(x=>{
   if(!checkMasteryFilter(x,masteryF))return false;
   if(!checkMultiFilter(x.CEFR||'B1',cefrF))return false;
+  if(!checkMultiFilter(x.Frequency||'K3',freqF))return false;
   if(!checkMultiFilter(x.Priority||'P2',priorityF))return false;
   if(!checkMultiFilter(x.Formality||'Neutral',formalityF))return false;
   if(!checkMultiFilter(x.Currency||'Current',currencyF))return false;
@@ -2250,6 +2253,7 @@ const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 // ★ 필터 적용 (다중 선택 및 제외 지원)
 const masteryF=getMultiChip('expr-filter-mastery');
 const cefrF=getMultiChip('expr-filter-cefr');
+const freqF=getMultiChip('expr-filter-freq');
 const priorityF=getMultiChip('expr-filter-priority');
 const formalityF=getMultiChip('expr-filter-formality');
 const currencyF=getMultiChip('expr-filter-currency');
@@ -2258,6 +2262,7 @@ const tagF=getMultiFilterValue('expr-filter-tag');
 let filtered=e.filter(x=>{
   if(!checkMasteryFilter(x,masteryF))return false;
   if(!checkMultiFilter(x.CEFR||'B1',cefrF))return false;
+  if(!checkMultiFilter(x.Frequency||'K3',freqF))return false;
   if(!checkMultiFilter(x.Priority||'P2',priorityF))return false;
   if(!checkMultiFilter(x.Formality||'Neutral',formalityF))return false;
   if(!checkMultiFilter(x.Currency||'Current',currencyF))return false;
@@ -4040,13 +4045,31 @@ listeningState.idx++;
 showListeningQ();
 }
 
-function speakText(text){
-if('speechSynthesis' in window){
+// ★ iOS TTS 언락 상태
+let ttsUnlocked=false;
+function unlockTTS(){
+  if(ttsUnlocked||!('speechSynthesis' in window))return;
+  const u=new SpeechSynthesisUtterance('');
+  u.volume=0;
+  window.speechSynthesis.speak(u);
+  ttsUnlocked=true;
+}
+// ★ 첫 터치 시 TTS 언락 (iOS 대응)
+document.addEventListener('touchstart',unlockTTS,{once:true});
+document.addEventListener('click',unlockTTS,{once:true});
+
+function speakText(text,retry=0){
+if(!text||!('speechSynthesis' in window))return;
+// ★ iOS: 언락 안 됐으면 스킵 (사용자 터치 필요)
+if(!ttsUnlocked){console.log('[TTS] Not unlocked yet');return;}
 window.speechSynthesis.cancel();
 const u=new SpeechSynthesisUtterance(text);
 u.lang='en-US';u.rate=0.9;
+// ★ 발화 실패 시 1회 재시도
+u.onerror=(e)=>{
+  if(retry<1){setTimeout(()=>speakText(text,retry+1),200);}
+};
 window.speechSynthesis.speak(u);
-}
 }
 
 // === 받아쓰기 (Dictation) ===
@@ -4238,6 +4261,7 @@ const count=parseInt(document.getElementById('pv-study-count').value),order=docu
 // ★ 다중 선택 필터 적용
 const masteryF=getMultiChip('pv-filter-mastery');
 const cefrF=getMultiChip('pv-filter-cefr');
+const freqF=getMultiChip('pv-filter-freq');
 const priorityF=getMultiChip('pv-filter-priority');
 const formalityF=getMultiChip('pv-filter-formality');
 const currencyF=getMultiChip('pv-filter-currency');
@@ -4249,6 +4273,7 @@ const today=now.toDateString();
 let filtered=p.filter(x=>{
 if(!checkMasteryFilter(x,masteryF))return false;
 if(!checkMultiFilter(x.CEFR||'B1',cefrF))return false;
+if(!checkMultiFilter(x.Frequency||'K3',freqF))return false;
 if(!checkMultiFilter(x.Priority||'P2',priorityF))return false;
 if(!checkMultiFilter(x.Formality||'Neutral',formalityF))return false;
 if(!checkMultiFilter(x.Currency||'Current',currencyF))return false;
@@ -6006,6 +6031,7 @@ const count=parseInt(document.getElementById('expr-study-count').value)||20;
 // ★ chip-multi 필터
 const masteryF=getMultiChip('expr-filter-mastery');
 const cefrF=getMultiChip('expr-filter-cefr');
+const freqF=getMultiChip('expr-filter-freq');
 const priorityF=getMultiChip('expr-filter-priority');
 const formalityF=getMultiChip('expr-filter-formality');
 const currencyF=getMultiChip('expr-filter-currency');
@@ -6018,6 +6044,7 @@ const isTypingMode=mode==='expr-typing';
 let filtered=exprs.filter(x=>{
   if(!checkMasteryFilter(x,masteryF))return false;
   if(!checkMultiFilter(x.CEFR||'B1',cefrF))return false;
+  if(!checkMultiFilter(x.Frequency||'K3',freqF))return false;
   if(!checkMultiFilter(x.Priority||'P2',priorityF))return false;
   if(!checkMultiFilter(x.Formality||'Neutral',formalityF))return false;
   if(!checkMultiFilter(x.Currency||'Current',currencyF))return false;
@@ -6612,6 +6639,7 @@ document.getElementById('expr-edit-medium').value=e.Medium||'Both';
 document.getElementById('expr-edit-example1').value=e.Example1||'';
 document.getElementById('expr-edit-example2').value=e.Example2||'';
 document.getElementById('expr-edit-similar').value=e.Similar_Expr||'';
+document.getElementById('expr-edit-error').value=e.Common_Error||'';
 document.getElementById('expr-edit-coca').value=e.COCA_Genre||'';
 document.getElementById('expr-edit-toefl').value=e.TOEFL_Rel||'';
 document.getElementById('expr-edit-priority').value=e.Priority||'';
@@ -6650,6 +6678,7 @@ editingExpr.Medium=document.getElementById('expr-edit-medium').value;
 editingExpr.Example1=document.getElementById('expr-edit-example1').value;
 editingExpr.Example2=document.getElementById('expr-edit-example2').value;
 editingExpr.Similar_Expr=document.getElementById('expr-edit-similar').value;
+editingExpr.Common_Error=document.getElementById('expr-edit-error').value;
 editingExpr.COCA_Genre=document.getElementById('expr-edit-coca').value;
 editingExpr.TOEFL_Rel=document.getElementById('expr-edit-toefl').value;
 editingExpr.Priority=document.getElementById('expr-edit-priority').value;
@@ -7163,7 +7192,7 @@ const gN=(r,n)=>{const v=gC(r,n);return v?parseFloat(v):null;}; // 숫자 파싱
 const gI=(r,n)=>{const v=gC(r,n);return v?parseInt(v,10):0;}; // 정수 파싱
 // 여러 컬럼명 시도 헬퍼
 const gM=(r,...names)=>{for(const n of names){const v=gC(r,n);if(v)return v;}return '';};
-for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[wIdx])continue;const wK=r[wIdx].toString().trim();const ex=await getWord(wK);if(ex){uC++;if(ex.reviewCount>0)pC++;}else nC++;const starredVal=gC(r,'starred').toLowerCase();const needsProdVal=gC(r,'needsproduction').toLowerCase();const tagsStr=gC(r,'tags');const tags=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):(ex?.tags||[]);
+for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[wIdx])continue;const wK=r[wIdx].toString().trim();const ex=await getWord(wK);if(ex){uC++;if(ex.reviewCount>0)pC++;}else nC++;const starredVal=gC(r,'starred').toLowerCase();const needsProdVal=gC(r,'needsproduction').toLowerCase();const tagsStr=gC(r,'tags');const styleTagsStr=gC(r,'Style_Tags')||gC(r,'StyleTags');const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];const tags=[...new Set([...tagsFromCol,...tagsFromStyle,...(ex?.tags||[])])];
 // Synonyms/Antonyms: 여러 컬럼명 지원
 const synRaw=gM(r,'Synonyms','Synonyms_EN','SynonymsEN','Synonym');
 const antRaw=gM(r,'Antonyms','Antonyms_EN','AntonymsEN','Antonyms_KO','AntonymsKO','Antonym');
@@ -7213,7 +7242,7 @@ if(pvIdx!==undefined){let nC=0,uC=0,pC=0;const ps=[];const gC=(r,n)=>{const idx=
 const gN=(r,n)=>{const v=gC(r,n);return v?parseFloat(v):null;};
 const gI=(r,n)=>{const v=gC(r,n);return v?parseInt(v,10):0;};
 const gM=(r,...names)=>{for(const n of names){const v=gC(r,n);if(v)return v;}return '';};
-for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[pvIdx])continue;const pvK=r[pvIdx].toString().trim();const ex=await getPV(pvK);if(ex){uC++;if(ex.reviewCount>0)pC++;}else nC++;const starredVal=gC(r,'starred').toLowerCase();const needsProdVal=gC(r,'needsproduction').toLowerCase();const tagsStr=gC(r,'tags');const tags=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):(ex?.tags||[]);
+for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[pvIdx])continue;const pvK=r[pvIdx].toString().trim();const ex=await getPV(pvK);if(ex){uC++;if(ex.reviewCount>0)pC++;}else nC++;const starredVal=gC(r,'starred').toLowerCase();const needsProdVal=gC(r,'needsproduction').toLowerCase();const tagsStr=gC(r,'tags');const styleTagsStr=gC(r,'Style_Tags')||gC(r,'StyleTags');const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];const tags=[...new Set([...tagsFromCol,...tagsFromStyle,...(ex?.tags||[])])];
 // Synonyms/Antonyms: 여러 컬럼명 지원
 const synRaw=gM(r,'Synonyms','Synonyms_EN','SynonymsEN');
 const antRaw=gM(r,'Antonyms','Antonyms_EN','AntonymsEN');
@@ -7264,7 +7293,7 @@ if(exprIdx!==undefined){let nC=0,uC=0,pC=0;const es=[];const gC=(r,n)=>{const id
 const gN=(r,n)=>{const v=gC(r,n);return v?parseFloat(v):null;};
 const gI=(r,n)=>{const v=gC(r,n);return v?parseInt(v,10):0;};
 const gM=(r,...names)=>{for(const n of names){const v=gC(r,n);if(v)return v;}return '';};
-for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[exprIdx])continue;const eK=r[exprIdx].toString().trim();const ex=await getExpr(eK);if(ex){uC++;if(ex.reviewCount>0)pC++;}else nC++;const starredVal=gC(r,'starred').toLowerCase();const needsProdVal=gC(r,'needsproduction').toLowerCase();const tagsStr=gC(r,'tags');const tags=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):(ex?.tags||[]);es.push({Expression:eK,
+for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[exprIdx])continue;const eK=r[exprIdx].toString().trim();const ex=await getExpr(eK);if(ex){uC++;if(ex.reviewCount>0)pC++;}else nC++;const starredVal=gC(r,'starred').toLowerCase();const needsProdVal=gC(r,'needsproduction').toLowerCase();const tagsStr=gC(r,'tags');const styleTagsStr=gC(r,'Style_Tags')||gC(r,'StyleTags');const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];const tags=[...new Set([...tagsFromCol,...tagsFromStyle,...(ex?.tags||[])])];es.push({Expression:eK,
 L1:gC(r,'L1')||ex?.L1||'',
 L2:gC(r,'L2')||ex?.L2||'',
 L3:gC(r,'L3')||ex?.L3||'',
@@ -7365,6 +7394,7 @@ document.getElementById('edit-pv-toefl').value=editingItem.TOEFL_Rel||'';
 document.getElementById('edit-pv-priority').value=editingItem.Priority||'';
 document.getElementById('edit-coca').value=editingItem.COCA_Genre||'';
 document.getElementById('edit-formal-equiv').value=editingItem.Formal_Equivalent||'';
+document.getElementById('edit-pv-error').value=editingItem.Common_Error||'';
 const pvSyn=editingItem.Synonyms;
 document.getElementById('edit-pv-synonyms').value=Array.isArray(pvSyn)?pvSyn.join(', '):(pvSyn||'');
 const pvAnt=editingItem.Antonyms;
@@ -7385,8 +7415,7 @@ document.getElementById('edit-formality').value=editingItem.Formality||'Neutral'
 document.getElementById('edit-currency').value=editingItem.Currency||'Current';
 document.getElementById('edit-medium').value=editingItem.Medium||'Both';
 document.getElementById('edit-collocation').value=editingItem.Key_Collocation||'';
-document.getElementById('edit-user-examples').value=(editingItem.userExamples||[]).join('\n');
-document.getElementById('edit-user-collocs').value=(editingItem.userCollocations||[]).join(', ');
+document.getElementById('edit-error').value=editingItem.Common_Error||'';
 // Synonyms/Antonyms: 배열 또는 문자열 처리
 const syn=editingItem.Synonyms;
 document.getElementById('edit-synonyms').value=Array.isArray(syn)?syn.join(', '):(syn||'');
@@ -7435,6 +7464,7 @@ editingItem.TOEFL_Rel=document.getElementById('edit-pv-toefl').value;
 editingItem.Priority=document.getElementById('edit-pv-priority').value;
 editingItem.COCA_Genre=document.getElementById('edit-coca').value;
 editingItem.Formal_Equivalent=document.getElementById('edit-formal-equiv').value;
+editingItem.Common_Error=document.getElementById('edit-pv-error').value;
 const pvSynStr=document.getElementById('edit-pv-synonyms').value.trim();
 editingItem.Synonyms=pvSynStr?pvSynStr.split(',').map(s=>s.trim()).filter(s=>s):[];
 const pvAntStr=document.getElementById('edit-pv-antonyms').value.trim();
@@ -7467,10 +7497,7 @@ editingItem.Formality=document.getElementById('edit-formality').value;
 editingItem.Currency=document.getElementById('edit-currency').value;
 editingItem.Medium=document.getElementById('edit-medium').value;
 editingItem.Key_Collocation=document.getElementById('edit-collocation').value;
-const userExStr=document.getElementById('edit-user-examples').value.trim();
-editingItem.userExamples=userExStr?userExStr.split('\n').map(e=>e.trim()).filter(e=>e):[];
-const userCollStr=document.getElementById('edit-user-collocs').value.trim();
-editingItem.userCollocations=userCollStr?userCollStr.split(',').map(c=>c.trim()).filter(c=>c):[];
+editingItem.Common_Error=document.getElementById('edit-error').value;
 const synStr=document.getElementById('edit-synonyms').value.trim();
 editingItem.Synonyms=synStr?synStr.split(',').map(s=>s.trim()).filter(s=>s):[];
 const antStr=document.getElementById('edit-antonyms').value.trim();
@@ -8090,6 +8117,13 @@ document.getElementById('setting-dark').checked=theme==='dark';
 // TTS 설정 로드
 const tts=localStorage.getItem('tts');
 document.getElementById('setting-tts').checked=tts==='true';
+// ★ TTS 워밍업 (첫 발화 지연 방지 - Chrome 버그 해결)
+if('speechSynthesis' in window){
+  window.speechSynthesis.cancel();
+  const warmup=new SpeechSynthesisUtterance('');
+  warmup.volume=0;
+  window.speechSynthesis.speak(warmup);
+}
 // 진동 설정 로드 (기본값 true)
 const vib=localStorage.getItem('vibrate');
 document.getElementById('setting-vibrate').checked=vib!=='false';
