@@ -272,6 +272,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <!-- 받아쓰기 (Dictation) -->
 <div id="page-dictation" class="page">
 <div style="position:sticky;top:0;z-index:10;background:var(--card);padding:12px 0;margin:-16px -16px 16px -16px;padding:12px 16px"><div class="progress-bar"><div class="progress-fill" id="dictation-progress"></div></div><div class="progress-text"><span><span id="dictation-current">0</span> / <span id="dictation-total">0</span></span><span>✅ <span id="dictation-correct">0</span> ❌ <span id="dictation-wrong">0</span></span></div></div>
+<div class="retry-banner hidden" id="dictation-retry-banner"><div class="retry-banner-icon">🔄</div><div class="retry-banner-text">오답 재출제 중</div><div class="retry-banner-count" id="dictation-retry-count">0</div></div>
 <div class="card" style="min-height:180px;display:flex;flex-direction:column;justify-content:center;align-items:center">
 <div style="font-size:64px;margin-bottom:16px">✍️</div>
 <button class="btn btn-primary" onclick="playCurrentDictation()" id="dictation-play-btn" style="padding:16px 32px;font-size:18px">🔊 듣기</button>
@@ -1294,6 +1295,55 @@ function stabilityToBox(S) {
   return 5;
 }
 let db=null,wordOffset=0,currentDataType='vocab',currentStudyType='vocab',currentWeakType='vocab',currentHomeType='vocab';
+
+// ★ State 팩토리 함수 (일관성 보장)
+function createBaseState(words=[], allWords=[], type='vocab') {
+  return {
+    words: words,
+    allWords: allWords,
+    idx: 0,
+    correct: 0,
+    wrong: 0,
+    answered: false,
+    start: Date.now(),
+    type: type,
+    retryQueue: [],
+    finalQueue: [],
+    phase: 'normal',
+    savedToWrong: 0,
+    originalCount: words.length,
+    completed: 0,
+    completedKeys: new Set(),
+    firstTryCorrect: 0,
+    firstTryWrong: 0,
+    sessionId: Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+  };
+}
+function createFCState(words=[], allWords=[], type='vocab') {
+  return {
+    ...createBaseState(words, allWords, type),
+    flipped: false,
+    timer: null,
+    transitioning: false,
+    stats: { again: 0, hard: 0, good: 0, easy: 0 }
+  };
+}
+function createQuizState(words=[], allWords=[], mode='quiz', type='vocab') {
+  return {
+    ...createBaseState(words, allWords, type),
+    mode: mode,
+    correctAns: null,
+    autoNextTimer: null
+  };
+}
+function createTypingState(words=[], allWords=[], type='vocab') {
+  return {
+    ...createBaseState(words, allWords, type),
+    hintUsed: false,
+    currentWord: null
+  };
+}
+
 // 플래시카드 상태
 let fcState={words:[],idx:0,flipped:false,start:null,timer:null,stats:{again:0,hard:0,good:0,easy:0},transitioning:false,retryQueue:[],phase:'normal',type:'vocab',savedToWrong:0,allWords:[],originalCount:0,completed:0,firstTryCorrect:0,firstTryWrong:0};
 let lastStudyType='vocab';
@@ -1351,7 +1401,18 @@ async function getAllExpr(){return new Promise(r=>{try{const req=db.transaction(
 async function saveWord(w){return new Promise(r=>{const tx=db.transaction('words','readwrite');tx.objectStore('words').put(w);tx.oncomplete=r;})}
 async function savePV(p){return new Promise(r=>{const tx=db.transaction('phrasal_verbs','readwrite');tx.objectStore('phrasal_verbs').put(p);tx.oncomplete=r;})}
 async function saveExpr(e){return new Promise(r=>{const tx=db.transaction('expressions','readwrite');tx.objectStore('expressions').put(e);tx.oncomplete=r;})}
-async function saveSession(s){lastStudyType=s.type||'vocab';return new Promise(r=>{const tx=db.transaction('sessions','readwrite');s.date=new Date().toISOString();tx.objectStore('sessions').add(s);tx.oncomplete=r;})}
+const savedSessionStarts=new Set(); // ★ 중복 저장 방지용
+async function saveSession(s){
+  // ★ mode+start로 중복 저장 방지 (같은 세션 중복 저장 차단)
+  const sessionKey=(s.mode||'unknown')+'-'+(s.start||0);
+  if(s.start && savedSessionStarts.has(sessionKey)){
+    console.log('[saveSession] 중복 저장 방지:',sessionKey);
+    return;
+  }
+  if(s.start)savedSessionStarts.add(sessionKey);
+  lastStudyType=s.type||'vocab';
+  return new Promise(r=>{const tx=db.transaction('sessions','readwrite');s.date=new Date().toISOString();tx.objectStore('sessions').add(s);tx.oncomplete=r;});
+}
 async function getSessions(){return new Promise(r=>{const req=db.transaction('sessions','readonly').objectStore('sessions').getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);})}
 async function getWord(w){return new Promise(r=>{try{const req=db.transaction('words','readonly').objectStore('words').get(w);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);}catch(e){r(null);}})}
 async function getPV(p){return new Promise(r=>{try{const req=db.transaction('phrasal_verbs','readonly').objectStore('phrasal_verbs').get(p);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);}catch(e){r(null);}})}
@@ -1652,7 +1713,31 @@ speechSynthesis.speak(u);
 },50);
 }
 let toastTimer=null;
-function showToast(m){const t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('show');if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.classList.remove('show');toastTimer=null;},2500);}
+function showToast(m,duration=2500){
+  const t=document.getElementById('toast');
+  if(!t)return;
+  // 기존 타이머 확실히 취소
+  if(toastTimer){clearTimeout(toastTimer);toastTimer=null;}
+  if(t._toastTimer){clearTimeout(t._toastTimer);t._toastTimer=null;}
+  // 토스트 표시
+  t.textContent=m;
+  t.classList.add('show');
+  // 새 타이머 설정 (두 곳에 저장하여 확실히 추적)
+  const timerId=setTimeout(()=>{
+    t.classList.remove('show');
+    toastTimer=null;
+    t._toastTimer=null;
+  },duration);
+  toastTimer=timerId;
+  t._toastTimer=timerId;
+}
+function hideToast(){
+  const t=document.getElementById('toast');
+  if(!t)return;
+  if(toastTimer){clearTimeout(toastTimer);toastTimer=null;}
+  if(t._toastTimer){clearTimeout(t._toastTimer);t._toastTimer=null;}
+  t.classList.remove('show');
+}
 function showModal(id){document.getElementById(id)?.classList.add('show');}
 function closeModal(id){document.getElementById(id)?.classList.remove('show');}
 // ★ 모달 외부(오버레이) 클릭 시 닫기
@@ -2116,6 +2201,7 @@ const priorityF=getMultiChip('pv-filter-priority');
 const formalityF=getMultiChip('pv-filter-formality');
 const currencyF=getMultiChip('pv-filter-currency');
 const mediumF=getMultiChip('pv-filter-medium');
+const tagF=getMultiFilterValue('pv-filter-tag'); // ★ 태그 필터 추가
 const catVal=document.getElementById('pv-filter-cat')?.value||'all';
 let filtered=p.filter(x=>{
   if(!checkMasteryFilter(x,masteryF))return false;
@@ -2124,6 +2210,7 @@ let filtered=p.filter(x=>{
   if(!checkMultiFilter(x.Formality||'Neutral',formalityF))return false;
   if(!checkMultiFilter(x.Currency||'Current',currencyF))return false;
   if(!checkMultiFilter(x.Medium||'Both',mediumF))return false;
+  if(!checkTagFilter(x.tags||[],tagF))return false; // ★ 태그 필터 적용
   if(catVal!=='all'&&x.Category!==catVal)return false;
   return true;
 });
@@ -2359,43 +2446,43 @@ if(page==='flashcard'){
   if(ev>0){
     const known=fcState.stats.good+fcState.stats.easy,unknown=fcState.stats.again+fcState.stats.hard;
     const acc=Math.round((known/ev)*100),dur=Math.round((Date.now()-fcState.start)/1000);
-    await saveSession({total:ev,known,unknown,accuracy:acc,duration:dur,mode:'flashcard',type:fcState.type,stats:{...fcState.stats},uniqueTotal:fcState.originalCount,firstTryCorrect:fcState.firstTryCorrect,firstTryWrong:fcState.firstTryWrong});
+    await saveSession({start:fcState.start,total:ev,known,unknown,accuracy:acc,duration:dur,mode:'flashcard',type:fcState.type,stats:{...fcState.stats},uniqueTotal:fcState.originalCount,firstTryCorrect:fcState.firstTryCorrect,firstTryWrong:fcState.firstTryWrong});
   }
 }else if(page==='quiz'){
   const ans=quizState.correct+quizState.wrong;
   if(ans>0){
     const acc=Math.round((quizState.correct/ans)*100);
-    await saveSession({total:ans,correct:quizState.correct,wrong:quizState.wrong,accuracy:acc,mode:quizState.mode,type:quizState.type,duration:Math.round((Date.now()-quizState.start)/1000),uniqueTotal:quizState.originalCount,firstTryCorrect:quizState.firstTryCorrect,firstTryWrong:quizState.firstTryWrong});
+    await saveSession({start:quizState.start,total:ans,correct:quizState.correct,wrong:quizState.wrong,accuracy:acc,mode:quizState.mode,type:quizState.type,duration:Math.round((Date.now()-quizState.start)/1000),uniqueTotal:quizState.originalCount,firstTryCorrect:quizState.firstTryCorrect,firstTryWrong:quizState.firstTryWrong});
   }
 }else if(page==='typing'){
   const ans=typingState.correct+typingState.wrong;
   if(ans>0){
     const acc=Math.round((typingState.correct/ans)*100);
-    await saveSession({total:ans,correct:typingState.correct,wrong:typingState.wrong,accuracy:acc,mode:'typing',type:'vocab',duration:Math.round((Date.now()-typingState.start)/1000),uniqueTotal:typingState.originalCount,firstTryCorrect:typingState.firstTryCorrect,firstTryWrong:typingState.firstTryWrong});
+    await saveSession({start:typingState.start,total:ans,correct:typingState.correct,wrong:typingState.wrong,accuracy:acc,mode:'typing',type:'vocab',duration:Math.round((Date.now()-typingState.start)/1000),uniqueTotal:typingState.originalCount,firstTryCorrect:typingState.firstTryCorrect,firstTryWrong:typingState.firstTryWrong});
   }
 }else if(page==='listening'){
   const ans=listeningState.correct+listeningState.wrong;
   if(ans>0){
     const acc=Math.round((listeningState.correct/ans)*100);
-    await saveSession({total:ans,correct:listeningState.correct,wrong:listeningState.wrong,accuracy:acc,mode:'listening',type:currentListeningType,duration:Math.round((Date.now()-listeningState.start)/1000),uniqueTotal:listeningState.originalCount,firstTryCorrect:listeningState.firstTryCorrect,firstTryWrong:listeningState.firstTryWrong});
+    await saveSession({start:listeningState.start,total:ans,correct:listeningState.correct,wrong:listeningState.wrong,accuracy:acc,mode:'listening',type:currentListeningType,duration:Math.round((Date.now()-listeningState.start)/1000),uniqueTotal:listeningState.originalCount,firstTryCorrect:listeningState.firstTryCorrect,firstTryWrong:listeningState.firstTryWrong});
   }
 }else if(page==='dictation'){
   const ans=dictationState.correct+dictationState.wrong;
   if(ans>0){
     const acc=Math.round((dictationState.correct/ans)*100);
-    await saveSession({total:ans,correct:dictationState.correct,wrong:dictationState.wrong,accuracy:acc,mode:'dictation',type:currentListeningType,duration:Math.round((Date.now()-dictationState.start)/1000),uniqueTotal:dictationState.originalCount,firstTryCorrect:dictationState.firstTryCorrect,firstTryWrong:dictationState.firstTryWrong});
+    await saveSession({start:dictationState.start,total:ans,correct:dictationState.correct,wrong:dictationState.wrong,accuracy:acc,mode:'dictation',type:currentListeningType,duration:Math.round((Date.now()-dictationState.start)/1000),uniqueTotal:dictationState.originalCount,firstTryCorrect:dictationState.firstTryCorrect,firstTryWrong:dictationState.firstTryWrong});
   }
 }else if(page==='cloze'){
   const ans=clozeState.correct+clozeState.wrong;
   if(ans>0){
     const acc=Math.round((clozeState.correct/ans)*100);
-    await saveSession({total:ans,correct:clozeState.correct,wrong:clozeState.wrong,accuracy:acc,mode:'cloze',type:'vocab',duration:Math.round((Date.now()-clozeState.start)/1000),uniqueTotal:clozeState.originalCount,firstTryCorrect:clozeState.firstTryCorrect,firstTryWrong:clozeState.firstTryWrong});
+    await saveSession({start:clozeState.start,total:ans,correct:clozeState.correct,wrong:clozeState.wrong,accuracy:acc,mode:'cloze',type:'vocab',duration:Math.round((Date.now()-clozeState.start)/1000),uniqueTotal:clozeState.originalCount,firstTryCorrect:clozeState.firstTryCorrect,firstTryWrong:clozeState.firstTryWrong});
   }
 }else if(page==='collocation'){
   const ans=collocState.correct+collocState.wrong;
   if(ans>0){
     const acc=Math.round((collocState.correct/ans)*100);
-    await saveSession({total:ans,correct:collocState.correct,wrong:collocState.wrong,accuracy:acc,mode:'collocation',type:'vocab',duration:Math.round((Date.now()-collocState.start)/1000),uniqueTotal:collocState.originalCount,firstTryCorrect:collocState.firstTryCorrect,firstTryWrong:collocState.firstTryWrong});
+    await saveSession({start:collocState.start,total:ans,correct:collocState.correct,wrong:collocState.wrong,accuracy:acc,mode:'collocation',type:'vocab',duration:Math.round((Date.now()-collocState.start)/1000),uniqueTotal:collocState.originalCount,firstTryCorrect:collocState.firstTryCorrect,firstTryWrong:collocState.firstTryWrong});
   }
 }else if(page==='expr-fc'){
   if(exprState.timer){clearInterval(exprState.timer);exprState.timer=null;}
@@ -2403,37 +2490,37 @@ if(page==='flashcard'){
   if(total>0){
     const known=exprState.stats.good+exprState.stats.easy,unknown=exprState.stats.again+exprState.stats.hard;
     const acc=Math.round((known/total)*100),dur=Math.round((Date.now()-exprState.start)/1000);
-    await saveSession({total,known,unknown,accuracy:acc,duration:dur,mode:'expr-fc',type:'expr',stats:{...exprState.stats},uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
+    await saveSession({start:exprState.start,total,known,unknown,accuracy:acc,duration:dur,mode:'expr-fc',type:'expr',stats:{...exprState.stats},uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
   }
 }else if(page==='expr-quiz'){
   const ans=exprState.correct+exprState.wrong;
   if(ans>0){
     const acc=Math.round((exprState.correct/ans)*100);
-    await saveSession({total:ans,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-quiz',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
+    await saveSession({start:exprState.start,total:ans,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-quiz',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
   }
 }else if(page==='expr-cloze'){
   const ans=exprState.correct+exprState.wrong;
   if(ans>0){
     const acc=Math.round((exprState.correct/ans)*100);
-    await saveSession({total:ans,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-cloze',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
+    await saveSession({start:exprState.start,total:ans,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-cloze',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
   }
 }else if(page==='expr-typing'){
   const ans=exprTypingState.correct+exprTypingState.wrong;
   if(ans>0){
     const acc=Math.round((exprTypingState.correct/ans)*100);
-    await saveSession({total:ans,correct:exprTypingState.correct,wrong:exprTypingState.wrong,accuracy:acc,mode:'expr-typing',type:'expr',duration:Math.round((Date.now()-exprTypingState.start)/1000),uniqueTotal:exprTypingState.originalCount,firstTryCorrect:exprTypingState.firstTryCorrect,firstTryWrong:exprTypingState.firstTryWrong});
+    await saveSession({start:exprTypingState.start,total:ans,correct:exprTypingState.correct,wrong:exprTypingState.wrong,accuracy:acc,mode:'expr-typing',type:'expr',duration:Math.round((Date.now()-exprTypingState.start)/1000),uniqueTotal:exprTypingState.originalCount,firstTryCorrect:exprTypingState.firstTryCorrect,firstTryWrong:exprTypingState.firstTryWrong});
   }
 }else if(page==='pv-particle'){
   const ans=pvState.correct+pvState.wrong;
   if(ans>0){
     const acc=Math.round((pvState.correct/ans)*100);
-    await saveSession({total:ans,correct:pvState.correct,wrong:pvState.wrong,accuracy:acc,mode:'pv-particle',type:'phrasal',duration:Math.round((Date.now()-pvState.start)/1000),uniqueTotal:pvState.originalCount,firstTryCorrect:pvState.firstTryCorrect,firstTryWrong:pvState.firstTryWrong});
+    await saveSession({start:pvState.start,total:ans,correct:pvState.correct,wrong:pvState.wrong,accuracy:acc,mode:'pv-particle',type:'phrasal',duration:Math.round((Date.now()-pvState.start)/1000),uniqueTotal:pvState.originalCount,firstTryCorrect:pvState.firstTryCorrect,firstTryWrong:pvState.firstTryWrong});
   }
 }else if(page==='pv-quiz'){
   const ans=pvState.correct+pvState.wrong;
   if(ans>0){
     const acc=Math.round((pvState.correct/ans)*100);
-    await saveSession({total:ans,correct:pvState.correct,wrong:pvState.wrong,accuracy:acc,mode:pvState.mode||'pv-meaning',type:'phrasal',duration:Math.round((Date.now()-pvState.start)/1000),uniqueTotal:pvState.originalCount,firstTryCorrect:pvState.firstTryCorrect,firstTryWrong:pvState.firstTryWrong});
+    await saveSession({start:pvState.start,total:ans,correct:pvState.correct,wrong:pvState.wrong,accuracy:acc,mode:pvState.mode||'pv-meaning',type:'phrasal',duration:Math.round((Date.now()-pvState.start)/1000),uniqueTotal:pvState.originalCount,firstTryCorrect:pvState.firstTryCorrect,firstTryWrong:pvState.firstTryWrong});
   }
 }
 showToast('📊 학습 기록 저장됨');
@@ -2484,7 +2571,8 @@ function cleanupAllTimers(){
   if(exprState?.autoNextTimer){clearTimeout(exprState.autoNextTimer);exprState.autoNextTimer=null;}
   if(typeof listeningRatingTimer!=='undefined'&&listeningRatingTimer){clearTimeout(listeningRatingTimer);listeningRatingTimer=null;}
   if(typeof quizRatingTimer!=='undefined'&&quizRatingTimer){clearTimeout(quizRatingTimer);quizRatingTimer=null;}
-  if(typeof toastTimer!=='undefined'&&toastTimer){clearTimeout(toastTimer);toastTimer=null;}
+  // ★ 토스트 숨기기 (hideToast 함수 사용)
+  hideToast();
 }
 // ★ 탭 비활성화 시 타이머 정리 (배터리/메모리 절약)
 document.addEventListener('visibilitychange',()=>{
@@ -2772,7 +2860,7 @@ async function startExprFCWithItems(items,all){
 if(!items.length){showToast('💬 학습할 표현이 없습니다!');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...items]);
-exprState={words:shuffled,allWords:all,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+exprState={words:shuffled,allWords:all,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=shuffled.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -2783,7 +2871,7 @@ function startExprQuiz(items,all){
 if(items.length<5){showToast('⚠️ 학습할 표현이 부족합니다');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...items]);
-exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-quiz-total').textContent=shuffled.length;
 document.getElementById('expr-quiz-retry-banner').classList.add('hidden');
 showPage('expr-quiz');showExprQuizQ();
@@ -2794,7 +2882,7 @@ let valid=items.filter(e=>{const ex=getEx(e);const expr=(e.Expression||'').toLow
 if(!valid.length){showToast('✅ 빈칸채우기 가능한 표현이 없습니다!');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...valid]);
-exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-cloze-total').textContent=shuffled.length;
 showPage('expr-cloze');showExprClozeQ();
 }
@@ -2806,7 +2894,7 @@ if(!valid.length){valid=items;} // fallback: 필터 없이 전부
 if(!valid.length){showToast('✅ 타이핑 가능한 표현이 없습니다!');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...valid]);
-exprTypingState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprTypingState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-typing-total').textContent=shuffled.length;
 document.getElementById('expr-typing-retry-banner').classList.add('hidden');
 showPage('expr-typing');showExprTypingQ();
@@ -2821,7 +2909,7 @@ console.log('startFC called:', {itemsCount: items.length, type, firstItem: items
 if(fcState.timer)clearInterval(fcState.timer);
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...items]);
-fcState={words:shuffled,idx:0,flipped:false,start:Date.now(),timer:null,stats:{again:0,hard:0,good:0,easy:0},transitioning:false,retryQueue:[],phase:'normal',type,savedToWrong:0,allWords:all,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+fcState={words:shuffled,idx:0,flipped:false,start:Date.now(),timer:null,stats:{again:0,hard:0,good:0,easy:0},transitioning:false,retryQueue:[],phase:'normal',type,savedToWrong:0,allWords:all,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 console.log('fcState.words[0]:', fcState.words[0]);
 document.getElementById('fc-total').textContent=shuffled.length;
 document.getElementById('fc-current').textContent='0';
@@ -2993,7 +3081,7 @@ if(!item.isRetry){
   else fcState.firstTryWrong++;
 }
 // ★ 고유 카드 완료 추적 (재출제 카드 제외)
-if(!item.isRetry){
+if(!item.isRetry&&fcState.completedKeys){
   const key=fcState.type==='phrasal'?item.Phrasal_Verb:item.word;
   fcState.completedKeys.add(key);
 }
@@ -3029,7 +3117,7 @@ try{
   console.log('[rateCard] DB 저장 완료:',{word:item.word||item.Phrasal_Verb,nextReview:item.nextReview});
 }catch(saveErr){console.error('DB save error:',saveErr);}
 vibrate(r>=2?10:[50,30,50]);fcState.idx++;
-setTimeout(()=>{fcState.transitioning=false;showCard();},200);
+setTimeout(()=>{fcState.transitioning=false;try{showCard();}catch(e){console.error('showCard error:',e);}},200);
 }catch(e){
 console.error('rateCard error:',e);
 fcState.transitioning=false; // ★ 에러 시 반드시 해제
@@ -3054,7 +3142,7 @@ const ev=fcState.stats.again+fcState.stats.hard+fcState.stats.good+fcState.stats
 if(ev===0||skip){showPage(studyStartPage,true);showToast('학습이 취소되었습니다');return;}
 const known=fcState.stats.good+fcState.stats.easy,unknown=fcState.stats.again+fcState.stats.hard,dur=Math.round((Date.now()-fcState.start)/1000);
 const acc=Math.round((known/ev)*100);
-await saveSession({total:ev,known,unknown,accuracy:acc,duration:dur,mode:'flashcard',type:fcState.type,stats:{...fcState.stats},uniqueTotal:fcState.originalCount,firstTryCorrect:fcState.firstTryCorrect,firstTryWrong:fcState.firstTryWrong});
+await saveSession({start:fcState.start,total:ev,known,unknown,accuracy:acc,duration:dur,mode:'flashcard',type:fcState.type,stats:{...fcState.stats},uniqueTotal:fcState.originalCount,firstTryCorrect:fcState.firstTryCorrect,firstTryWrong:fcState.firstTryWrong});
 document.getElementById('complete-total').textContent=ev;
 document.getElementById('complete-known').textContent=known;
 document.getElementById('complete-unknown').textContent=unknown;
@@ -3069,7 +3157,7 @@ function startQuiz(words,all,mode,type){
 const m=words.filter(w=>getMKO(w));if(m.length<5){showToast('⚠️ 뜻이 있는 단어가 부족합니다');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...m]);
-quizState={words:shuffled,allWords:all||words,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode:mode||'quiz',type:type||'vocab',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+quizState={words:shuffled,allWords:all||words,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode:mode||'quiz',type:type||'vocab',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('quiz-total').textContent=shuffled.length;
 document.getElementById('quiz-retry-banner').classList.add('hidden');
 showPage('quiz');showQuizQ();updateStreak();
@@ -3197,7 +3285,7 @@ function confirmEndQuiz(){if(quizState.idx<quizState.words.length||quizState.ret
 async function endQuiz(){
 const ans=quizState.correct+quizState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((quizState.correct/ans)*100);
-await saveSession({total:ans,correct:quizState.correct,wrong:quizState.wrong,accuracy:acc,mode:quizState.mode,type:quizState.type,duration:Math.round((Date.now()-quizState.start)/1000),uniqueTotal:quizState.originalCount,firstTryCorrect:quizState.firstTryCorrect,firstTryWrong:quizState.firstTryWrong});
+await saveSession({start:quizState.start,total:ans,correct:quizState.correct,wrong:quizState.wrong,accuracy:acc,mode:quizState.mode,type:quizState.type,duration:Math.round((Date.now()-quizState.start)/1000),uniqueTotal:quizState.originalCount,firstTryCorrect:quizState.firstTryCorrect,firstTryWrong:quizState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=quizState.correct;document.getElementById('qc-wrong').textContent=quizState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
 if(quizState.savedToWrong>0){document.getElementById('qc-wrong-info').classList.remove('hidden');document.getElementById('qc-wrong-count').textContent=quizState.savedToWrong;}else document.getElementById('qc-wrong-info').classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
@@ -3208,7 +3296,7 @@ function startTyping(words){
 const valid=words.filter(w=>getMKO(w));
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...valid]);
-typingState={words:shuffled,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+typingState={words:shuffled,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('typing-total').textContent=shuffled.length;document.getElementById('typing-retry-banner').classList.add('hidden');
 showPage('typing');showTypingQ();updateStreak();
 }
@@ -3284,7 +3372,7 @@ function confirmEndTyping(){if(typingState.idx<typingState.words.length||typingS
 async function endTyping(){
 const ans=typingState.correct+typingState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((typingState.correct/ans)*100);
-await saveSession({total:ans,correct:typingState.correct,wrong:typingState.wrong,accuracy:acc,mode:'typing',type:'vocab',duration:Math.round((Date.now()-typingState.start)/1000),uniqueTotal:typingState.originalCount,firstTryCorrect:typingState.firstTryCorrect,firstTryWrong:typingState.firstTryWrong});
+await saveSession({start:typingState.start,total:ans,correct:typingState.correct,wrong:typingState.wrong,accuracy:acc,mode:'typing',type:'vocab',duration:Math.round((Date.now()-typingState.start)/1000),uniqueTotal:typingState.originalCount,firstTryCorrect:typingState.firstTryCorrect,firstTryWrong:typingState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=typingState.correct;document.getElementById('qc-wrong').textContent=typingState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
 if(typingState.savedToWrong>0){document.getElementById('qc-wrong-info').classList.remove('hidden');document.getElementById('qc-wrong-count').textContent=typingState.savedToWrong;}else document.getElementById('qc-wrong-info').classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
@@ -3304,7 +3392,7 @@ return allEx.some(e=>regex.test(e));
 if(valid.length<5){showToast('⚠️ 유효한 예문이 있는 단어가 부족합니다 (5개 이상 필요)');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...valid]);
-clozeState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,autoNextTimer:null,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+clozeState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,autoNextTimer:null,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('cloze-total').textContent=shuffled.length;
 document.getElementById('cloze-retry-banner').classList.add('hidden');
 showPage('cloze');showClozeQ();
@@ -3420,7 +3508,7 @@ function confirmEndCloze(){if(clozeState.idx<clozeState.words.length||clozeState
 async function endCloze(){
 const ans=clozeState.correct+clozeState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((clozeState.correct/ans)*100);
-await saveSession({total:ans,correct:clozeState.correct,wrong:clozeState.wrong,accuracy:acc,mode:'cloze',type:'vocab',duration:Math.round((Date.now()-clozeState.start)/1000),uniqueTotal:clozeState.originalCount,firstTryCorrect:clozeState.firstTryCorrect,firstTryWrong:clozeState.firstTryWrong});
+await saveSession({start:clozeState.start,total:ans,correct:clozeState.correct,wrong:clozeState.wrong,accuracy:acc,mode:'cloze',type:'vocab',duration:Math.round((Date.now()-clozeState.start)/1000),uniqueTotal:clozeState.originalCount,firstTryCorrect:clozeState.firstTryCorrect,firstTryWrong:clozeState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=clozeState.correct;document.getElementById('qc-wrong').textContent=clozeState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
 if(clozeState.savedToWrong>0){document.getElementById('qc-wrong-info').classList.remove('hidden');document.getElementById('qc-wrong-count').textContent=clozeState.savedToWrong;}else document.getElementById('qc-wrong-info').classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
@@ -3437,7 +3525,7 @@ return colls.some(c=>regex.test(c));
 if(valid.length<5){showToast('⚠️ 유효한 Collocation이 있는 단어가 부족합니다 (5개 이상 필요)');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...valid]);
-collocState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+collocState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('colloc-total').textContent=shuffled.length;
 document.getElementById('colloc-retry-banner').classList.add('hidden');
 showPage('collocation');showCollocQ();
@@ -3554,7 +3642,7 @@ function confirmEndColloc(){if(collocState.idx<collocState.words.length||collocS
 async function endColloc(){
 const ans=collocState.correct+collocState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((collocState.correct/ans)*100);
-await saveSession({total:ans,correct:collocState.correct,wrong:collocState.wrong,accuracy:acc,mode:'collocation',type:'vocab',duration:Math.round((Date.now()-collocState.start)/1000),uniqueTotal:collocState.originalCount,firstTryCorrect:collocState.firstTryCorrect,firstTryWrong:collocState.firstTryWrong});
+await saveSession({start:collocState.start,total:ans,correct:collocState.correct,wrong:collocState.wrong,accuracy:acc,mode:'collocation',type:'vocab',duration:Math.round((Date.now()-collocState.start)/1000),uniqueTotal:collocState.originalCount,firstTryCorrect:collocState.firstTryCorrect,firstTryWrong:collocState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=collocState.correct;document.getElementById('qc-wrong').textContent=collocState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
 if(collocState.savedToWrong>0){document.getElementById('qc-wrong-info').classList.remove('hidden');document.getElementById('qc-wrong-count').textContent=collocState.savedToWrong;}else document.getElementById('qc-wrong-info').classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
@@ -3570,7 +3658,7 @@ type=type||'vocab';
 currentListeningType=type;
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...items]);
-listeningState={words:shuffled,all:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),currentWord:null,type:type,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+listeningState={words:shuffled,all:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),currentWord:null,type:type,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('listening-total').textContent=shuffled.length;
 document.getElementById('listening-correct').textContent=0;
 document.getElementById('listening-wrong').textContent=0;
@@ -3599,7 +3687,7 @@ async function endCurrentListening(){
 const ans=listeningState.correct+listeningState.wrong;
 if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((listeningState.correct/ans)*100);
-await saveSession({total:ans,correct:listeningState.correct,wrong:listeningState.wrong,accuracy:acc,mode:'listening',type:currentListeningType,duration:Math.round((Date.now()-listeningState.start)/1000),uniqueTotal:listeningState.originalCount,firstTryCorrect:listeningState.firstTryCorrect,firstTryWrong:listeningState.firstTryWrong});
+await saveSession({start:listeningState.start,total:ans,correct:listeningState.correct,wrong:listeningState.wrong,accuracy:acc,mode:'listening',type:currentListeningType,duration:Math.round((Date.now()-listeningState.start)/1000),uniqueTotal:listeningState.originalCount,firstTryCorrect:listeningState.firstTryCorrect,firstTryWrong:listeningState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;
 document.getElementById('qc-correct').textContent=listeningState.correct;
 document.getElementById('qc-wrong').textContent=listeningState.wrong;
@@ -3694,7 +3782,7 @@ async function endCurrentDictation(){
 const ans=dictationState.correct+dictationState.wrong;
 if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((dictationState.correct/ans)*100);
-await saveSession({total:ans,correct:dictationState.correct,wrong:dictationState.wrong,accuracy:acc,mode:'dictation',type:currentDictationType,duration:Math.round((Date.now()-dictationState.start)/1000),uniqueTotal:dictationState.originalCount,firstTryCorrect:dictationState.firstTryCorrect,firstTryWrong:dictationState.firstTryWrong});
+await saveSession({start:dictationState.start,total:ans,correct:dictationState.correct,wrong:dictationState.wrong,accuracy:acc,mode:'dictation',type:currentDictationType,duration:Math.round((Date.now()-dictationState.start)/1000),uniqueTotal:dictationState.originalCount,firstTryCorrect:dictationState.firstTryCorrect,firstTryWrong:dictationState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;
 document.getElementById('qc-correct').textContent=dictationState.correct;
 document.getElementById('qc-wrong').textContent=dictationState.wrong;
@@ -3962,28 +4050,45 @@ window.speechSynthesis.speak(u);
 }
 
 // === 받아쓰기 (Dictation) ===
-let dictationState={words:[],idx:0,correct:0,wrong:0,answered:false,hintUsed:false,start:0,currentWord:null,originalCount:0,completed:0,firstTryCorrect:0,firstTryWrong:0};
+let dictationState={words:[],idx:0,correct:0,wrong:0,answered:false,hintUsed:false,start:0,currentWord:null,originalCount:0,completed:0,firstTryCorrect:0,firstTryWrong:0,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,completedKeys:new Set()};
 function startDictation(items,all,type){
 type=type||'vocab';
 currentDictationType=type;
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...items]);
-dictationState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,hintUsed:false,start:Date.now(),currentWord:null,type:type,originalCount:shuffled.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+dictationState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,hintUsed:false,start:Date.now(),currentWord:null,type:type,originalCount:shuffled.length,completed:0,firstTryCorrect:0,firstTryWrong:0,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,completedKeys:new Set(),sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('dictation-total').textContent=shuffled.length;
 document.getElementById('dictation-current').textContent='0';
 document.getElementById('dictation-correct').textContent=0;
 document.getElementById('dictation-wrong').textContent=0;
+document.getElementById('dictation-retry-banner').classList.add('hidden');
 showPage('dictation');showDictationQ();
 }
 function showDictationQ(){
+// ★ 3단계 재출제 로직
+if(dictationState.idx>=dictationState.words.length){
+  if(dictationState.retryQueue.length>0&&dictationState.phase==='normal'){
+    dictationState.words=[...dictationState.retryQueue];dictationState.retryQueue=[];dictationState.idx=0;dictationState.phase='retry';
+    document.getElementById('dictation-retry-banner').classList.remove('hidden');
+    document.getElementById('dictation-retry-count').textContent=dictationState.words.length;
+    showToast('🔄 오답 '+dictationState.words.length+'개 재출제!');
+  }else if(dictationState.finalQueue.length>0&&dictationState.phase==='retry'){
+    dictationState.words=[...dictationState.finalQueue];dictationState.finalQueue=[];dictationState.idx=0;dictationState.phase='final';
+    document.getElementById('dictation-retry-count').textContent=dictationState.words.length;
+    showToast('⚠️ 최종 '+dictationState.words.length+'개 재출제!');
+  }else{endCurrentDictation();return;}
+}
 const item=dictationState.words[dictationState.idx];
 if(!item){endCurrentDictation();return;}
 dictationState.currentWord=item;
 dictationState.answered=false;
 dictationState.hintUsed=false;
-// 진행바: completed/originalCount 기준
-document.getElementById('dictation-progress').style.width=(dictationState.completed/dictationState.originalCount)*100+'%';
-document.getElementById('dictation-current').textContent=dictationState.completed;
+// ★ 진행바: completedKeys 기준 (고유 카드)
+const uniqueCompleted=dictationState.completedKeys?.size||0;
+document.getElementById('dictation-progress').style.width=(uniqueCompleted/dictationState.originalCount)*100+'%';
+document.getElementById('dictation-current').textContent=uniqueCompleted;
+document.getElementById('dictation-total').textContent=dictationState.originalCount;
+if(dictationState.phase!=='normal')document.getElementById('dictation-retry-count').textContent=dictationState.words.length-dictationState.idx;
 document.getElementById('dictation-input').value='';
 document.getElementById('dictation-input').disabled=false;
 document.getElementById('dictation-input').classList.remove('correct','wrong');
@@ -4020,17 +4125,21 @@ async function checkDictation(){
 if(dictationState.answered){dictationState.idx++;showDictationQ();return;}
 const item=dictationState.words[dictationState.idx];
 const type=dictationState.type||'vocab';
-// ★ 타입별 정답 추출
-let correctPlain,correctDisplay;
+const isRetry=item.isRetry||false; // ★ 재출제 카드 여부
+// ★ 타입별 정답 및 키 추출
+let correctPlain,correctDisplay,itemKey;
 if(type==='vocab'){
   correctPlain=normalizeAnswer(displayWord(item.word,true));
   correctDisplay=displayWord(item.word);
+  itemKey=item.word;
 }else if(type==='phrasal'){
   correctPlain=normalizeAnswer(item.Phrasal_Verb);
   correctDisplay=item.Phrasal_Verb;
+  itemKey=item.Phrasal_Verb;
 }else{
   correctPlain=normalizeAnswer(item.Expression);
   correctDisplay=item.Expression;
+  itemKey=item.Expression;
 }
 const input=normalizeAnswer(document.getElementById('dictation-input').value);
 const ok=input===correctPlain;
@@ -4038,24 +4147,29 @@ dictationState.answered=true;
 document.getElementById('dictation-input').disabled=true;
 const ansEl=document.getElementById('dictation-answer');
 ansEl.classList.remove('hidden');
+
+// ★ 통계: 첫 시도만 correct/wrong 카운트
 if(ok){
-dictationState.correct++;
-dictationState.completed++;
-dictationState.firstTryCorrect++;
-document.getElementById('dictation-input').classList.add('correct');
-ansEl.innerHTML='✅ 정답! <strong>'+correctDisplay+'</strong>';
-ansEl.style.background='rgba(34,197,94,.2)';
-ansEl.style.color='var(--success)';
+  if(!isRetry){dictationState.correct++;dictationState.firstTryCorrect++;}
+  if(!isRetry&&dictationState.completedKeys)dictationState.completedKeys.add(itemKey);
+  document.getElementById('dictation-input').classList.add('correct');
+  ansEl.innerHTML='✅ 정답! <strong>'+correctDisplay+'</strong>';
+  ansEl.style.background='rgba(34,197,94,.2)';
+  ansEl.style.color='var(--success)';
 }else{
-dictationState.wrong++;
-dictationState.completed++;
-dictationState.firstTryWrong++;
-document.getElementById('dictation-input').classList.add('wrong');
-ansEl.innerHTML='❌ 오답<br><span style="font-size:20px;font-weight:700">'+correctDisplay+'</span><br><span style="font-size:14px;opacity:0.8">'+getMKO(item)+'</span>';
-ansEl.style.background='rgba(239,68,68,.2)';
-ansEl.style.color='var(--danger)';
+  if(!isRetry){dictationState.wrong++;dictationState.firstTryWrong++;}
+  // ★ 재출제 큐에 추가
+  if(dictationState.phase==='normal')dictationState.retryQueue.push({...item,isRetry:true});
+  else if(dictationState.phase==='retry')dictationState.finalQueue.push({...item,isRetry:true});
+  else{dictationState.savedToWrong++;if(!isRetry&&dictationState.completedKeys)dictationState.completedKeys.add(itemKey);} // final에서 틀려도 완료
+  document.getElementById('dictation-input').classList.add('wrong');
+  ansEl.innerHTML='❌ 오답<br><span style="font-size:20px;font-weight:700">'+correctDisplay+'</span><br><span style="font-size:14px;opacity:0.8">'+getMKO(item)+'</span>';
+  ansEl.style.background='rgba(239,68,68,.2)';
+  ansEl.style.color='var(--danger)';
 }
-// ★ 타입별 FSRS 업데이트
+
+// ★ 재출제 카드가 아닐 때만 DB 업데이트
+if(!isRetry){
 if(type==='vocab'){
 const w=await getWord(item.word);
 if(w){
@@ -4099,19 +4213,20 @@ else{updateWrong(e,false);Object.assign(e,calcNext(e,0));if(e.isLeech)showToast(
 try{await saveExpr(e);}catch(e2){console.error(e2);}
 }
 }
+}
 vibrate(ok?10:[50,30,50]);
 document.getElementById('dictation-correct').textContent=dictationState.correct;
 document.getElementById('dictation-wrong').textContent=dictationState.wrong;
 document.getElementById('dictation-submit-btn').textContent='다음 →';
 }
-function confirmEndDictation(){if(dictationState.idx<dictationState.words.length)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endDictation);else endDictation();}
+function confirmEndDictation(){if(dictationState.idx<dictationState.words.length||dictationState.retryQueue.length>0||dictationState.finalQueue.length>0)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endDictation);else endDictation();}
 async function endDictation(){
 const ans=dictationState.correct+dictationState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((dictationState.correct/ans)*100);
 const type=dictationState.type||'vocab';
-await saveSession({total:ans,correct:dictationState.correct,wrong:dictationState.wrong,accuracy:acc,mode:'dictation',type:type,duration:Math.round((Date.now()-dictationState.start)/1000),uniqueTotal:dictationState.originalCount,firstTryCorrect:dictationState.firstTryCorrect,firstTryWrong:dictationState.firstTryWrong});
+await saveSession({start:dictationState.start,total:ans,correct:dictationState.correct,wrong:dictationState.wrong,accuracy:acc,mode:'dictation',type:type,duration:Math.round((Date.now()-dictationState.start)/1000),uniqueTotal:dictationState.originalCount,firstTryCorrect:dictationState.firstTryCorrect,firstTryWrong:dictationState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=dictationState.correct;document.getElementById('qc-wrong').textContent=dictationState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
-document.getElementById('qc-wrong-info').classList.add('hidden');
+if(dictationState.savedToWrong>0){document.getElementById('qc-wrong-info').classList.remove('hidden');document.getElementById('qc-wrong-count').textContent=dictationState.savedToWrong;}else document.getElementById('qc-wrong-info').classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
 }
 document.getElementById('dictation-input')?.addEventListener('keypress',e=>{if(e.key==='Enter')checkCurrentDictation();});
@@ -4189,7 +4304,7 @@ function startPVP(items,all){
 const v=items.filter(x=>x.Particle?.trim());if(v.length<5){showToast('⚠️ Particle이 있는 구동사가 부족합니다');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...v]);
-pvState={words:shuffled,allWords:all||items,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode:'particle',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+pvState={words:shuffled,allWords:all||items,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode:'particle',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('pvp-total').textContent=shuffled.length;document.getElementById('pvp-retry-banner').classList.add('hidden');
 showPage('pv-particle');showPVPQ();updateStreak();
 }
@@ -4201,8 +4316,9 @@ if(pvState.idx>=pvState.words.length){
 }
 const pv=pvState.words[pvState.idx];if(!pv)return;
 // ★ 진행바: 완료된 고유 카드 / 원래 카드 수
-document.getElementById('pvp-progress').style.width=(pvState.completed/pvState.originalCount)*100+'%';
-document.getElementById('pvp-current').textContent=pvState.completed;document.getElementById('pvp-total').textContent=pvState.originalCount;
+const pvpUniqueCompleted=pvState.completedKeys?.size||0;
+document.getElementById('pvp-progress').style.width=(pvpUniqueCompleted/pvState.originalCount)*100+'%';
+document.getElementById('pvp-current').textContent=pvpUniqueCompleted;document.getElementById('pvp-total').textContent=pvState.originalCount;
 document.getElementById('pvp-correct').textContent=pvState.correct;document.getElementById('pvp-wrong').textContent=pvState.wrong;
 if(pvState.phase!=='normal')document.getElementById('pvp-retry-count').textContent=pvState.words.length-pvState.idx;
 document.getElementById('pvp-meaning').textContent=getMKO(pv)||'';
@@ -4222,15 +4338,16 @@ if(pvState.answered)return;pvState.answered=true;
 const ok=el.dataset.ans==='true';
 const pv=pvState.words[pvState.idx];
 const isRetry=pv.isRetry||false;
+const pvKey=pv.Phrasal_Verb;
 // ★ 통계: 첫 시도만 correct/wrong 카운트, firstTry 카운트
 if(ok){
   if(!isRetry){pvState.correct++;pvState.firstTryCorrect++;}
-  pvState.completed++; // 정답 = 카드 완료
+  if(!isRetry&&pvState.completedKeys)pvState.completedKeys.add(pvKey); // 고유 카드 완료
 }else{
   if(!isRetry){pvState.wrong++;pvState.firstTryWrong++;}
   if(pvState.phase==='normal')pvState.retryQueue.push({...pv,isRetry:true});
   else if(pvState.phase==='retry')pvState.finalQueue.push({...pv,isRetry:true});
-  else{updateWrong(pv,false);pvState.savedToWrong++;pvState.completed++;} // final에서 틀려도 완료
+  else{updateWrong(pv,false);pvState.savedToWrong++;if(!isRetry&&pvState.completedKeys)pvState.completedKeys.add(pvKey);} // final에서 틀려도 완료
 }
 document.querySelectorAll('#pvp-options .quiz-option').forEach(o=>{o.disabled=true;if(o.dataset.ans==='true')o.classList.add('correct');else if(o===el&&!ok)o.classList.add('wrong');});
 const blank=document.querySelector('#page-pv-particle .blank-word');if(blank){blank.textContent=pvState.correctAns;blank.style.borderBottom='none';blank.style.color=ok?'var(--success)':'var(--danger)';}
@@ -4283,7 +4400,7 @@ function startPVQ(items,all,mode){
 const m=items.filter(x=>getMKO(x));if(m.length<5){showToast('⚠️ 뜻이 있는 구동사가 부족합니다');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...m]);
-pvState={words:shuffled,allWords:all||items,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+pvState={words:shuffled,allWords:all||items,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('pvq-total').textContent=shuffled.length;document.getElementById('pvq-retry-banner').classList.add('hidden');
 showPage('pv-quiz');showPVQQ();updateStreak();
 }
@@ -4295,8 +4412,9 @@ if(pvState.idx>=pvState.words.length){
 }
 const pv=pvState.words[pvState.idx];if(!pv||!pv.Phrasal_Verb){console.error('Invalid PV:',pv);pvState.idx++;showPVQQ();return;}
 // ★ 진행바: 완료된 고유 카드 / 원래 카드 수
-document.getElementById('pvq-progress').style.width=(pvState.completed/pvState.originalCount)*100+'%';
-document.getElementById('pvq-current').textContent=pvState.completed;document.getElementById('pvq-total').textContent=pvState.originalCount;
+const pvqUniqueCompleted=pvState.completedKeys?.size||0;
+document.getElementById('pvq-progress').style.width=(pvqUniqueCompleted/pvState.originalCount)*100+'%';
+document.getElementById('pvq-current').textContent=pvqUniqueCompleted;document.getElementById('pvq-total').textContent=pvState.originalCount;
 document.getElementById('pvq-correct').textContent=pvState.correct;document.getElementById('pvq-wrong').textContent=pvState.wrong;
 if(pvState.phase!=='normal')document.getElementById('pvq-retry-count').textContent=pvState.words.length-pvState.idx;
 const isRev=pvState.mode==='reverse';
@@ -4323,15 +4441,16 @@ if(pvState.answered)return;pvState.answered=true;
 const ok=el.dataset.ans==='true';
 const pv=pvState.words[pvState.idx];
 const isRetry=pv.isRetry||false;
+const pvKey=pv.Phrasal_Verb;
 // ★ 통계: 첫 시도만 correct/wrong 카운트, firstTry 카운트
 if(ok){
   if(!isRetry){pvState.correct++;pvState.firstTryCorrect++;}
-  pvState.completed++; // 정답 = 카드 완료
+  if(!isRetry&&pvState.completedKeys)pvState.completedKeys.add(pvKey); // 고유 카드 완료
 }else{
   if(!isRetry){pvState.wrong++;pvState.firstTryWrong++;}
   if(pvState.phase==='normal')pvState.retryQueue.push({...pv,isRetry:true});
   else if(pvState.phase==='retry')pvState.finalQueue.push({...pv,isRetry:true});
-  else{updateWrong(pv,false);pvState.savedToWrong++;pvState.completed++;} // final에서 틀려도 완료
+  else{updateWrong(pv,false);pvState.savedToWrong++;if(!isRetry&&pvState.completedKeys)pvState.completedKeys.add(pvKey);} // final에서 틀려도 완료
 }
 document.querySelectorAll('#pvq-options .quiz-option').forEach(o=>{o.disabled=true;if(o.dataset.ans==='true')o.classList.add('correct');else if(o===el&&!ok)o.classList.add('wrong');});
 if(!isRetry){
@@ -4381,7 +4500,7 @@ function confirmEndPVQuiz(){if(pvState.idx<pvState.words.length||pvState.retryQu
 async function endPVQuiz(){
 const ans=pvState.correct+pvState.wrong;if(ans===0){showPage(studyStartPage,true);return;}
 const acc=Math.round((pvState.correct/ans)*100);
-await saveSession({total:ans,correct:pvState.correct,wrong:pvState.wrong,accuracy:acc,mode:'pv-'+pvState.mode,type:'phrasal',duration:Math.round((Date.now()-pvState.start)/1000),uniqueTotal:pvState.originalCount,firstTryCorrect:pvState.firstTryCorrect,firstTryWrong:pvState.firstTryWrong});
+await saveSession({start:pvState.start,total:ans,correct:pvState.correct,wrong:pvState.wrong,accuracy:acc,mode:'pv-'+pvState.mode,type:'phrasal',duration:Math.round((Date.now()-pvState.start)/1000),uniqueTotal:pvState.originalCount,firstTryCorrect:pvState.firstTryCorrect,firstTryWrong:pvState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=pvState.correct;document.getElementById('qc-wrong').textContent=pvState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
 if(pvState.savedToWrong>0){document.getElementById('qc-wrong-info').classList.remove('hidden');document.getElementById('qc-wrong-count').textContent=pvState.savedToWrong;}else document.getElementById('qc-wrong-info').classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
@@ -4942,7 +5061,7 @@ if(selected.length<count){
 console.log('[ExprFC] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:filtered.filter(isAvailable).length});
 if(!selected.length){showToast('✅ 오늘 학습할 표현이 없습니다!');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0};
+exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -4973,7 +5092,7 @@ if(selected.length<count){
 console.log('[ExprCloze] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:valid.filter(isAvailable).length});
 if(selected.length<5){showToast('⚠️ 오늘 학습할 빈칸채우기가 부족합니다');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-cloze-total').textContent=selected.length;
 showPage('expr-cloze');showExprClozeQ();
 }
@@ -5003,7 +5122,7 @@ if(selected.length<count){
 console.log('[ExprQuizQuick] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:filtered.filter(isAvailable).length});
 if(selected.length<5){showToast('⚠️ 오늘 학습할 표현이 부족합니다');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-quiz-total').textContent=selected.length;
 document.getElementById('expr-quiz-retry-banner').classList.add('hidden');
 showPage('expr-quiz');showExprQuizQ();
@@ -5014,7 +5133,7 @@ const wrong=exprs.filter(e=>isWrong(e));
 if(!wrong.length){showToast('✅ 오답노트가 비어있습니다!');return;}
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
 const selected=shuffle(wrong).slice(0,count);
-exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -5027,7 +5146,7 @@ const starred=exprs.filter(e=>e.starred);
 if(!starred.length){showToast('⭐ 북마크가 비어있습니다!');return;}
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
 const selected=shuffle(starred).slice(0,count);
-exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -5042,7 +5161,7 @@ const tagged=exprs.filter(e=>(e.tags||[]).includes(tag));
 if(!tagged.length){showToast('🏷️ "'+tag+'" 태그가 없습니다');sel.value='';return;}
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
 const selected=shuffle(tagged).slice(0,count);
-exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -5075,7 +5194,7 @@ if(selected.length<count){
 console.log('[ExprClozeQuick] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:valid.filter(isAvailable).length});
 if(selected.length<5){showToast('⚠️ 오늘 학습할 빈칸채우기가 부족합니다');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-cloze-total').textContent=selected.length;
 showPage('expr-cloze');showExprClozeQ();
 }
@@ -5087,7 +5206,7 @@ const count=parseInt(localStorage.getItem('defaultCount')||'20');
 // ★ FSRS 우선순위 정렬
 const sorted=sortByFSRSPriority([...due],now);
 const selected=sorted.slice(0,count);
-exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -5256,7 +5375,7 @@ Object.assign(e,fresh);
 console.log('[rateExprCard] isRetry card, skipping FSRS update');
 }
 vibrate(r>=2?10:[50,30,50]);exprState.idx++;
-setTimeout(()=>{exprState.transitioning=false;showExprCard();},200);
+setTimeout(()=>{exprState.transitioning=false;try{showExprCard();}catch(e){console.error('showExprCard error:',e);}},200);
 }catch(e){console.error('rateExprCard error:',e);exprState.transitioning=false;}
 }
 
@@ -5273,7 +5392,7 @@ const total=exprState.stats.again+exprState.stats.hard+exprState.stats.good+expr
 if(total===0||skip){showPage(studyStartPage,true);showToast('학습이 취소되었습니다');return;}
 const known=exprState.stats.good+exprState.stats.easy;
 const acc=Math.round((known/total)*100);
-await saveSession({total:total,accuracy:acc,mode:'expr-fc',type:'expr',stats:exprState.stats,duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
+await saveSession({start:exprState.start,total:total,accuracy:acc,mode:'expr-fc',type:'expr',stats:exprState.stats,duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
 // 완료 모달
 document.getElementById('qc-total').textContent=total;
 document.getElementById('qc-correct').textContent=known;
@@ -5445,7 +5564,7 @@ async function endExprQuiz(){
 const total=exprState.correct+exprState.wrong;
 if(!total){showPage(studyStartPage,true);return;}
 const acc=Math.round((exprState.correct/total)*100);
-await saveSession({total,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-quiz',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
+await saveSession({start:exprState.start,total,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-quiz',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
 document.getElementById('qc-total').textContent=total;
 document.getElementById('qc-correct').textContent=exprState.correct;
 document.getElementById('qc-wrong').textContent=exprState.wrong;
@@ -5681,7 +5800,7 @@ rateExprClozeItem(2);
 async function endExprCloze(){
 const ans=exprState.correct+exprState.wrong;if(!ans){showPage(studyStartPage,true);return;}
 const acc=Math.round((exprState.correct/ans)*100);
-await saveSession({total:ans,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-cloze',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
+await saveSession({start:exprState.start,total:ans,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-cloze',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=exprState.correct;document.getElementById('qc-wrong').textContent=exprState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
 document.getElementById('qc-wrong-info').classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
@@ -5749,11 +5868,12 @@ if(!e){endExprTyping();return;} // ★ null 체크
 exprTypingState.hintUsed=false;
 exprTypingState.answered=false;
 // ★ 진행바: 완료된 고유 카드 / 원래 카드 수
-document.getElementById('expr-typing-current').textContent=exprTypingState.completed;
+const etUniqueCompleted=exprTypingState.completedKeys?.size||0;
+document.getElementById('expr-typing-current').textContent=etUniqueCompleted;
 document.getElementById('expr-typing-total').textContent=exprTypingState.originalCount;
 document.getElementById('expr-typing-correct').textContent=exprTypingState.correct;
 document.getElementById('expr-typing-wrong').textContent=exprTypingState.wrong;
-document.getElementById('expr-typing-progress').style.width=((exprTypingState.completed/exprTypingState.originalCount)*100)+'%';
+document.getElementById('expr-typing-progress').style.width=((etUniqueCompleted/exprTypingState.originalCount)*100)+'%';
 if(exprTypingState.phase!=='normal'){const rc=document.getElementById('expr-typing-retry-count');if(rc)rc.textContent=exprTypingState.words.length-exprTypingState.idx;}
 document.getElementById('expr-typing-meaning').textContent=getMKO(e)||'';
 document.getElementById('expr-typing-func').textContent=e.Function||'';
@@ -5799,9 +5919,10 @@ const ansEl=document.getElementById('expr-typing-answer');
 ansEl.classList.remove('hidden');
 const isRetry=e.isRetry||false; // 재출제 카드 여부
 // ★ 통계: 첫 시도만 correct/wrong 카운트, firstTry 카운트
+const exprKey=e.Expression;
 if(isCorrect){
   if(!isRetry){exprTypingState.correct++;exprTypingState.firstTryCorrect++;}
-  exprTypingState.completed++; // 정답 = 카드 완료
+  if(!isRetry&&exprTypingState.completedKeys)exprTypingState.completedKeys.add(exprKey); // 고유 카드 완료
   if(isAltMatch){
     ansEl.innerHTML='✅ 정답!<br><span style="font-size:14px;opacity:0.8">💡 학습 표현: <strong>'+e.Expression+'</strong></span>';
   }else{
@@ -5814,7 +5935,7 @@ if(isCorrect){
   // 재출제 큐에 추가
   if(exprTypingState.phase==='normal')exprTypingState.retryQueue.push({...e,isRetry:true});
   else if(exprTypingState.phase==='retry')exprTypingState.finalQueue.push({...e,isRetry:true});
-  else{exprTypingState.savedToWrong++;exprTypingState.completed++;} // final에서 틀려도 완료
+  else{exprTypingState.savedToWrong++;if(!isRetry&&exprTypingState.completedKeys)exprTypingState.completedKeys.add(exprKey);} // final에서 틀려도 완료
   // 오답 시 대체 표현이 있으면 함께 표시
   let altInfo='';
   if(alternatives.length>0){
@@ -5871,7 +5992,7 @@ async function endExprTyping(){
 try{
 const ans=exprTypingState.correct+exprTypingState.wrong;if(!ans){showPage(studyStartPage,true);return;}
 const acc=Math.round((exprTypingState.correct/ans)*100);
-await saveSession({total:ans,correct:exprTypingState.correct,wrong:exprTypingState.wrong,accuracy:acc,mode:'expr-typing',type:'expr',duration:Math.round((Date.now()-(exprTypingState.start||Date.now()))/1000),uniqueTotal:exprTypingState.originalCount,firstTryCorrect:exprTypingState.firstTryCorrect,firstTryWrong:exprTypingState.firstTryWrong});
+await saveSession({start:exprTypingState.start,total:ans,correct:exprTypingState.correct,wrong:exprTypingState.wrong,accuracy:acc,mode:'expr-typing',type:'expr',duration:Math.round((Date.now()-(exprTypingState.start||Date.now()))/1000),uniqueTotal:exprTypingState.originalCount,firstTryCorrect:exprTypingState.firstTryCorrect,firstTryWrong:exprTypingState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=exprTypingState.correct;document.getElementById('qc-wrong').textContent=exprTypingState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
 document.getElementById('qc-wrong-info')?.classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
@@ -5943,19 +6064,19 @@ sel.splice(insertIdx,0,w);
 if(mode==='expr-cloze'){
 const valid=sel.filter(e=>{const ex=getEx(e);return ex&&ex.toLowerCase().includes(e.Expression.toLowerCase().split(' ')[0]);});
 if(!valid.length){showToast('⚠️ 빈칸채우기 가능한 표현이 없습니다');return;}
-exprState={words:valid,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprState={words:valid,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 showPage('expr-cloze');showExprClozeQ();
 }else if(mode==='expr-quiz'){
 const valid=sel.filter(e=>getMKO(e));
 if(valid.length<5){showToast('⚠️ 뜻이 있는 표현이 부족합니다');return;}
-exprState={words:valid,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprState={words:valid,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-quiz-total').textContent=valid.length;
 document.getElementById('expr-quiz-retry-banner').classList.add('hidden');
 showPage('expr-quiz');showExprQuizQ();
 }else if(mode==='expr-typing'){
 const valid=sel.filter(e=>getMKO(e));
 if(!valid.length){showToast('⚠️ 뜻이 있는 표현이 없습니다');return;}
-exprTypingState={words:valid,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprTypingState={words:valid,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-typing-total').textContent=valid.length;
 document.getElementById('expr-typing-retry-banner').classList.add('hidden');
 showPage('expr-typing');showExprTypingQ();
@@ -5968,7 +6089,7 @@ const valid=sel.filter(e=>getMKO(e));
 if(!valid.length){showToast('⚠️ 뜻이 있는 표현이 없습니다');return;}
 startDictation(valid,exprs,'expr');
 }else{
-exprState={words:sel,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:sel.length,completed:0,firstTryCorrect:0,firstTryWrong:0};
+exprState={words:sel,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:sel.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=sel.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
