@@ -1701,7 +1701,7 @@ item.mastery=Math.round(stabilityScore*0.6+item.accMastery*0.4);
 function shuffle(a){const arr=[...a];for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 function vibrate(p=10){if(document.getElementById('setting-vibrate')?.checked&&navigator.vibrate)navigator.vibrate(p);}
 function speakWord(t){
-const w=displayWord(t||getW(fcState?.words?.[fcState.idx]));
+const w=displayWord(t||getW(fcState?.words?.[fcState.idx]),true);
 if(!w||!('speechSynthesis'in window))return;
 // iOS Safari 버그: cancel() 후 바로 speak()하면 무음
 speechSynthesis.cancel();
@@ -1782,9 +1782,7 @@ function toggleFilterMode(el){
 function resetFilters(type){
   const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
   // chip-multi 초기화 (학습상태, CEFR, 빈도, 우선순위, Formality, Currency, Medium, 태그)
-  const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium','tag']:
-                   type==='phrasal'?['mastery','cefr','priority','formality','currency','medium','tag']:
-                   ['mastery','cefr','priority','formality','currency','medium','tag'];
+  const chipGroups=['mastery','cefr','freq','priority','formality','currency','medium','tag'];
   chipGroups.forEach(g=>{
     const container=document.getElementById(prefix+'-'+g);
     if(container){
@@ -1810,9 +1808,7 @@ function saveFilters(type){
     const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
     const data={};
     // chip-multi 저장 (태그 포함)
-    const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium','tag']:
-                     type==='phrasal'?['mastery','cefr','priority','formality','currency','medium','tag']:
-                     ['mastery','cefr','priority','formality','currency','medium','tag'];
+    const chipGroups=['mastery','cefr','freq','priority','formality','currency','medium','tag'];
     chipGroups.forEach(g=>{
       data[g]=getMultiChip(prefix+'-'+g);
     });
@@ -1838,8 +1834,8 @@ function loadFilters(type){
     const prefix=type==='vocab'?'filter':type==='phrasal'?'pv-filter':'expr-filter';
     // chip-multi 복원 (태그 포함)
     const chipGroups=type==='vocab'?['mastery','cefr','freq','priority','formality','currency','medium','tag']:
-                     type==='phrasal'?['mastery','cefr','priority','formality','currency','medium','tag']:
-                     ['mastery','cefr','priority','formality','currency','medium','tag'];
+                     type==='phrasal'?['mastery','cefr','freq','priority','formality','currency','medium','tag']:
+                     ['mastery','cefr','freq','priority','formality','currency','medium','tag'];
     chipGroups.forEach(g=>{
       const container=document.getElementById(prefix+'-'+g);
       if(!container)return;
@@ -1893,11 +1889,19 @@ function loadFilters(type){
 // 필터 조건 체크 헬퍼
 function checkMasteryFilter(item,mastery){
   const {include,exclude}=mastery;
+  const isNew=!item.reviewCount||item.reviewCount===0;
   // include가 비어있거나 'all'이 포함되어 있으면 제외 조건만 체크
   if(include.length===0 || include.includes('all')){
     // 제외 조건 체크
     for(const ex of exclude){
-      if(ex==='new'&&(!item.reviewCount||item.reviewCount===0))return false;
+      if(ex==='new'&&isNew){
+        // 디버그: 새 단어가 배제될 때
+        if(!window._masteryDebugLogged){
+          console.log('[MasteryFilter Debug] 새단어 배제 적용됨, exclude:', exclude);
+          window._masteryDebugLogged=true;
+        }
+        return false;
+      }
       if(ex==='weak'&&isWeak(item))return false;
       if(ex==='wrong'&&isWrong(item))return false;
       if(ex==='starred'&&item.starred)return false;
@@ -1908,7 +1912,7 @@ function checkMasteryFilter(item,mastery){
   // 포함 조건 체크 (OR 연산)
   let pass=false;
   for(const inc of include){
-    if(inc==='new'&&(!item.reviewCount||item.reviewCount===0)){pass=true;break;}
+    if(inc==='new'&&isNew){pass=true;break;}
     if(inc==='weak'&&isWeak(item)){pass=true;break;}
     if(inc==='wrong'&&isWrong(item)){pass=true;break;}
     if(inc==='starred'&&item.starred){pass=true;break;}
@@ -1917,7 +1921,7 @@ function checkMasteryFilter(item,mastery){
   if(!pass)return false;
   // 제외 조건 체크
   for(const ex of exclude){
-    if(ex==='new'&&(!item.reviewCount||item.reviewCount===0))return false;
+    if(ex==='new'&&isNew)return false;
     if(ex==='weak'&&isWeak(item))return false;
     if(ex==='wrong'&&isWrong(item))return false;
     if(ex==='starred'&&item.starred)return false;
@@ -2131,6 +2135,11 @@ const now=new Date();
 const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
 // ★ 필터 적용 (다중 선택 및 제외 지원)
 const masteryF=getMultiChip('filter-mastery');
+console.log('[Filter Debug] masteryF:', JSON.stringify(masteryF));
+// ★ 디버그: 전체 단어 중 새 단어/기존 단어 수
+const totalNew=w.filter(x=>!x.reviewCount||x.reviewCount===0).length;
+const totalOld=w.filter(x=>x.reviewCount>0).length;
+console.log('[Filter Debug] 전체:', w.length, '새단어:', totalNew, '기존:', totalOld);
 const cefrF=getMultiChip('filter-cefr');
 const freqF=getMultiChip('filter-freq');
 const priorityF=getMultiChip('filter-priority');
@@ -2160,6 +2169,10 @@ let filtered=w.filter(x=>{
   if(cocaVal!=='all'&&!(x.COCA_Genre||'').toLowerCase().includes(cocaVal.toLowerCase()))return false;
   return true;
 });
+// ★ 디버그: 필터 후 새 단어/기존 단어 수
+const filteredNew=filtered.filter(x=>!x.reviewCount||x.reviewCount===0).length;
+const filteredOld=filtered.filter(x=>x.reviewCount>0).length;
+console.log('[Filter Debug] 필터 후:', filtered.length, '새단어:', filteredNew, '기존:', filteredOld);
 if(!filtered.length){showToast('⚠️ 필터 조건에 맞는 단어가 없습니다');return;}
 // ★ FSRS 기반 복습 우선 (순서 유지: DUE → WEAK → NEW)
 const dueCount=Math.ceil(count*0.6),weakCount=Math.ceil(count*0.3),newCount=count-dueCount-weakCount;
@@ -3093,11 +3106,13 @@ if(!item.isRetry&&fcState.completedKeys){
 // 6. 산출 연습 상태 업데이트 (공통 함수)
 const prodResult = updateProductionStatus(item, r>=2, 'flashcard');
 if(prodResult.shouldToast) showToast(prodResult.message);
-// 5. 세션 내 재학습: 오답 시 5~7문제 후 재출제 (phase='normal'일 때만)
-if(r===0&&fcState.phase==='normal'){
+// 5. 세션 내 재학습: 오답 시 5~7문제 후 재출제 (phase='normal'이고 첫 시도일 때만)
+if(r===0&&fcState.phase==='normal'&&!item.isRetry){
 const insertIdx=Math.min(fcState.idx+5+Math.floor(Math.random()*3),fcState.words.length);
 fcState.words.splice(insertIdx,0,{...item,isRetry:true});
 }
+// ★ isRetry 카드가 또 틀리면 오답노트로 저장하고 끝
+else if(r===0&&item.isRetry){updateWrong(item,false);fcState.savedToWrong++;}
 // retry phase에서 또 틀리면 오답노트로
 else if(r===0&&fcState.phase==='retry'){updateWrong(item,false);fcState.savedToWrong++;}
 else if(r>=2)updateWrong(item,true);
@@ -6129,6 +6144,12 @@ showPage('expr-fc');startExprTimer();showExprCard();
 async function updateHomeStats(){
 try{const w=await getAllWords(),p=await getAllPV(),e=await getAllExpr(),now=new Date();
 const today=now.toDateString();
+// ★ 디버그 로그
+const newVocab=w.filter(x=>x.addedDate&&new Date(x.addedDate).toDateString()===today&&(!x.reviewCount||x.reviewCount===0));
+const dueVocab=w.filter(x=>x.reviewCount>0&&x.nextReview&&new Date(x.nextReview)<=now);
+console.log('[Badge Debug] 신규:', newVocab.length, '복습:', dueVocab.length);
+if(newVocab.length>0)console.log('[Badge Debug] 신규 예시:', newVocab.slice(0,3).map(x=>({word:x.word,reviewCount:x.reviewCount,addedDate:x.addedDate})));
+if(dueVocab.length>0)console.log('[Badge Debug] 복습 예시:', dueVocab.slice(0,3).map(x=>({word:x.word,nextReview:x.nextReview,reviewCount:x.reviewCount})));
 document.getElementById('stat-total').textContent=w.length;document.getElementById('stat-mastered').textContent=w.filter(x=>(x.mastery||0)>=80).length;document.getElementById('stat-weak').textContent=w.filter(x=>isWeak(x)).length;document.getElementById('stat-due').textContent=w.filter(x=>x.nextReview&&new Date(x.nextReview)<=now).length;
 const wV=w.filter(x=>isWrong(x)).length,bV=document.getElementById('wrong-badge-vocab');if(wV>0){bV.textContent=wV;bV.classList.remove('hidden');}else bV.classList.add('hidden');
 const sV=w.filter(x=>x.starred).length;document.getElementById('star-badge-vocab').textContent=sV;
@@ -8439,6 +8460,13 @@ function parsePasteData(text, type){
     const key=cols[keyIdx]?.trim();
     if(!key)continue;
     
+    // ★ Style_Tags와 tags 컬럼을 병합
+    const tagsStr=gC(cols,'tags');
+    const styleTagsStr=gC(cols,'Style_Tags')||gC(cols,'StyleTags');
+    const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
+    const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
+    const mergedTags=[...new Set([...tagsFromCol,...tagsFromStyle])];
+    
     const base={
       addedDate:now,
       todayStudy:true,
@@ -8449,7 +8477,7 @@ function parsePasteData(text, type){
       stability:null,
       difficulty:null,
       starred:false,
-      tags:[]
+      tags:mergedTags
     };
     
     if(type==='vocab'){
