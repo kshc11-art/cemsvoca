@@ -1424,7 +1424,7 @@ async function deleteExpr(k){return new Promise(r=>{const tx=db.transaction('exp
 function getMKO(i){return i?.Meaning1_KO||i?.MeaningKO||i?.Meaning_KO||'';}
 function getMEN(i){return i?.Meaning1_EN||i?.MeaningEN||i?.Meaning_EN||'';}
 function getEx(i){return i?.Example1||i?.Example||'';}
-function getW(i){return i?.word||i?.Phrasal_Verb||'';}
+function getW(i){return i?.word||i?.Phrasal_Verb||i?.Expression||'';}
 // 다의어 표시: dash1 → dash<sup>1</sup>, 검색용은 숫자 제거
 function displayWord(w, forSearch=false){
   if(!w) return '';
@@ -1598,6 +1598,10 @@ homeExprTagSelect.innerHTML+=`<option value="${t}">${t} (${count})</option>`;
 }
 }
 function updateTagFilters(words,pvs,exprs){
+// ★ 디버그: 태그 있는 단어 확인
+const wordsWithTags=words.filter(w=>w.tags&&w.tags.length>0);
+console.log('[TagFilter Debug] 태그 있는 어휘:', wordsWithTags.length, '/', words.length);
+if(wordsWithTags.length>0)console.log('[TagFilter Debug] 예시:', JSON.stringify(wordsWithTags.slice(0,3).map(w=>({word:w.word,tags:w.tags}))));
 // TOEFL 연관성 필터 동적 업데이트
 const toeflSet=new Set();
 words.forEach(w=>{if(w.TOEFL_Rel)toeflSet.add(w.TOEFL_Rel);});
@@ -1890,16 +1894,25 @@ function loadFilters(type){
 function checkMasteryFilter(item,mastery){
   const {include,exclude}=mastery;
   const isNew=!item.reviewCount||item.reviewCount===0;
+  
+  // ★ 상세 디버그 (첫 5개 아이템만)
+  if(!window._masteryDebugCount)window._masteryDebugCount=0;
+  if(window._masteryDebugCount<5){
+    console.log('[MasteryFilter]', JSON.stringify({
+      word: item.word||item.Phrasal_Verb||item.Expression,
+      reviewCount: item.reviewCount,
+      isNew: isNew,
+      include: include,
+      exclude: exclude
+    }));
+    window._masteryDebugCount++;
+  }
+  
   // include가 비어있거나 'all'이 포함되어 있으면 제외 조건만 체크
   if(include.length===0 || include.includes('all')){
     // 제외 조건 체크
     for(const ex of exclude){
       if(ex==='new'&&isNew){
-        // 디버그: 새 단어가 배제될 때
-        if(!window._masteryDebugLogged){
-          console.log('[MasteryFilter Debug] 새단어 배제 적용됨, exclude:', exclude);
-          window._masteryDebugLogged=true;
-        }
         return false;
       }
       if(ex==='weak'&&isWeak(item))return false;
@@ -2971,7 +2984,7 @@ document.getElementById('fc-total').textContent=fcState.originalCount;
 if(fcState.phase==='retry')document.getElementById('fc-retry-count').textContent=fcState.words.length-fcState.idx;
 // 4. 앞면
 if(fcState.type==='phrasal'){
-  document.getElementById('fc-word').textContent=item.Phrasal_Verb||'(구동사)';
+  document.getElementById('fc-word').innerHTML=displayWord(item.Phrasal_Verb)||item.Phrasal_Verb||'(구동사)';
   document.getElementById('fc-tags').innerHTML=`<span class="tag tag-phrasal">${item.Particle||''}</span><span class="tag tag-cat">${item.Category||''}</span>`;
 }else{
   const wordText=displayWord(item.word)||item.word||'(단어 없음)';
@@ -4459,7 +4472,7 @@ document.getElementById('pvq-correct').textContent=pvState.correct;document.getE
 if(pvState.phase!=='normal')document.getElementById('pvq-retry-count').textContent=pvState.words.length-pvState.idx;
 const isRev=pvState.mode==='reverse';
 if(isRev){document.getElementById('pvq-word').textContent=getMKO(pv);document.getElementById('pvq-sub').textContent='구동사를 선택하세요';document.getElementById('pvq-tags').innerHTML='';}
-else{document.getElementById('pvq-word').textContent=pv.Phrasal_Verb;document.getElementById('pvq-sub').textContent='';document.getElementById('pvq-tags').innerHTML=`<span class="tag tag-phrasal">${pv.Particle||''}</span><span class="tag tag-cat">${pv.Category||''}</span>`;}
+else{document.getElementById('pvq-word').innerHTML=displayWord(pv.Phrasal_Verb);document.getElementById('pvq-sub').textContent='';document.getElementById('pvq-tags').innerHTML=`<span class="tag tag-phrasal">${pv.Particle||''}</span><span class="tag tag-cat">${pv.Category||''}</span>`;}
 // 선택지 생성
 const cAns=isRev?pv.Phrasal_Verb:getMKO(pv);
 if(!cAns){console.error('No answer for PV:',pv);pvState.idx++;showPVQQ();return;}
@@ -4963,7 +4976,7 @@ function showPVQSResult(item,isExact){
 document.getElementById('pv-quick-search-result').style.display='block';
 document.getElementById('pv-qs-found').style.display='block';
 document.getElementById('pv-qs-notfound').style.display='none';
-document.getElementById('pv-qs-word').textContent=item.Phrasal_Verb;
+document.getElementById('pv-qs-word').innerHTML=displayWord(item.Phrasal_Verb);
 document.getElementById('pv-qs-meaning').textContent=getMKO(item)||getMEN(item)||'';
 document.getElementById('pv-qs-info').textContent=`${item.Category||'General'} | ${item.Formal_Equivalent||''}`;
 const ex=getEx(item);
@@ -5297,9 +5310,9 @@ document.getElementById('expr-fc-current').textContent=exprUniqueCompleted;
 document.getElementById('expr-fc-total').textContent=exprState.originalCount;
 if(exprState.phase==='retry')document.getElementById('expr-retry-count').textContent=exprState.words.length-exprState.idx;
 // 4. 앞면 - Expression 표시
-const exprText=e.Expression||'(표현 없음)';
+const exprText=displayWord(e.Expression)||e.Expression||'(표현 없음)';
 console.log('[showExprCard] Expression:',exprText);
-document.getElementById('expr-fc-word').textContent=exprText;
+document.getElementById('expr-fc-word').innerHTML=exprText;
 document.getElementById('expr-fc-formality').textContent=e.Formality||'Neutral';
 if(document.getElementById('setting-tts')?.checked)setTimeout(()=>speakExpr(),300);
 updateExprFCBookmarkBtn();
@@ -5490,8 +5503,8 @@ document.getElementById('expr-quiz-total').textContent=exprState.originalCount;
 document.getElementById('expr-quiz-correct').textContent=exprState.correct;
 document.getElementById('expr-quiz-wrong').textContent=exprState.wrong;
 // 표현 표시
-const exprText=e.Expression||'(표현 없음)';
-document.getElementById('expr-quiz-word').textContent=exprText;
+const exprText=displayWord(e.Expression)||e.Expression||'(표현 없음)';
+document.getElementById('expr-quiz-word').innerHTML=exprText;
 document.getElementById('expr-quiz-tags').innerHTML=`<span class="tag" style="background:rgba(249,115,22,.2);color:var(--expr)">${e.Formality||'Neutral'}</span>`;
 // Function은 정답 후 표시
 const funcEl=document.getElementById('expr-quiz-func');
@@ -5660,7 +5673,7 @@ function showExprQSResult(e,isExact){
 document.getElementById('expr-search-result').style.display='block';
 document.getElementById('expr-qs-found').style.display='block';
 document.getElementById('expr-qs-notfound').style.display='none';
-document.getElementById('expr-qs-word').textContent=e.Expression;
+document.getElementById('expr-qs-word').innerHTML=displayWord(e.Expression);
 document.getElementById('expr-qs-formality').textContent=e.Formality||'Neutral';
 document.getElementById('expr-qs-func').textContent=e.Function||e.L1+' > '+e.L2||'';
 document.getElementById('expr-qs-meaning').textContent=getMKO(e)||'';
@@ -6148,8 +6161,8 @@ const today=now.toDateString();
 const newVocab=w.filter(x=>x.addedDate&&new Date(x.addedDate).toDateString()===today&&(!x.reviewCount||x.reviewCount===0));
 const dueVocab=w.filter(x=>x.reviewCount>0&&x.nextReview&&new Date(x.nextReview)<=now);
 console.log('[Badge Debug] 신규:', newVocab.length, '복습:', dueVocab.length);
-if(newVocab.length>0)console.log('[Badge Debug] 신규 예시:', newVocab.slice(0,3).map(x=>({word:x.word,reviewCount:x.reviewCount,addedDate:x.addedDate})));
-if(dueVocab.length>0)console.log('[Badge Debug] 복습 예시:', dueVocab.slice(0,3).map(x=>({word:x.word,nextReview:x.nextReview,reviewCount:x.reviewCount})));
+if(newVocab.length>0)console.log('[Badge Debug] 신규 예시:', JSON.stringify(newVocab.slice(0,3).map(x=>({word:x.word,reviewCount:x.reviewCount,addedDate:x.addedDate}))));
+if(dueVocab.length>0)console.log('[Badge Debug] 복습 예시:', JSON.stringify(dueVocab.slice(0,3).map(x=>({word:x.word,nextReview:x.nextReview,reviewCount:x.reviewCount}))));
 document.getElementById('stat-total').textContent=w.length;document.getElementById('stat-mastered').textContent=w.filter(x=>(x.mastery||0)>=80).length;document.getElementById('stat-weak').textContent=w.filter(x=>isWeak(x)).length;document.getElementById('stat-due').textContent=w.filter(x=>x.nextReview&&new Date(x.nextReview)<=now).length;
 const wV=w.filter(x=>isWrong(x)).length,bV=document.getElementById('wrong-badge-vocab');if(wV>0){bV.textContent=wV;bV.classList.remove('hidden');}else bV.classList.add('hidden');
 const sV=w.filter(x=>x.starred).length;document.getElementById('star-badge-vocab').textContent=sV;
@@ -6991,6 +7004,16 @@ return aWord.localeCompare(bWord);
 });
 }
 // 특수 필터
+// ★ 디버그: 특수 필터 확인
+if(specialF!=='all'){
+  console.log('[DataFilter Debug]', JSON.stringify({specialF, today, 전체:w.length}));
+  if(specialF==='new-today'){
+    const withDate=w.filter(x=>x.addedDate);
+    const todayItems=w.filter(x=>x.addedDate&&x.addedDate.startsWith(today));
+    console.log('[DataFilter Debug] addedDate 있음:', withDate.length, '오늘:', todayItems.length);
+    if(withDate.length>0)console.log('[DataFilter Debug] 예시:', JSON.stringify(withDate.slice(0,3).map(x=>({word:x.word,addedDate:x.addedDate}))));
+  }
+}
 if(specialF==='new-today')w=w.filter(x=>x.addedDate&&x.addedDate.startsWith(today));
 else if(specialF==='duplicate')w=w.filter(x=>/[¹²³]/.test(x.word)||/[123]$/.test(x.word));
 else if(specialF==='starred')w=w.filter(x=>x.starred);
@@ -7024,10 +7047,9 @@ document.getElementById('word-count').textContent=w.length+'개';
 document.getElementById('word-table-body').innerHTML=w.slice(0,wordOffset+50).map(x=>{
 const a=getAcc(x),as=a!==null?a+'%':'-',c=a===null?'':a>=80?'color:var(--success)':a<50?'color:var(--danger)':'color:var(--warning)';
 const star=x.starred?'⭐ ':'';
-const tags=(x.tags||[]).map(t=>`<span style="background:var(--primary);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:4px">${t}</span>`).join('');
 const wd=x.word.replace(/'/g,"\\'");
 const spkWord=displayWord(x.word,true).replace(/'/g,"\\'");
-return`<tr><td onclick="openEditModal('${wd}','vocab')" style="cursor:pointer"><strong>${star}${displayWord(x.word)}</strong>${tags}</td><td onclick="openEditModal('${wd}','vocab')" style="cursor:pointer">${getMKO(x)||''}</td><td onclick="speakDataWord('${spkWord}')" style="${c};cursor:pointer" title="🔊 클릭하여 발음">${as}</td></tr>`;
+return`<tr><td onclick="openEditModal('${wd}','vocab')" style="cursor:pointer"><strong>${star}${displayWord(x.word)}</strong></td><td onclick="openEditModal('${wd}','vocab')" style="cursor:pointer">${getMKO(x)||''}</td><td onclick="speakDataWord('${spkWord}')" style="${c};cursor:pointer" title="🔊 클릭하여 발음">${as}</td></tr>`;
 }).join('');
 }
 await updateTagFilter();
@@ -7207,13 +7229,19 @@ for(const sn of wb.SheetNames){const l=sn.toLowerCase();if(l.includes('phrasal')
 if(wb.SheetNames.length>=2){if(vS&&!pS)pS=wb.SheetNames.find(s=>s!==vS&&s!==eS);if(pS&&!vS)vS=wb.SheetNames.find(s=>s!==pS&&s!==eS);}
 if(!vS&&!pS&&!eS)vS=wb.SheetNames[0];
 let vR=null,pR=null,eR=null;
-if(vS){const json=XLSX.utils.sheet_to_json(wb.Sheets[vS],{header:1});let hr=0;for(let i=0;i<Math.min(10,json.length);i++){if(json[i]&&json[i].some(c=>c&&normH(c)==='word')){hr=i;break;}}const headers=(json[hr]||[]).map(h=>(h||'').toString());const colIdx={};headers.forEach((h,i)=>{colIdx[normH(h)]=i;});const wIdx=colIdx['word'];
+if(vS){const json=XLSX.utils.sheet_to_json(wb.Sheets[vS],{header:1});let hr=0;for(let i=0;i<Math.min(10,json.length);i++){if(json[i]&&json[i].some(c=>c&&normH(c)==='word')){hr=i;break;}}const headers=(json[hr]||[]).map(h=>(h||'').toString());const colIdx={};headers.forEach((h,i)=>{colIdx[normH(h)]=i;});
+// ★ 디버그: 헤더 목록 출력
+console.log('[ExcelUpload Debug] 헤더:', headers);
+console.log('[ExcelUpload Debug] colIdx keys:', Object.keys(colIdx));
+const wIdx=colIdx['word'];
 if(wIdx!==undefined){let nC=0,uC=0,pC=0;const ws=[];const gC=(r,n)=>{const idx=colIdx[normH(n)];return idx!==undefined&&r[idx]!=null?r[idx].toString():'';};
 const gN=(r,n)=>{const v=gC(r,n);return v?parseFloat(v):null;}; // 숫자 파싱
 const gI=(r,n)=>{const v=gC(r,n);return v?parseInt(v,10):0;}; // 정수 파싱
 // 여러 컬럼명 시도 헬퍼
 const gM=(r,...names)=>{for(const n of names){const v=gC(r,n);if(v)return v;}return '';};
 for(let i=hr+1;i<json.length;i++){const r=json[i];if(!r||!r[wIdx])continue;const wK=r[wIdx].toString().trim();const ex=await getWord(wK);if(ex){uC++;if(ex.reviewCount>0)pC++;}else nC++;const starredVal=gC(r,'starred').toLowerCase();const needsProdVal=gC(r,'needsproduction').toLowerCase();const tagsStr=gC(r,'tags');const styleTagsStr=gC(r,'Style_Tags')||gC(r,'StyleTags');const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];const tags=[...new Set([...tagsFromCol,...tagsFromStyle,...(ex?.tags||[])])];
+// ★ 디버그: 처음 3개만 태그 정보 출력
+if(i<=hr+3){console.log('[ExcelUpload Debug]',JSON.stringify({word:wK,tagsStr,styleTagsStr,tags,colIdx_tags:colIdx['tags'],colIdx_styletags:colIdx['styletags']}));}
 // Synonyms/Antonyms: 여러 컬럼명 지원
 const synRaw=gM(r,'Synonyms','Synonyms_EN','SynonymsEN','Synonym');
 const antRaw=gM(r,'Antonyms','Antonyms_EN','AntonymsEN','Antonyms_KO','AntonymsKO','Antonym');
@@ -8300,12 +8328,22 @@ async function confirmModalExcel(){
     for(const n of names){const v=getCol(row,headers,n);if(v)return v;}
     return '';
   };
+  let tagUpdated=0;
   // 어휘 추가
   for(const item of modalExcelData.vocab){
     const existing=await getWord(item.word);
+    const r=item._row||[];
+    const h=item._headers||[];
+    // ★ Style_Tags와 tags 컬럼을 병합
+    const tagsStr=getCol(r,h,'tags');
+    const styleTagsStr=getColMulti(r,h,'Style_Tags','StyleTags');
+    const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
+    const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
+    const mergedTags=[...new Set([...tagsFromCol,...tagsFromStyle])];
+    // ★ 디버그: 처음 3개만 태그 정보 출력
+    if(added<3)console.log('[ModalExcel Debug]',JSON.stringify({word:item.word,tagsStr,styleTagsStr,mergedTags,headers:h.slice(0,20)}));
+    
     if(!existing){
-      const r=item._row||[];
-      const h=item._headers||[];
       await saveWord({
         word:item.word,
         POS:getCol(r,h,'POS'),
@@ -8329,17 +8367,31 @@ async function confirmModalExcel(){
         Medium:getCol(r,h,'Medium')||'Both',
         TOEFL_Rel:getCol(r,h,'TOEFL_Rel'),
         COCA_Genre:getCol(r,h,'COCA_Genre'),
-        tags:[],addedDate:today,reviewCount:0
+        tags:mergedTags,addedDate:today,reviewCount:0
       });
       added++;
+    }else if(mergedTags.length>0){
+      // ★ 기존 단어도 태그 업데이트
+      const newTags=[...new Set([...(existing.tags||[]),...mergedTags])];
+      existing.tags=newTags;
+      await saveWord(existing);
+      tagUpdated++;
+      console.log('[ModalExcel] 기존 단어 태그 업데이트:',item.word,newTags);
     }
   }
   // 구동사 추가
   for(const item of modalExcelData.phrasal){
     const existing=await getPV(item.Phrasal_Verb);
+    const r=item._row||[];
+    const h=item._headers||[];
+    // ★ Style_Tags와 tags 컬럼을 병합
+    const tagsStr=getCol(r,h,'tags');
+    const styleTagsStr=getColMulti(r,h,'Style_Tags','StyleTags');
+    const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
+    const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
+    const mergedTags=[...new Set([...tagsFromCol,...tagsFromStyle])];
+    
     if(!existing){
-      const r=item._row||[];
-      const h=item._headers||[];
       await savePV({
         Phrasal_Verb:item.Phrasal_Verb,
         Base_Verb:getColMulti(r,h,'Base_Verb','BaseVerb'),
@@ -8356,17 +8408,30 @@ async function confirmModalExcel(){
         Formal_Equivalent:getCol(r,h,'Formal_Equivalent'),
         Synonyms:getCol(r,h,'Synonyms'),
         Antonyms:getCol(r,h,'Antonyms'),
-        tags:[],addedDate:today,reviewCount:0
+        tags:mergedTags,addedDate:today,reviewCount:0
       });
       added++;
+    }else if(mergedTags.length>0){
+      // ★ 기존 구동사도 태그 업데이트
+      const newTags=[...new Set([...(existing.tags||[]),...mergedTags])];
+      existing.tags=newTags;
+      await savePV(existing);
+      tagUpdated++;
     }
   }
   // 표현 추가
   for(const item of modalExcelData.expr){
     const existing=await getExpr(item.Expression);
+    const r=item._row||[];
+    const h=item._headers||[];
+    // ★ Style_Tags와 tags 컬럼을 병합
+    const tagsStr=getCol(r,h,'tags');
+    const styleTagsStr=getColMulti(r,h,'Style_Tags','StyleTags');
+    const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
+    const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
+    const mergedTags=[...new Set([...tagsFromCol,...tagsFromStyle])];
+    
     if(!existing){
-      const r=item._row||[];
-      const h=item._headers||[];
       await saveExpr({
         Expression:item.Expression,
         Meaning_KO:item.Meaning_KO||getColMulti(r,h,'Meaning_KO','MeaningKO'),
@@ -8379,12 +8444,21 @@ async function confirmModalExcel(){
         Formality:getColMulti(r,h,'Formality','Register')||'Neutral',
         Currency:getCol(r,h,'Currency')||'Current',
         Medium:getCol(r,h,'Medium')||'Both',
-        tags:[],addedDate:today,reviewCount:0
+        tags:mergedTags,addedDate:today,reviewCount:0
       });
       added++;
+    }else if(mergedTags.length>0){
+      // ★ 기존 표현도 태그 업데이트
+      const newTags=[...new Set([...(existing.tags||[]),...mergedTags])];
+      existing.tags=newTags;
+      await saveExpr(existing);
+      tagUpdated++;
     }
   }
-  showToast(`✅ 새 단어 ${added}개 추가됨`);
+  let msg=added>0?`✅ 새 단어 ${added}개 추가됨`:'';
+  if(tagUpdated>0)msg+=(msg?', ':'✅ ')+`기존 ${tagUpdated}개 태그 업데이트`;
+  if(!msg)msg='⚠️ 모든 단어가 이미 존재합니다';
+  showToast(msg);
   closeModal('paste-modal');
   updateHomeStats();
 }
@@ -8466,6 +8540,11 @@ function parsePasteData(text, type){
     const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
     const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
     const mergedTags=[...new Set([...tagsFromCol,...tagsFromStyle])];
+    
+    // ★ 디버그: 첫 3개만 태그 정보 출력
+    if(items.length<3){
+      console.log('[ParsePaste Debug]', JSON.stringify({key, tagsStr, styleTagsStr, mergedTags}));
+    }
     
     const base={
       addedDate:now,
