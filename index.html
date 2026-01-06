@@ -2369,6 +2369,10 @@ document.querySelectorAll('.chip-group').forEach(g=>{g.addEventListener('click',
 // ★ 다중 선택 칩 그룹 이벤트
 // 동적으로 추가된 chip-multi에 이벤트 재등록
 function initChipMultiEvents(g){
+  // ★ 이미 이벤트가 등록되어 있으면 스킵
+  if(g._chipEventsInitialized)return;
+  g._chipEventsInitialized=true;
+  
   g.addEventListener('click',e=>{
     if(!e.target.classList.contains('chip'))return;
     const chip=e.target;
@@ -2405,11 +2409,24 @@ document.querySelectorAll('.chip-multi').forEach(g=>{
     });
     return;
   }
+  // ★ 이미 이벤트가 등록되어 있으면 스킵
+  if(g._chipEventsInitialized)return;
+  g._chipEventsInitialized=true;
+  
   g.addEventListener('click',e=>{
     if(!e.target.classList.contains('chip'))return;
     const chip=e.target;
     const val=chip.dataset.value;
     const allChip=g.querySelector('.chip[data-value="all"]');
+    
+    // ★ 디버그 로그
+    console.log('[ChipClick] 클릭 전:', JSON.stringify({
+      containerId: g.id,
+      value: val,
+      wasChecked: chip.classList.contains('checked'),
+      wasExcluded: chip.classList.contains('excluded')
+    }));
+    
     // 'all' 클릭 시 다른 것 모두 해제
     if(val==='all'){
       g.querySelectorAll('.chip').forEach(c=>{
@@ -2420,7 +2437,7 @@ document.querySelectorAll('.chip-multi').forEach(g=>{
     }
     // 다른 칩 클릭 시 'all' 해제
     if(allChip)allChip.classList.remove('checked','excluded');
-    // 토글 (checked → excluded → 해제)
+    // 토글 (해제 → checked → excluded → 해제)
     if(chip.classList.contains('excluded')){
       chip.classList.remove('excluded');
     }else if(chip.classList.contains('checked')){
@@ -2429,6 +2446,14 @@ document.querySelectorAll('.chip-multi').forEach(g=>{
     }else{
       chip.classList.add('checked');
     }
+    
+    // ★ 디버그 로그
+    console.log('[ChipClick] 클릭 후:', JSON.stringify({
+      value: val,
+      isChecked: chip.classList.contains('checked'),
+      isExcluded: chip.classList.contains('excluded')
+    }));
+    
     // 아무것도 선택 안되면 'all' 선택
     const anySelected=g.querySelector('.chip.checked,.chip.excluded');
     if(!anySelected&&allChip)allChip.classList.add('checked');
@@ -3105,6 +3130,7 @@ if(fcState.transitioning)return;
 fcState.transitioning=true;
 try{
 const item=fcState.words[fcState.idx];if(!item){fcState.transitioning=false;return;}
+console.log('[rateCard] 시작:', JSON.stringify({word:item.word||item.Phrasal_Verb,rating:r,isRetry:item.isRetry,completedBefore:fcState.completedKeys?.size}));
 if(r===0)fcState.stats.again++;else if(r===1)fcState.stats.hard++;else if(r===2)fcState.stats.good++;else fcState.stats.easy++;
 // ★ 첫 시도 정답/오답 카운트 (isRetry가 아닌 경우만)
 if(!item.isRetry){
@@ -3115,6 +3141,7 @@ if(!item.isRetry){
 if(!item.isRetry&&fcState.completedKeys){
   const key=fcState.type==='phrasal'?item.Phrasal_Verb:item.word;
   fcState.completedKeys.add(key);
+  console.log('[rateCard] completedKeys 추가:', key, 'size:', fcState.completedKeys.size);
 }
 // 6. 산출 연습 상태 업데이트 (공통 함수)
 const prodResult = updateProductionStatus(item, r>=2, 'flashcard');
