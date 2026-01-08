@@ -857,6 +857,31 @@ function safeSkipInvalid(state, renderFn, endFn, maxSkips = 5) {
 // ========== FSRS-4.5 Algorithm ==========
 // 참조: https://github.com/open-spaced-repetition/fsrs4anki
 // 웹앱용으로 초기 stability 조정 (w[0]~w[3])
+// ★ 학습 관련 상수 (Magic Numbers 상수화)
+const STUDY_CONSTANTS = {
+  // 산출 연습 트리거 조건
+  PRODUCTION_TRIGGER_CONSECUTIVE: 3,  // 연속 정답 수
+  PRODUCTION_TRIGGER_INTERVAL: 7,     // 최소 interval (일)
+  
+  // 세션 내 재출제 설정
+  RETRY_INSERT_MIN: 5,                // 재출제 최소 간격 (카드 수)
+  RETRY_INSERT_RANGE: 3,              // 재출제 랜덤 범위 (5~7)
+  
+  // 정답/오답 판정
+  CORRECT_GRADE_THRESHOLD: 2,         // 이 등급 이상이면 정답 (Good=2, Easy=3)
+  
+  // 캐시 설정
+  MAX_SESSION_CACHE: 100,             // 세션 중복 방지 캐시 최대 크기
+  
+  // TTS 설정
+  TTS_RETRY_DELAY: 200,               // TTS 재시도 딜레이 (ms)
+  TTS_IOS_DELAY: 50,                  // iOS Safari 버그 대응 딜레이 (ms)
+  
+  // 예측 범위
+  FORECAST_DAYS: 7,                   // 망각 예측 범위 (일)
+  FORGET_THRESHOLD: 0.7               // 망각 판정 기억률
+};
+
 const FSRS = {
   // ★ FSRS-6 기본 파라미터 (21개) - 공식 문서 기준
   // [S0(1), S0(2), S0(3), S0(4), w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, w16, w17, w18, w19, w20]
@@ -1402,7 +1427,8 @@ async function getAllExpr(){return new Promise(r=>{try{const req=db.transaction(
 async function saveWord(w){return new Promise(r=>{const tx=db.transaction('words','readwrite');tx.objectStore('words').put(w);tx.oncomplete=r;})}
 async function savePV(p){return new Promise(r=>{const tx=db.transaction('phrasal_verbs','readwrite');tx.objectStore('phrasal_verbs').put(p);tx.oncomplete=r;})}
 async function saveExpr(e){return new Promise(r=>{const tx=db.transaction('expressions','readwrite');tx.objectStore('expressions').put(e);tx.oncomplete=r;})}
-const savedSessionStarts=new Set(); // ★ 중복 저장 방지용
+// ★ 중복 저장 방지용 (메모리 누수 방지)
+const savedSessionStarts=new Set();
 async function saveSession(s){
   // ★ mode+start로 중복 저장 방지 (같은 세션 중복 저장 차단)
   const sessionKey=(s.mode||'unknown')+'-'+(s.start||0);
@@ -1410,7 +1436,14 @@ async function saveSession(s){
     console.log('[saveSession] 중복 저장 방지:',sessionKey);
     return;
   }
-  if(s.start)savedSessionStarts.add(sessionKey);
+  if(s.start){
+    savedSessionStarts.add(sessionKey);
+    // ★ 메모리 누수 방지: 캐시가 너무 크면 오래된 것부터 삭제
+    if(savedSessionStarts.size>STUDY_CONSTANTS.MAX_SESSION_CACHE){
+      const firstKey=savedSessionStarts.values().next().value;
+      savedSessionStarts.delete(firstKey);
+    }
+  }
   lastStudyType=s.type||'vocab';
   return new Promise(r=>{const tx=db.transaction('sessions','readwrite');s.date=new Date().toISOString();tx.objectStore('sessions').add(s);tx.oncomplete=r;});
 }
@@ -1512,8 +1545,8 @@ function updateProductionStatus(item, isCorrect, mode) {
     if(isCorrect && !item.needsProduction) {
       item.consecutiveCorrect = (item.consecutiveCorrect || 0) + 1;
       // 조건: 3연속 정답 + interval 7일 이상 (충분히 기억한 것)
-      const intervalOK = (item.interval || 0) >= 7;
-      if(item.consecutiveCorrect >= 3 && intervalOK) {
+      const intervalOK = (item.interval || 0) >= STUDY_CONSTANTS.PRODUCTION_TRIGGER_INTERVAL;
+      if(item.consecutiveCorrect >= STUDY_CONSTANTS.PRODUCTION_TRIGGER_CONSECUTIVE && intervalOK) {
         item.needsProduction = true;
         item.consecutiveCorrect = 0;
         return { shouldToast: true, message: '🖊️ 산출 연습 목록에 추가됨' };
@@ -2614,8 +2647,25 @@ if(studyPages.includes(n)){
 // ★ 수정: 모든 타이머 정리 (메모리 누수 방지)
 cleanupAllTimers();
 document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+n)?.classList.add('active');document.querySelectorAll('.nav-item').forEach(a=>a.classList.toggle('active',a.dataset.page===n));if(n==='home'){updateHomeStats();clearSearchInputs();}if(n==='stats')updateStatsPage();if(n==='data')updateDataPage();if(n==='study')updateStudyPage();}
-// ★ 추가: 모든 타이머 정리 함수
+
+// ★ 전역 타이머 레지스트리 (누수 방지)
+const timerRegistry = {
+  intervals: new Set(),
+  timeouts: new Set(),
+  registerInterval(id) { this.intervals.add(id); return id; },
+  registerTimeout(id) { this.timeouts.add(id); return id; },
+  clearAll() {
+    this.intervals.forEach(id => clearInterval(id));
+    this.timeouts.forEach(id => clearTimeout(id));
+    this.intervals.clear();
+    this.timeouts.clear();
+  }
+};
+
+// ★ 모든 타이머 정리 함수
 function cleanupAllTimers(){
+  // 레지스트리 정리
+  timerRegistry.clearAll();
   // 인터벌 타이머
   if(fcState.timer){clearInterval(fcState.timer);fcState.timer=null;}
   if(exprState.timer){clearInterval(exprState.timer);exprState.timer=null;}
@@ -2764,6 +2814,17 @@ if(t==='phrasal'){
   }
   console.log('[QuickStudy PV] FSRS기반:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length});
   if(!selected.length){showToast('✅ 오늘 학습할 구동사가 없습니다!');return;}
+  // ★ 오답 자동 포함
+  const wrongAutoEnabled=localStorage.getItem('wrongAuto')!=='false';
+  if(wrongAutoEnabled){
+  const wrongLimit=parseInt(localStorage.getItem('wrongLimit')||'5');
+  const wrongBonus=Math.min(wrongLimit,Math.floor(count/5));
+  if(wrongBonus>0){
+  const wrongPVs=p.filter(x=>isWrong(x)&&!selected.includes(x));
+  const wrongToAdd=shuffle(wrongPVs).slice(0,wrongBonus);
+  if(wrongToAdd.length>0){wrongToAdd.forEach(item=>{const insertIdx=Math.floor(Math.random()*(selected.length+1));selected.splice(insertIdx,0,item);});showToast(`📝 오답 ${wrongToAdd.length}개 포함`);}
+  }
+  }
   if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
   startFC(selected,p,'phrasal');
   return;
@@ -2793,6 +2854,17 @@ if(selected.length<count){
 }
 console.log('[QuickStudy Vocab] FSRS기반:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,available:w.filter(x=>isAvailable(x)).length});
 if(!selected.length){showToast('✅ 오늘 학습할 단어가 없습니다! 내일 다시 확인하세요.');return;}
+// ★ 오답 자동 포함
+const wrongAutoEnabledV=localStorage.getItem('wrongAuto')!=='false';
+if(wrongAutoEnabledV){
+const wrongLimitV=parseInt(localStorage.getItem('wrongLimit')||'5');
+const wrongBonusV=Math.min(wrongLimitV,Math.floor(count/5));
+if(wrongBonusV>0){
+const wrongWords=w.filter(x=>isWrong(x)&&!selected.includes(x));
+const wrongToAddV=shuffle(wrongWords).slice(0,wrongBonusV);
+if(wrongToAddV.length>0){wrongToAddV.forEach(item=>{const insertIdx=Math.floor(Math.random()*(selected.length+1));selected.splice(insertIdx,0,item);});showToast(`📝 오답 ${wrongToAddV.length}개 포함`);}
+}
+}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 startFC(selected,w,'vocab');
 }
@@ -2876,8 +2948,8 @@ if(t==='phrasal'){
 const p=await getAllPV();const prod=p.filter(x=>x.needsProduction);
 if(!prod.length){showToast('🖊️ 산출 연습 목록이 비어있습니다!');return;}
 showToast('🖊️ 산출 연습 '+prod.length+'개!');
-// 역방향 퀴즈로 시작 (뜻→구동사)
-startPVQ(shuffle(prod).slice(0,count),p,'reverse');return;
+// 받아쓰기 모드로 시작 (Output 모드)
+startDictation(shuffle(prod).slice(0,count),p,'phrasal');return;
 }
 const w=await getAllWords();const prod=w.filter(x=>x.needsProduction);
 if(!prod.length){showToast('🖊️ 산출 연습 목록이 비어있습니다!');return;}
@@ -2927,7 +2999,7 @@ function startExprQuiz(items,all){
 if(items.length<5){showToast('⚠️ 학습할 표현이 부족합니다');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...items]);
-exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-quiz-total').textContent=shuffled.length;
 document.getElementById('expr-quiz-retry-banner').classList.add('hidden');
 showPage('expr-quiz');showExprQuizQ();
@@ -2938,7 +3010,7 @@ let valid=items.filter(e=>{const ex=getEx(e);const expr=(e.Expression||'').toLow
 if(!valid.length){showToast('✅ 빈칸채우기 가능한 표현이 없습니다!');return;}
 // ★ 매번 셔플하여 순서 무작위화
 const shuffled=shuffle([...valid]);
-exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-cloze-total').textContent=shuffled.length;
 showPage('expr-cloze');showExprClozeQ();
 }
@@ -2956,8 +3028,8 @@ document.getElementById('expr-typing-retry-banner').classList.add('hidden');
 showPage('expr-typing');showExprTypingQ();
 }catch(e){console.error('startExprTyping error:',e);showToast('❌ 시작 오류');}
 }
-async function showWeakWords(t){const count=parseInt(localStorage.getItem('defaultCount')||'20');currentWeakType=t;const items=t==='phrasal'?await getAllPV():await getAllWords();const weak=items.filter(i=>isWeak(i)).sort((a,b)=>(getAcc(a)||100)-(getAcc(b)||100));document.getElementById('weak-title').textContent=t==='phrasal'?'취약 구동사':'취약 단어';const list=document.getElementById('weak-list'),empty=document.getElementById('weak-empty'),btn=document.getElementById('weak-study-btn');if(!weak.length){list.innerHTML='';empty.classList.remove('hidden');btn.classList.add('hidden');}else{empty.classList.add('hidden');btn.classList.remove('hidden');list.innerHTML=weak.slice(0,count).map(w=>`<div class="weak-word-item"><div class="weak-word-text"><strong>${displayWord(getW(w))}</strong><span>${getMKO(w)}</span></div><div class="weak-word-stats"><div class="weak-word-rate" style="color:var(--danger)">${getAcc(w)!==null?getAcc(w)+'%':'-'}</div><div class="weak-word-count">${w.reviewCount||0}회</div></div></div>`).join('');}showPage('weak');}
-async function startWeakStudy(){const count=parseInt(localStorage.getItem('defaultCount')||'20');const items=currentWeakType==='phrasal'?await getAllPV():await getAllWords();const weak=items.filter(i=>isWeak(i));if(!weak.length){showToast('취약 단어가 없습니다');return;}if(currentWeakType==='phrasal')startFC(shuffle(weak).slice(0,count),items,'phrasal');else startFC(shuffle(weak).slice(0,count),items,'vocab');}
+async function showWeakWords(t){const count=parseInt(localStorage.getItem('defaultCount')||'20');currentWeakType=t;const items=t==='phrasal'?await getAllPV():t==='expr'?await getAllExpr():await getAllWords();const weak=items.filter(i=>isWeak(i)).sort((a,b)=>(getAcc(a)||100)-(getAcc(b)||100));document.getElementById('weak-title').textContent=t==='phrasal'?'취약 구동사':t==='expr'?'취약 표현':'취약 단어';const list=document.getElementById('weak-list'),empty=document.getElementById('weak-empty'),btn=document.getElementById('weak-study-btn');if(!weak.length){list.innerHTML='';empty.classList.remove('hidden');btn.classList.add('hidden');}else{empty.classList.add('hidden');btn.classList.remove('hidden');list.innerHTML=weak.slice(0,count).map(w=>`<div class="weak-word-item"><div class="weak-word-text"><strong>${displayWord(getW(w))}</strong><span>${getMKO(w)}</span></div><div class="weak-word-stats"><div class="weak-word-rate" style="color:var(--danger)">${getAcc(w)!==null?getAcc(w)+'%':'-'}</div><div class="weak-word-count">${w.reviewCount||0}회</div></div></div>`).join('');}showPage('weak');}
+async function startWeakStudy(){const count=parseInt(localStorage.getItem('defaultCount')||'20');const items=currentWeakType==='phrasal'?await getAllPV():currentWeakType==='expr'?await getAllExpr():await getAllWords();const weak=items.filter(i=>isWeak(i));if(!weak.length){showToast('취약 항목이 없습니다');return;}if(currentWeakType==='expr')startExprFCWithItems(shuffle(weak).slice(0,count),items);else if(currentWeakType==='phrasal')startFC(shuffle(weak).slice(0,count),items,'phrasal');else startFC(shuffle(weak).slice(0,count),items,'vocab');}
 
 // === 플래시카드 (핵심) ===
 function startFC(items,all,type){
@@ -3129,7 +3201,7 @@ async function rateCard(r){
 if(fcState.transitioning)return;
 fcState.transitioning=true;
 try{
-const item=fcState.words[fcState.idx];if(!item){fcState.transitioning=false;return;}
+const item=fcState.words[fcState.idx];if(!item)return;
 console.log('[rateCard] 시작:', JSON.stringify({word:item.word||item.Phrasal_Verb,rating:r,isRetry:item.isRetry,completedBefore:fcState.completedKeys?.size}));
 if(r===0)fcState.stats.again++;else if(r===1)fcState.stats.hard++;else if(r===2)fcState.stats.good++;else fcState.stats.easy++;
 // ★ 첫 시도 정답/오답 카운트 (isRetry가 아닌 경우만)
@@ -3148,7 +3220,7 @@ const prodResult = updateProductionStatus(item, r>=2, 'flashcard');
 if(prodResult.shouldToast) showToast(prodResult.message);
 // 5. 세션 내 재학습: 오답 시 5~7문제 후 재출제 (phase='normal'이고 첫 시도일 때만)
 if(r===0&&fcState.phase==='normal'&&!item.isRetry){
-const insertIdx=Math.min(fcState.idx+5+Math.floor(Math.random()*3),fcState.words.length);
+const insertIdx=Math.min(fcState.idx+STUDY_CONSTANTS.RETRY_INSERT_MIN+Math.floor(Math.random()*STUDY_CONSTANTS.RETRY_INSERT_RANGE),fcState.words.length);
 fcState.words.splice(insertIdx,0,{...item,isRetry:true});
 }
 // ★ isRetry 카드가 또 틀리면 오답노트로 저장하고 끝
@@ -3177,10 +3249,12 @@ try{
   console.log('[rateCard] DB 저장 완료:',{word:item.word||item.Phrasal_Verb,nextReview:item.nextReview});
 }catch(saveErr){console.error('DB save error:',saveErr);}
 vibrate(r>=2?10:[50,30,50]);fcState.idx++;
-setTimeout(()=>{fcState.transitioning=false;try{showCard();}catch(e){console.error('showCard error:',e);}},200);
+setTimeout(()=>{try{showCard();}catch(e){console.error('showCard error:',e);}},200);
 }catch(e){
 console.error('rateCard error:',e);
-fcState.transitioning=false; // ★ 에러 시 반드시 해제
+}finally{
+// ★ 항상 transitioning 해제 보장 (200ms 후)
+setTimeout(()=>{fcState.transitioning=false;},200);
 }
 }
 
@@ -3752,7 +3826,7 @@ document.getElementById('qc-total').textContent=ans;
 document.getElementById('qc-correct').textContent=listeningState.correct;
 document.getElementById('qc-wrong').textContent=listeningState.wrong;
 document.getElementById('qc-acc').textContent=acc+'%';
-document.getElementById('qc-wrong-info').classList.add('hidden');
+if(listeningState.savedToWrong>0){document.getElementById('qc-wrong-info').classList.remove('hidden');document.getElementById('qc-wrong-count').textContent=listeningState.savedToWrong;}else document.getElementById('qc-wrong-info').classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
 }
 
@@ -4115,12 +4189,14 @@ document.addEventListener('click',unlockTTS,{once:true});
 
 function speakText(text,retry=0){
 if(!text||!('speechSynthesis' in window))return;
-// ★ iOS: 언락 안 됐으면 스킵 (사용자 터치 필요)
+// ★ iOS Safari 버그 대응:
+// 1. 사용자 터치 없이 TTS 불가 → ttsUnlocked 플래그로 관리
+// 2. cancel() 후 바로 speak() 시 무음 → speakWord()에서는 50ms 딜레이 사용
 if(!ttsUnlocked){console.log('[TTS] Not unlocked yet');return;}
 window.speechSynthesis.cancel();
 const u=new SpeechSynthesisUtterance(text);
 u.lang='en-US';u.rate=0.9;
-// ★ 발화 실패 시 1회 재시도
+// ★ 발화 실패 시 1회 재시도 (iOS에서 간헐적 실패 대응)
 u.onerror=(e)=>{
   if(retry<1){setTimeout(()=>speakText(text,retry+1),200);}
 };
@@ -5140,6 +5216,20 @@ if(selected.length<count){
 }
 console.log('[ExprFC] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:filtered.filter(isAvailable).length});
 if(!selected.length){showToast('✅ 오늘 학습할 표현이 없습니다!');return;}
+// ★ 오답 자동 포함
+const wrongAutoEnabled=localStorage.getItem('wrongAuto')!=='false';
+if(wrongAutoEnabled){
+const wrongLimit=parseInt(localStorage.getItem('wrongLimit')||'5');
+const wrongBonus=Math.min(wrongLimit,Math.floor(count/5));
+if(wrongBonus>0){
+const wrongExprs=exprs.filter(x=>isWrong(x)&&!selected.includes(x));
+const wrongToAdd=shuffle(wrongExprs).slice(0,wrongBonus);
+if(wrongToAdd.length>0){
+wrongToAdd.forEach(w=>{const insertIdx=Math.floor(Math.random()*(selected.length+1));selected.splice(insertIdx,0,w);});
+showToast(`📝 오답 ${wrongToAdd.length}개 포함`);
+}
+}
+}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
 exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
@@ -5172,7 +5262,7 @@ if(selected.length<count){
 console.log('[ExprCloze] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:valid.filter(isAvailable).length});
 if(selected.length<5){showToast('⚠️ 오늘 학습할 빈칸채우기가 부족합니다');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-cloze-total').textContent=selected.length;
 showPage('expr-cloze');showExprClozeQ();
 }
@@ -5202,7 +5292,7 @@ if(selected.length<count){
 console.log('[ExprQuizQuick] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:filtered.filter(isAvailable).length});
 if(selected.length<5){showToast('⚠️ 오늘 학습할 표현이 부족합니다');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-quiz-total').textContent=selected.length;
 document.getElementById('expr-quiz-retry-banner').classList.add('hidden');
 showPage('expr-quiz');showExprQuizQ();
@@ -5274,7 +5364,7 @@ if(selected.length<count){
 console.log('[ExprClozeQuick] 선택:',{due:dueItems.length,weak:weakItems.length,new:newItems.length,total:selected.length,availableInDB:valid.filter(isAvailable).length});
 if(selected.length<5){showToast('⚠️ 오늘 학습할 빈칸채우기가 부족합니다');return;}
 if(dueItems.length>0)showToast(`🔄 복습 ${dueItems.length}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-cloze-total').textContent=selected.length;
 showPage('expr-cloze');showExprClozeQ();
 }
@@ -5413,7 +5503,7 @@ async function rateExprCard(r){
 if(exprState.transitioning)return;
 exprState.transitioning=true;
 try{
-const e=exprState.words[exprState.idx];if(!e){exprState.transitioning=false;return;}
+const e=exprState.words[exprState.idx];if(!e)return;
 // 통계
 if(r===0)exprState.stats.again++;else if(r===1)exprState.stats.hard++;else if(r===2)exprState.stats.good++;else exprState.stats.easy++;
 // ★ 첫 시도 정답/오답 카운트 (isRetry가 아닌 경우만)
@@ -5428,11 +5518,12 @@ if(!e.isRetry&&exprState.completedKeys){
 // 6. 산출 연습 상태 업데이트 (공통 함수)
 const prodResultExpr = updateProductionStatus(e, r>=2, 'expr-fc');
 if(prodResultExpr.shouldToast) showToast(prodResultExpr.message);
-// 5. 세션 내 재학습: 오답 시 5~7문제 후 재출제
-if(r===0&&exprState.phase==='normal'){
+// 5. 세션 내 재학습: 오답 시 5~7문제 후 재출제 (첫 시도일 때만)
+if(r===0&&exprState.phase==='normal'&&!e.isRetry){
 const insertIdx=Math.min(exprState.idx+5+Math.floor(Math.random()*3),exprState.words.length);
 exprState.words.splice(insertIdx,0,{...e,isRetry:true});
 }
+else if(r===0&&e.isRetry){updateWrong(e,false);exprState.savedToWrong++;} // isRetry가 또 틀리면 오답노트로
 else if(r===0&&exprState.phase==='retry'){updateWrong(e,false);exprState.savedToWrong++;}
 else if(r>=2)updateWrong(e,true);
 // DB 업데이트 - 재출제 카드(isRetry)는 FSRS 건너뛰기
@@ -5455,8 +5546,12 @@ Object.assign(e,fresh);
 console.log('[rateExprCard] isRetry card, skipping FSRS update');
 }
 vibrate(r>=2?10:[50,30,50]);exprState.idx++;
-setTimeout(()=>{exprState.transitioning=false;try{showExprCard();}catch(e){console.error('showExprCard error:',e);}},200);
-}catch(e){console.error('rateExprCard error:',e);exprState.transitioning=false;}
+setTimeout(()=>{try{showExprCard();}catch(e){console.error('showExprCard error:',e);}},200);
+}catch(e){console.error('rateExprCard error:',e);}
+finally{
+// ★ 항상 transitioning 해제 보장 (200ms 후)
+setTimeout(()=>{exprState.transitioning=false;},200);
+}
 }
 
 function confirmEndExprFC(){
@@ -5515,6 +5610,11 @@ exprState.words=[...exprState.retryQueue];exprState.retryQueue=[];exprState.idx=
 document.getElementById('expr-quiz-retry-banner').classList.remove('hidden');
 document.getElementById('expr-quiz-retry-count').textContent=exprState.words.length;
 showToast('🔄 오답 '+exprState.words.length+'개 재출제!');
+showExprQuizQ();return;
+}else if(exprState.finalQueue&&exprState.finalQueue.length>0&&exprState.phase==='retry'){
+exprState.words=[...exprState.finalQueue];exprState.finalQueue=[];exprState.idx=0;exprState.phase='final';
+document.getElementById('expr-quiz-retry-count').textContent=exprState.words.length;
+showToast('⚠️ 최종 '+exprState.words.length+'개 재출제!');
 showExprQuizQ();return;
 }else{endExprQuiz();return;}
 }
@@ -5576,6 +5676,7 @@ if(ok){
   if(!isRetry){exprState.wrong++;exprState.firstTryWrong++;}
   vibrate([50,30,50]);
   if(exprState.phase==='normal')exprState.retryQueue.push({...e,isRetry:true});
+  else if(exprState.phase==='retry'){if(!exprState.finalQueue)exprState.finalQueue=[];exprState.finalQueue.push({...e,isRetry:true});}
   else{updateWrong(e,false);exprState.savedToWrong++;if(!isRetry&&exprState.completedKeys)exprState.completedKeys.add(e.Expression);} // final에서 틀려도 완료
 }
 if(!isRetry){
@@ -5636,7 +5737,7 @@ rateExprQuizItem(2);
 }
 function nextExprQuiz(){exprState.idx++;showExprQuizQ();}
 function confirmEndExprQuiz(){
-if(exprState.idx<exprState.words.length||exprState.retryQueue.length>0)
+if(exprState.idx<exprState.words.length||exprState.retryQueue.length>0||(exprState.finalQueue&&exprState.finalQueue.length>0))
 showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endExprQuiz);
 else endExprQuiz();
 }
@@ -5794,6 +5895,19 @@ document.querySelectorAll('#home-expr .chip').forEach(c=>c.classList.toggle('act
 }
 // 표현 빈칸채우기
 function showExprClozeQ(){
+// ★ 재출제 로직 추가
+if(exprState.idx>=exprState.words.length){
+  if(exprState.retryQueue.length>0&&exprState.phase==='normal'){
+    exprState.words=[...exprState.retryQueue];exprState.retryQueue=[];exprState.idx=0;exprState.phase='retry';
+    document.getElementById('expr-cloze-retry-banner')?.classList.remove('hidden');
+    const rc=document.getElementById('expr-cloze-retry-count');if(rc)rc.textContent=exprState.words.length;
+    showToast('🔄 오답 '+exprState.words.length+'개 재출제!');
+  }else if(exprState.finalQueue&&exprState.finalQueue.length>0&&exprState.phase==='retry'){
+    exprState.words=[...exprState.finalQueue];exprState.finalQueue=[];exprState.idx=0;exprState.phase='final';
+    const rc=document.getElementById('expr-cloze-retry-count');if(rc)rc.textContent=exprState.words.length;
+    showToast('⚠️ 최종 '+exprState.words.length+'개 재출제!');
+  }else{endExprCloze();return;}
+}
 const e=exprState.words[exprState.idx];
 if(!e){endExprCloze();return;}
 exprState.answered=false;
@@ -5836,7 +5950,8 @@ if(ok){
 }else{
   if(!isRetry){exprState.wrong++;exprState.firstTryWrong++;}
   if(exprState.phase==='normal')exprState.retryQueue.push({...e,isRetry:true});
-  else if(!isRetry&&exprState.completedKeys)exprState.completedKeys.add(e.Expression); // final에서 틀려도 완료
+  else if(exprState.phase==='retry'){if(!exprState.finalQueue)exprState.finalQueue=[];exprState.finalQueue.push({...e,isRetry:true});}
+  else{exprState.savedToWrong++;if(!isRetry&&exprState.completedKeys)exprState.completedKeys.add(e.Expression);} // final에서 틀려도 완료
 }
 document.querySelectorAll('#expr-cloze-options .quiz-option').forEach(o=>{o.disabled=true;if(o.dataset.ans==='true')o.classList.add('correct');else if(o===el&&!ok)o.classList.add('wrong');});
 // 재출제 카드가 아닐 때만 처리
@@ -5882,11 +5997,11 @@ const ans=exprState.correct+exprState.wrong;if(!ans){showPage(studyStartPage,tru
 const acc=Math.round((exprState.correct/ans)*100);
 await saveSession({start:exprState.start,total:ans,correct:exprState.correct,wrong:exprState.wrong,accuracy:acc,mode:'expr-cloze',type:'expr',duration:Math.round((Date.now()-exprState.start)/1000),uniqueTotal:exprState.originalCount,firstTryCorrect:exprState.firstTryCorrect,firstTryWrong:exprState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=exprState.correct;document.getElementById('qc-wrong').textContent=exprState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
-document.getElementById('qc-wrong-info').classList.add('hidden');
+if(exprState.savedToWrong>0){document.getElementById('qc-wrong-info').classList.remove('hidden');document.getElementById('qc-wrong-count').textContent=exprState.savedToWrong;}else document.getElementById('qc-wrong-info').classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
 }
 function confirmEndExprCloze(){
-if(exprState.idx<exprState.words.length)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endExprCloze);
+if(exprState.idx<exprState.words.length||exprState.retryQueue.length>0||(exprState.finalQueue&&exprState.finalQueue.length>0))showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endExprCloze);
 else endExprCloze();
 }
 // 빈칸채우기 액션바 핸들러
@@ -6074,7 +6189,7 @@ const ans=exprTypingState.correct+exprTypingState.wrong;if(!ans){showPage(studyS
 const acc=Math.round((exprTypingState.correct/ans)*100);
 await saveSession({start:exprTypingState.start,total:ans,correct:exprTypingState.correct,wrong:exprTypingState.wrong,accuracy:acc,mode:'expr-typing',type:'expr',duration:Math.round((Date.now()-(exprTypingState.start||Date.now()))/1000),uniqueTotal:exprTypingState.originalCount,firstTryCorrect:exprTypingState.firstTryCorrect,firstTryWrong:exprTypingState.firstTryWrong});
 document.getElementById('qc-total').textContent=ans;document.getElementById('qc-correct').textContent=exprTypingState.correct;document.getElementById('qc-wrong').textContent=exprTypingState.wrong;document.getElementById('qc-acc').textContent=acc+'%';
-document.getElementById('qc-wrong-info')?.classList.add('hidden');
+if(exprTypingState.savedToWrong>0){document.getElementById('qc-wrong-info').classList.remove('hidden');document.getElementById('qc-wrong-count').textContent=exprTypingState.savedToWrong;}else document.getElementById('qc-wrong-info')?.classList.add('hidden');
 showModal('quiz-complete-modal');updateHomeStats();
 }catch(e){console.error('endExprTyping error:',e);showPage(studyStartPage,true);showToast('❌ 종료 처리 오류');}
 }
@@ -6146,12 +6261,12 @@ sel.splice(insertIdx,0,w);
 if(mode==='expr-cloze'){
 const valid=sel.filter(e=>{const ex=getEx(e);return ex&&ex.toLowerCase().includes(e.Expression.toLowerCase().split(' ')[0]);});
 if(!valid.length){showToast('⚠️ 빈칸채우기 가능한 표현이 없습니다');return;}
-exprState={words:valid,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:valid,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 showPage('expr-cloze');showExprClozeQ();
 }else if(mode==='expr-quiz'){
 const valid=sel.filter(e=>getMKO(e));
 if(valid.length<5){showToast('⚠️ 뜻이 있는 표현이 부족합니다');return;}
-exprState={words:valid,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:valid,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,completed:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-quiz-total').textContent=valid.length;
 document.getElementById('expr-quiz-retry-banner').classList.add('hidden');
 showPage('expr-quiz');showExprQuizQ();
@@ -7312,6 +7427,7 @@ leitnerBox:gI(r,'leitnerbox')||ex?.leitnerBox||1,
 // 사용자 정의 예문/콜로케이션 - Excel 값 우선 (파이프/쉼표로 구분)
 userExamples:(()=>{const v=gC(r,'userexamples');return v?v.split(' | ').map(s=>s.trim()).filter(s=>s):(ex?.userExamples||[]);})(),
 userCollocations:(()=>{const v=gC(r,'usercollocations');return v?v.split(', ').map(s=>s.trim()).filter(s=>s):(ex?.userCollocations||[]);})()});}
+// ★ IndexedDB 배치 처리: 하나의 트랜잭션에서 모든 put() 실행 → 성능 최적화
 const tx=db.transaction('words','readwrite');ws.forEach(w=>tx.objectStore('words').put(w));await new Promise(r=>{tx.oncomplete=r;});vR={total:ws.length,new:nC,update:uC,preserved:pC,sheet:vS};}}
 if(pS){const json=XLSX.utils.sheet_to_json(wb.Sheets[pS],{header:1});let hr=0;for(let i=0;i<Math.min(10,json.length);i++){if(json[i]&&json[i].some(c=>c&&normH(c)==='phrasalverb')){hr=i;break;}}const headers=(json[hr]||[]).map(h=>(h||'').toString());const colIdx={};headers.forEach((h,i)=>{colIdx[normH(h)]=i;});const pvIdx=colIdx['phrasalverb'];
 if(pvIdx!==undefined){let nC=0,uC=0,pC=0;const ps=[];const gC=(r,n)=>{const idx=colIdx[normH(n)];return idx!==undefined&&r[idx]!=null?r[idx].toString():'';};
