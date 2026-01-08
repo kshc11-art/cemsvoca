@@ -785,9 +785,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <div class="form-group">
 <label class="form-label">TSV/표 데이터 (헤더 선택사항)</label>
-<textarea class="form-input" id="paste-data" rows="10" placeholder="Excel, AI 표, 마크다운 테이블 모두 지원&#10;&#10;✓ TSV (탭 구분)&#10;✓ 마크다운 (| 구분)&#10;✓ 헤더 있어도 없어도 OK&#10;&#10;헤더 없을 시 기본 순서:&#10;어휘: 단어, 뜻, 품사, 예문...&#10;구동사: 구동사, 뜻, 기본동사, 불변화사...&#10;표현: 표현, 뜻, 기능, 예문..." style="text-align:left;font-family:monospace;font-size:12px"></textarea>
+<textarea class="form-input" id="paste-data" rows="10" placeholder="Excel, AI 표, 마크다운 테이블 모두 지원&#10;&#10;✓ TSV (탭 구분)&#10;✓ 마크다운 (| 구분)&#10;✓ 헤더 있어도 없어도 OK&#10;&#10;헤더 없을 시 순서:&#10;어휘: Word,POS,Meaning1_EN,Meaning1_KO,...&#10;구동사: PV,Base_Verb,Particle,M1_EN,M1_KO,...&#10;표현: Expr,L1,L2,L3,Function,Meaning_KO,..." style="text-align:left;font-family:monospace;font-size:12px"></textarea>
 <div style="font-size:11px;color:var(--muted);margin-top:4px">
-💡 <strong>헤더 있으면</strong>: 컬럼명으로 자동 매핑 | <strong>헤더 없으면</strong>: 첫 컬럼=단어, 두 번째=뜻
+💡 <strong>헤더 있으면</strong>: 컬럼명으로 자동 매핑 | <strong>헤더 없으면</strong>: 엑셀 순서대로 매핑
 </div>
 </div>
 <div id="paste-preview" style="display:none;background:var(--bg);border-radius:12px;padding:12px;margin-bottom:16px">
@@ -8776,13 +8776,16 @@ function parsePasteData(text, type){
     colMap = {};
     headers.forEach((h,i)=>colMap[normalize(h)]=i);
   } else {
-    // ★ 헤더 없음: 타입별 기본 컬럼 순서 적용
+    // ★ 헤더 없음: 사용자 지정 엑셀 헤더 순서 적용
     if(type==='vocab'){
-      headers = ['word','Meaning1_KO','POS','Example1','Key_Collocation','CEFR','L1','L2','Synonyms','Common_Error'];
+      // Word,POS,Meaning1_EN,Meaning1_KO,Meaning2_EN,Meaning2_KO,Synonyms,Antonyms_EN,Antonyms_KO,L1,L2,Formality,Currency,Medium,Style_Tags,CEFR,Frequency,Priority,TOEFL_Rel,Example1,Example2,Key_Collocation,Common_Error
+      headers = ['word','POS','Meaning1_EN','Meaning1_KO','Meaning2_EN','Meaning2_KO','Synonyms','Antonyms_EN','Antonyms_KO','L1','L2','Formality','Currency','Medium','Style_Tags','CEFR','Frequency','Priority','TOEFL_Rel','Example1','Example2','Key_Collocation','Common_Error'];
     } else if(type==='phrasal'){
-      headers = ['Phrasal_Verb','Meaning1_KO','Base_Verb','Particle','Example1','Category','Formal_Equivalent','CEFR','Common_Error'];
+      // Phrasal_Verb,Base_Verb,Particle,Meaning1_EN,Meaning1_KO,Meaning2_EN,Meaning2_KO,Transparency,Category,Formality,Currency,Medium,Style_Tags,Formal_Equivalent,Separable,CEFR,Frequency,Priority,Example1,Example2,Common_Error
+      headers = ['Phrasal_Verb','Base_Verb','Particle','Meaning1_EN','Meaning1_KO','Meaning2_EN','Meaning2_KO','Transparency','Category','Formality','Currency','Medium','Style_Tags','Formal_Equivalent','Separable','CEFR','Frequency','Priority','Example1','Example2','Common_Error'];
     } else {
-      headers = ['Expression','Meaning_KO','Function','Example1','Example2','Similar_Expr','CEFR','Common_Error'];
+      // Expression,L1,L2,L3,Function,Meaning_KO,Formality,Currency,Medium,Style_Tags,Example1,Example2,Similar_Expr,Common_Error,CEFR,Frequency,Priority
+      headers = ['Expression','L1','L2','L3','Function','Meaning_KO','Formality','Currency','Medium','Style_Tags','Example1','Example2','Similar_Expr','Common_Error','CEFR','Frequency','Priority'];
     }
     dataStartIdx = 0; // 첫 행부터 데이터
     colMap = {};
@@ -8795,9 +8798,9 @@ function parsePasteData(text, type){
   const keyIdx=colMap[keyCol]??colMap['word']??colMap['phrasalverb']??colMap['expression'];
   if(keyIdx===undefined){return {error:`필수 컬럼(${keyCol})을 찾을 수 없습니다`};}
   
+  // ★ 뜻 컬럼 인덱스 (타입별로 다름)
+  // vocab: Meaning1_KO(3), phrasal: Meaning1_KO(4), expr: Meaning_KO(5)
   const meaningIdx=colMap['meaning1ko']??colMap['meaningko']??colMap['meaning'];
-  // ★ 헤더 없는 경우 meaning은 두 번째 컬럼으로 간주
-  const actualMeaningIdx = meaningIdx !== undefined ? meaningIdx : 1;
   
   const gC=(cols,name)=>{const idx=colMap[normalize(name)];return idx!==undefined&&cols[idx]!=null?cols[idx].toString().trim():'';};
   
@@ -8809,9 +8812,6 @@ function parsePasteData(text, type){
     const key=cols[keyIdx]?.trim();
     if(!key)continue;
     
-    // ★ 헤더 없는 경우 두 번째 컬럼을 뜻으로 사용
-    const meaningValue = hasHeader ? (gC(cols,'Meaning1_KO')||gC(cols,'MeaningKO')||gC(cols,'Meaning_KO')) : (cols[1]?.trim()||'');
-    
     // Style_Tags와 tags 컬럼을 병합
     const tagsStr=gC(cols,'tags');
     const styleTagsStr=gC(cols,'Style_Tags')||gC(cols,'StyleTags');
@@ -8819,9 +8819,9 @@ function parsePasteData(text, type){
     const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
     const mergedTags=[...new Set([...tagsFromCol,...tagsFromStyle])];
     
-    // 디버그: 첫 3개만 태그 정보 출력
+    // 디버그: 첫 3개만 출력
     if(items.length<3){
-      console.log('[ParsePaste Debug]', JSON.stringify({key, meaningValue, hasHeader, tagsStr, styleTagsStr, mergedTags}));
+      console.log('[ParsePaste Debug]', JSON.stringify({key, hasHeader, cols: cols.slice(0,5)}));
     }
     
     const base={
@@ -8838,13 +8838,14 @@ function parsePasteData(text, type){
     };
     
     if(type==='vocab'){
+      // 순서: Word(0),POS(1),Meaning1_EN(2),Meaning1_KO(3),Meaning2_EN(4),Meaning2_KO(5),Synonyms(6),Antonyms_EN(7),Antonyms_KO(8),L1(9),L2(10),Formality(11),Currency(12),Medium(13),Style_Tags(14),CEFR(15),Frequency(16),Priority(17),TOEFL_Rel(18),Example1(19),Example2(20),Key_Collocation(21),Common_Error(22)
       items.push({...base,
         word:key,
-        POS:hasHeader?gC(cols,'POS'):(cols[2]?.trim()||''),
-        Meaning1_KO:meaningValue,
-        Meaning1_EN:gC(cols,'Meaning1_EN')||gC(cols,'MeaningEN'),
-        Meaning2_KO:gC(cols,'Meaning2_KO'),
+        POS:gC(cols,'POS'),
+        Meaning1_EN:gC(cols,'Meaning1_EN'),
+        Meaning1_KO:gC(cols,'Meaning1_KO'),
         Meaning2_EN:gC(cols,'Meaning2_EN'),
+        Meaning2_KO:gC(cols,'Meaning2_KO'),
         Synonyms:gC(cols,'Synonyms'),
         Antonyms_EN:gC(cols,'Antonyms_EN'),
         Antonyms_KO:gC(cols,'Antonyms_KO'),
@@ -8858,47 +8859,56 @@ function parsePasteData(text, type){
         Frequency:gC(cols,'Frequency')||'K3',
         Priority:gC(cols,'Priority')||'P2',
         TOEFL_Rel:gC(cols,'TOEFL_Rel'),
-        COCA_Genre:gC(cols,'COCA_Genre'),
-        Example1:hasHeader?gC(cols,'Example1'):(cols[3]?.trim()||''),
+        Example1:gC(cols,'Example1'),
         Example2:gC(cols,'Example2'),
-        Key_Collocation:hasHeader?gC(cols,'Key_Collocation'):(cols[4]?.trim()||''),
+        Key_Collocation:gC(cols,'Key_Collocation'),
         Common_Error:gC(cols,'Common_Error')
       });
     }else if(type==='phrasal'){
+      // 순서: Phrasal_Verb(0),Base_Verb(1),Particle(2),Meaning1_EN(3),Meaning1_KO(4),Meaning2_EN(5),Meaning2_KO(6),Transparency(7),Category(8),Formality(9),Currency(10),Medium(11),Style_Tags(12),Formal_Equivalent(13),Separable(14),CEFR(15),Frequency(16),Priority(17),Example1(18),Example2(19),Common_Error(20)
       items.push({...base,
         Phrasal_Verb:key,
-        Base_Verb:hasHeader?gC(cols,'Base_Verb'):(cols[2]?.trim()||''),
-        Particle:hasHeader?gC(cols,'Particle'):(cols[3]?.trim()||''),
-        Meaning1_KO:meaningValue,
+        Base_Verb:gC(cols,'Base_Verb'),
+        Particle:gC(cols,'Particle'),
         Meaning1_EN:gC(cols,'Meaning1_EN'),
-        Example1:hasHeader?gC(cols,'Example1'):(cols[4]?.trim()||''),
+        Meaning1_KO:gC(cols,'Meaning1_KO'),
+        Meaning2_EN:gC(cols,'Meaning2_EN'),
+        Meaning2_KO:gC(cols,'Meaning2_KO'),
+        Transparency:gC(cols,'Transparency'),
         Category:gC(cols,'Category')||'General',
         Formality:gC(cols,'Formality')||'Neutral',
         Currency:gC(cols,'Currency')||'Current',
         Medium:gC(cols,'Medium')||'Both',
         Style_Tags:gC(cols,'Style_Tags'),
+        Formal_Equivalent:gC(cols,'Formal_Equivalent'),
+        Separable:gC(cols,'Separable'),
         CEFR:gC(cols,'CEFR')||'B1',
         Frequency:gC(cols,'Frequency')||'K3',
         Priority:gC(cols,'Priority')||'P2',
-        Formal_Equivalent:gC(cols,'Formal_Equivalent'),
+        Example1:gC(cols,'Example1'),
+        Example2:gC(cols,'Example2'),
         Common_Error:gC(cols,'Common_Error')
       });
     }else{
+      // 순서: Expression(0),L1(1),L2(2),L3(3),Function(4),Meaning_KO(5),Formality(6),Currency(7),Medium(8),Style_Tags(9),Example1(10),Example2(11),Similar_Expr(12),Common_Error(13),CEFR(14),Frequency(15),Priority(16)
       items.push({...base,
         Expression:key,
-        Meaning_KO:meaningValue,
-        Function:hasHeader?gC(cols,'Function'):(cols[2]?.trim()||''),
+        L1:gC(cols,'L1'),
+        L2:gC(cols,'L2'),
+        L3:gC(cols,'L3'),
+        Function:gC(cols,'Function'),
+        Meaning_KO:gC(cols,'Meaning_KO'),
         Formality:gC(cols,'Formality')||'Neutral',
         Currency:gC(cols,'Currency')||'Current',
         Medium:gC(cols,'Medium')||'Both',
         Style_Tags:gC(cols,'Style_Tags'),
-        CEFR:gC(cols,'CEFR')||'B1',
-        Frequency:gC(cols,'Frequency')||'K3',
-        Priority:gC(cols,'Priority')||'P2',
-        Example1:hasHeader?gC(cols,'Example1'):(cols[3]?.trim()||''),
+        Example1:gC(cols,'Example1'),
         Example2:gC(cols,'Example2'),
         Similar_Expr:gC(cols,'Similar_Expr'),
-        Common_Error:gC(cols,'Common_Error')
+        Common_Error:gC(cols,'Common_Error'),
+        CEFR:gC(cols,'CEFR')||'B1',
+        Frequency:gC(cols,'Frequency')||'K3',
+        Priority:gC(cols,'Priority')||'P2'
       });
     }
   }
