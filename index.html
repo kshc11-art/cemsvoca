@@ -236,7 +236,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="position:sticky;top:0;z-index:10;background:var(--card);padding:12px 0;margin:-16px -16px 16px -16px;padding:12px 16px"><div class="progress-bar"><div class="progress-fill" id="quiz-progress"></div></div><div class="progress-text"><span><span id="quiz-current">0</span> / <span id="quiz-total">0</span></span><span>✅ <span id="quiz-correct">0</span> ❌ <span id="quiz-wrong">0</span></span></div></div>
 <div class="retry-banner hidden" id="quiz-retry-banner"><div class="retry-banner-icon">🔄</div><div class="retry-banner-text">오답 재출제 중</div><div class="retry-banner-count" id="quiz-retry-count">0</div></div>
 <div class="card" style="min-height:150px;display:flex;flex-direction:column;justify-content:center"><div class="flashcard-tags" id="quiz-tags" style="justify-content:center"></div><div class="flashcard-word" id="quiz-word" style="font-size:28px">단어</div><div id="quiz-sub" style="font-size:14px;color:var(--muted);text-align:center;margin-top:8px"></div><div id="quiz-example" class="hidden" style="background:rgba(99,102,241,.1);padding:12px;border-radius:10px;border-left:3px solid var(--primary);font-size:13px;margin-top:12px"></div></div>
-<div id="quiz-rating-bar" class="hidden" style="margin-bottom:12px;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateQuizItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="rateQuizItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="rateQuizItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="rateQuizItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div id="quiz-rating-bar" class="hidden" style="margin-bottom:12px;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateQuizItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">다시</span></button><button class="rating-btn hard" onclick="rateQuizItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">1일</span></button><button class="rating-btn good" onclick="rateQuizItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">3일</span></button><button class="rating-btn easy" onclick="rateQuizItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">7일</span></button></div></div>
 <div class="quiz-options" id="quiz-options"></div>
 <div class="quiz-action-bar"><button class="btn btn-secondary btn-sm" onclick="speakQuizWord()">🔊</button><button class="btn btn-secondary btn-sm" id="quiz-bookmark-btn" onclick="toggleQuizBookmark()">☆</button><button class="btn btn-secondary btn-sm" id="quiz-production-btn" onclick="toggleQuizProduction()">🖊️</button><button class="btn btn-secondary btn-sm" id="quiz-tag-btn" onclick="openQuizTagMenu()">🏷️</button><button class="btn btn-secondary btn-sm" onclick="openQuizEdit()">✏️</button></div>
 <button class="btn btn-primary hidden" id="quiz-next-btn" onclick="nextQuiz()" style="margin-top:16px">다음 문제 →</button>
@@ -263,7 +263,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <button class="btn btn-primary" onclick="playCurrentListening()" id="listening-play-btn" style="padding:16px 32px;font-size:18px">🔊 듣기</button>
 <div style="font-size:12px;color:var(--muted);margin-top:8px">단어를 듣고 뜻을 선택하세요</div>
 </div>
-<div id="listening-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateListeningItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="rateListeningItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="rateListeningItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="rateListeningItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div id="listening-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateListeningItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">다시</span></button><button class="rating-btn hard" onclick="rateListeningItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">1일</span></button><button class="rating-btn good" onclick="rateListeningItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">3일</span></button><button class="rating-btn easy" onclick="rateListeningItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">7일</span></button></div></div>
 <div class="quiz-options" id="listening-options"></div>
 <div class="quiz-action-bar" id="listening-action-bar"><button class="btn btn-secondary btn-sm" onclick="playCurrentListening()">🔊</button><button class="btn btn-secondary btn-sm" id="listening-bookmark-btn" onclick="toggleListeningBookmark()">☆</button><button class="btn btn-secondary btn-sm" id="listening-production-btn" onclick="toggleListeningProduction()">🖊️</button><button class="btn btn-secondary btn-sm" id="listening-tag-btn" onclick="openListeningTagMenu()">🏷️</button><button class="btn btn-secondary btn-sm" onclick="openListeningEdit()">✏️</button></div>
 <button class="btn btn-primary hidden" id="listening-next-btn" onclick="nextListeningQ()" style="margin-top:16px">다음 문제 →</button>
@@ -290,7 +290,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="font-size:14px;color:var(--muted);text-align:center;margin-bottom:8px"><span id="cloze-hint"></span></div>
 <div id="cloze-sentence" style="font-size:18px;line-height:1.8;text-align:center;padding:16px"></div>
 </div>
-<div id="cloze-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateClozeItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="rateClozeItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="rateClozeItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="rateClozeItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div id="cloze-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateClozeItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">다시</span></button><button class="rating-btn hard" onclick="rateClozeItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">1일</span></button><button class="rating-btn good" onclick="rateClozeItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">3일</span></button><button class="rating-btn easy" onclick="rateClozeItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">7일</span></button></div></div>
 <div class="quiz-options" id="cloze-options"></div>
 <button class="btn btn-primary hidden" id="cloze-next-btn" onclick="nextCloze()" style="margin-top:16px">다음 문제 →</button>
 <div style="margin-top:16px"><button class="btn btn-secondary btn-sm" onclick="confirmEndCloze()">학습 종료</button></div>
@@ -304,7 +304,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="colloc-question" style="font-size:28px;font-weight:700;text-align:center;padding:16px">_____ + decision</div>
 <div style="font-size:14px;color:var(--muted);text-align:center" id="colloc-meaning"></div>
 </div>
-<div id="colloc-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateCollocItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="rateCollocItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="rateCollocItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="rateCollocItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div id="colloc-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateCollocItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">다시</span></button><button class="rating-btn hard" onclick="rateCollocItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">1일</span></button><button class="rating-btn good" onclick="rateCollocItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">3일</span></button><button class="rating-btn easy" onclick="rateCollocItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">7일</span></button></div></div>
 <div class="quiz-options" id="colloc-options"></div>
 <button class="btn btn-primary hidden" id="colloc-next-btn" onclick="nextColloc()" style="margin-top:16px">다음 문제 →</button>
 <div style="margin-top:16px"><button class="btn btn-secondary btn-sm" onclick="confirmEndColloc()">학습 종료</button></div>
@@ -347,7 +347,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="expr-cloze-sentence" style="font-size:18px;text-align:center;padding:16px;line-height:1.6"></div>
 <div style="font-size:14px;color:var(--expr);text-align:center" id="expr-cloze-hint"></div>
 </div>
-<div id="expr-cloze-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateExprClozeItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="rateExprClozeItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="rateExprClozeItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="rateExprClozeItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div id="expr-cloze-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateExprClozeItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">다시</span></button><button class="rating-btn hard" onclick="rateExprClozeItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">1일</span></button><button class="rating-btn good" onclick="rateExprClozeItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">3일</span></button><button class="rating-btn easy" onclick="rateExprClozeItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">7일</span></button></div></div>
 <div class="quiz-options" id="expr-cloze-options"></div>
 <div class="quiz-action-bar"><button class="btn btn-secondary btn-sm" onclick="speakExprCloze()">🔊</button><button class="btn btn-secondary btn-sm" id="expr-cloze-bookmark-btn" onclick="toggleExprClozeBookmark()">☆</button><button class="btn btn-secondary btn-sm" id="expr-cloze-production-btn" onclick="toggleExprClozeProduction()">🖊️</button><button class="btn btn-secondary btn-sm" onclick="openExprClozeEdit()">✏️</button></div>
 <div style="margin-top:16px"><button class="btn btn-secondary btn-sm" onclick="confirmEndExprCloze()">학습 종료</button></div>
@@ -370,7 +370,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="flashcard-word" id="expr-quiz-word" style="font-size:24px">Expression</div>
 <div id="expr-quiz-func" style="font-size:13px;color:var(--expr);text-align:center;margin-top:8px;display:none"></div>
 </div>
-<div id="expr-quiz-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateExprQuizItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="rateExprQuizItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="rateExprQuizItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="rateExprQuizItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div id="expr-quiz-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="rateExprQuizItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">다시</span></button><button class="rating-btn hard" onclick="rateExprQuizItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">1일</span></button><button class="rating-btn good" onclick="rateExprQuizItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">3일</span></button><button class="rating-btn easy" onclick="rateExprQuizItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">7일</span></button></div></div>
 <div class="quiz-options" id="expr-quiz-options"></div>
 <div class="quiz-action-bar"><button class="btn btn-secondary btn-sm" onclick="speakExprQuiz()">🔊</button><button class="btn btn-secondary btn-sm" id="expr-quiz-bookmark-btn" onclick="toggleExprQuizBookmark()">☆</button><button class="btn btn-secondary btn-sm" id="expr-quiz-production-btn" onclick="toggleExprQuizProduction()">🖊️</button><button class="btn btn-secondary btn-sm" id="expr-quiz-tag-btn" onclick="openExprQuizTagMenu()">🏷️</button><button class="btn btn-secondary btn-sm" onclick="openExprQuizEdit()">✏️</button></div>
 <button class="btn btn-primary hidden" id="expr-quiz-next-btn" onclick="nextExprQuiz()" style="margin-top:16px;background:var(--expr)">다음 문제 →</button>
@@ -381,7 +381,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="position:sticky;top:0;z-index:10;background:var(--card);padding:12px 0;margin:-16px -16px 16px -16px;padding:12px 16px"><div class="progress-bar"><div class="progress-fill phrasal" id="pvp-progress"></div></div><div class="progress-text"><span><span id="pvp-current">0</span> / <span id="pvp-total">0</span></span><span>✅ <span id="pvp-correct">0</span> ❌ <span id="pvp-wrong">0</span></span></div></div>
 <div class="retry-banner hidden" id="pvp-retry-banner"><div class="retry-banner-icon">🔄</div><div class="retry-banner-text">오답 재출제 중</div><div class="retry-banner-count" id="pvp-retry-count">0</div></div>
 <div class="card" style="min-height:180px;display:flex;flex-direction:column;justify-content:center"><div style="font-size:14px;color:var(--muted);text-align:center;margin-bottom:8px" id="pvp-meaning"></div><div style="font-size:40px;font-weight:700;color:var(--phrasal);text-align:center;padding:16px" id="pvp-question">verb + <span class="blank-word">?</span></div><div id="pvp-example" class="hidden" style="background:rgba(236,72,153,.1);padding:12px;border-radius:10px;border-left:3px solid var(--phrasal);font-size:13px;margin-top:12px"></div></div>
-<div id="pvp-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="ratePVPItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="ratePVPItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="ratePVPItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="ratePVPItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div id="pvp-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="ratePVPItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">다시</span></button><button class="rating-btn hard" onclick="ratePVPItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">1일</span></button><button class="rating-btn good" onclick="ratePVPItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">3일</span></button><button class="rating-btn easy" onclick="ratePVPItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">7일</span></button></div></div>
 <div class="quiz-options" id="pvp-options"></div>
 <div class="quiz-action-bar"><button class="btn btn-secondary btn-sm" onclick="speakPVP()">🔊</button><button class="btn btn-secondary btn-sm" id="pvp-bookmark-btn" onclick="togglePVPBookmark()">☆</button><button class="btn btn-secondary btn-sm" id="pvp-production-btn" onclick="togglePVPProduction()">🖊️</button><button class="btn btn-secondary btn-sm" id="pvp-tag-btn" onclick="openPVPTagMenu()">🏷️</button><button class="btn btn-secondary btn-sm" onclick="openPVPEdit()">✏️</button></div>
 <button class="btn btn-phrasal hidden" id="pvp-next-btn" onclick="nextPVP()" style="margin-top:16px">다음 문제 →</button>
@@ -392,7 +392,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="position:sticky;top:0;z-index:10;background:var(--card);padding:12px 0;margin:-16px -16px 16px -16px;padding:12px 16px"><div class="progress-bar"><div class="progress-fill phrasal" id="pvq-progress"></div></div><div class="progress-text"><span><span id="pvq-current">0</span> / <span id="pvq-total">0</span></span><span>✅ <span id="pvq-correct">0</span> ❌ <span id="pvq-wrong">0</span></span></div></div>
 <div class="retry-banner hidden" id="pvq-retry-banner"><div class="retry-banner-icon">🔄</div><div class="retry-banner-text">오답 재출제 중</div><div class="retry-banner-count" id="pvq-retry-count">0</div></div>
 <div class="card" style="min-height:150px;display:flex;flex-direction:column;justify-content:center"><div class="flashcard-tags" id="pvq-tags" style="justify-content:center"></div><div class="flashcard-word" id="pvq-word" style="font-size:28px">구동사</div><div id="pvq-sub" style="font-size:14px;color:var(--muted);text-align:center;margin-top:8px"></div><div id="pvq-example" class="hidden" style="background:rgba(249,115,22,.1);padding:12px;border-radius:10px;border-left:3px solid var(--phrasal);font-size:13px;margin-top:12px"></div></div>
-<div id="pvq-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="ratePVQItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름</button><button class="rating-btn hard" onclick="ratePVQItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움</button><button class="rating-btn good" onclick="ratePVQItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통</button><button class="rating-btn easy" onclick="ratePVQItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움</button></div></div>
+<div id="pvq-rating-bar" class="hidden" style="margin:12px 0;padding:10px;background:var(--bg);border-radius:12px"><div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px">📊 난이도 평가</div><div class="rating-grid"><button class="rating-btn again" onclick="ratePVQItem(0)" style="padding:10px 4px;min-height:50px;font-size:11px">😫 모름<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">다시</span></button><button class="rating-btn hard" onclick="ratePVQItem(1)" style="padding:10px 4px;min-height:50px;font-size:11px">😕 어려움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">1일</span></button><button class="rating-btn good" onclick="ratePVQItem(2)" style="padding:10px 4px;min-height:50px;font-size:11px">🙂 보통<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">3일</span></button><button class="rating-btn easy" onclick="ratePVQItem(3)" style="padding:10px 4px;min-height:50px;font-size:11px">😊 쉬움<span class="rating-interval" style="display:block;font-size:9px;opacity:.7">7일</span></button></div></div>
 <div class="quiz-options" id="pvq-options"></div>
 <div class="quiz-action-bar"><button class="btn btn-secondary btn-sm" onclick="speakPVQ()">🔊</button><button class="btn btn-secondary btn-sm" id="pvq-bookmark-btn" onclick="togglePVQBookmark()">☆</button><button class="btn btn-secondary btn-sm" id="pvq-production-btn" onclick="togglePVQProduction()">🖊️</button><button class="btn btn-secondary btn-sm" id="pvq-tag-btn" onclick="openPVQTagMenu()">🏷️</button><button class="btn btn-secondary btn-sm" onclick="openPVQEdit()">✏️</button></div>
 <button class="btn btn-phrasal hidden" id="pvq-next-btn" onclick="nextPVQ()" style="margin-top:16px">다음 문제 →</button>
@@ -764,6 +764,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="chip-multi chip-small" id="add-suggested-tags" style="margin-bottom:8px"><span class="chip" data-value="Academic">Academic</span><span class="chip" data-value="Literary">Literary</span><span class="chip" data-value="Legal">Legal</span><span class="chip" data-value="Business">Business</span><span class="chip" data-value="Technical">Technical</span><span class="chip" data-value="Medical">Medical</span><span class="chip" data-value="BrE">BrE</span><span class="chip" data-value="AmE">AmE</span><span class="chip" data-value="Idiom">Idiom</span><span class="chip" data-value="TOEFL">TOEFL</span></div>
 <input type="text" class="form-input" id="add-tags" placeholder="추가 태그 (쉼표로 구분)" style="text-align:left">
 </div>
+<div class="form-group"><label class="form-label">⚠️ Common Error (흔한 실수)</label><input type="text" class="form-input" id="add-common-error" placeholder="예: *informations (불가산명사)" style="text-align:left"></div>
 <div class="form-group"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="add-bookmark" checked> ⭐ 북마크에 추가</label></div>
 <div style="display:flex;gap:10px"><button class="btn btn-secondary" onclick="closeModal('add-word-modal')" style="flex:1">취소</button><button class="btn btn-primary" onclick="saveNewWord()" style="flex:1">💾 저장</button></div>
 </div></div>
@@ -783,10 +784,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 </div>
 <div class="form-group">
-<label class="form-label">TSV/표 데이터 (헤더 포함)</label>
-<textarea class="form-input" id="paste-data" rows="10" placeholder="Excel, AI 표, 마크다운 테이블 모두 지원&#10;&#10;✓ TSV (탭 구분)&#10;✓ 마크다운 (| 구분)&#10;&#10;필수: word + Meaning1_KO" style="text-align:left;font-family:monospace;font-size:12px"></textarea>
+<label class="form-label">TSV/표 데이터 (헤더 선택사항)</label>
+<textarea class="form-input" id="paste-data" rows="10" placeholder="Excel, AI 표, 마크다운 테이블 모두 지원&#10;&#10;✓ TSV (탭 구분)&#10;✓ 마크다운 (| 구분)&#10;✓ 헤더 있어도 없어도 OK&#10;&#10;헤더 없을 시 기본 순서:&#10;어휘: 단어, 뜻, 품사, 예문...&#10;구동사: 구동사, 뜻, 기본동사, 불변화사...&#10;표현: 표현, 뜻, 기능, 예문..." style="text-align:left;font-family:monospace;font-size:12px"></textarea>
 <div style="font-size:11px;color:var(--muted);margin-top:4px">
-💡 필수 컬럼: <strong>word</strong> (또는 Phrasal_Verb, Expression) + <strong>Meaning1_KO</strong>
+💡 <strong>헤더 있으면</strong>: 컬럼명으로 자동 매핑 | <strong>헤더 없으면</strong>: 첫 컬럼=단어, 두 번째=뜻
 </div>
 </div>
 <div id="paste-preview" style="display:none;background:var(--bg);border-radius:12px;padding:12px;margin-bottom:16px">
@@ -1292,6 +1293,10 @@ function calcNext(item, grade) {
   
   // ★ 다음 간격 계산 (Fuzz 적용)
   let interval = FSRS.nextInterval(S);
+  // ★ Easy(grade=3)는 최소 easyInterval 보장
+  if (grade === 3) {
+    interval = Math.max(interval, FSRS.easyInterval);
+  }
   interval = FSRS.applyFuzz(interval);
   const nextReview = new Date(now);
   nextReview.setDate(nextReview.getDate() + interval);
@@ -2738,10 +2743,12 @@ return true;
 if(!filtered.length){showToast('⚠️ 학습할 단어가 없습니다');return;}
 // ★ P3 경고: 타이핑 모드 시
 if(isP3Only&&isTypingMode){showToast('⚠️ P3(인식용)은 산출 연습 불필요');return;}
-// ★ 오늘 추가 → 기타 새 단어 → 기존 학습
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
+// ★ 오늘 추가 → 기타 새 단어 → 기존 학습 (미래 복습 제외)
 const todayAdded=shuffle(filtered.filter(x=>x.addedDate&&new Date(x.addedDate).toDateString()===today));
 const otherNew=shuffle(filtered.filter(x=>(!x.addedDate||new Date(x.addedDate).toDateString()!==today)&&(!x.reviewCount||x.reviewCount===0)));
-const oldW=shuffle(filtered.filter(x=>x.reviewCount>0));
+const oldW=shuffle(filtered.filter(x=>x.reviewCount>0&&isAvailable(x))); // ★ 미래 복습 제외
 let sel;
 if(isTypingMode){
   const prodW=shuffle(filtered.filter(x=>x.needsProduction));
@@ -3167,6 +3174,23 @@ function formatInterval(result) {
   return `${interval}일`;
 }
 
+// ★ 공통: Rating Bar interval 동적 업데이트
+function updateRatingIntervals(barId, item) {
+  if (!item) return;
+  const bar = document.getElementById(barId);
+  if (!bar) return;
+  try {
+    const result1 = calcNext({...item}, 1);
+    const result2 = calcNext({...item}, 2);
+    const result3 = calcNext({...item}, 3);
+    const intervals = ['다시', formatInterval(result1), formatInterval(result2), formatInterval(result3)];
+    bar.querySelectorAll('.rating-interval').forEach((el, i) => el.textContent = intervals[i]);
+  } catch (e) {
+    console.warn('updateRatingIntervals error:', e);
+    bar.querySelectorAll('.rating-interval').forEach((el, i) => el.textContent = ['다시', '1일', '3일', '7일'][i]);
+  }
+}
+
 function setRating(en){
 try{
 const sec=document.getElementById('rating-section');
@@ -3385,6 +3409,7 @@ const ex=getEx(w);if(ex){document.getElementById('quiz-example').textContent=ex;
 // ★ 정답: rating bar 표시 + 2초 후 Hard(1) FSRS 적용 / 오답: 1.5초 후 자동 넘김
 if(ok){
 document.getElementById('quiz-rating-bar').classList.remove('hidden');
+updateRatingIntervals('quiz-rating-bar',w); // ★ 동적 interval 표시
 quizState.autoNextTimer=setTimeout(()=>{
   skipQuizRating(); // Good(2) FSRS 적용
 },2000);
@@ -3617,6 +3642,7 @@ document.getElementById('cloze-wrong').textContent=clozeState.wrong;
 // ★ 정답: rating bar + 2초 후 Hard(1) FSRS 적용 / 오답: 1.5초 후 자동 넘김
 if(ok){
   document.getElementById('cloze-rating-bar').classList.remove('hidden');
+  updateRatingIntervals('cloze-rating-bar',w); // ★ 동적 interval 표시
   clozeState.autoNextTimer=setTimeout(()=>{
     skipClozeRating(); // Good(2) FSRS 적용
   },2000);
@@ -3751,6 +3777,7 @@ document.getElementById('colloc-wrong').textContent=collocState.wrong;
 // ★ 정답: rating bar + 2초 후 Hard(1) FSRS 적용 / 오답: 1.5초 후 자동 넘김
 if(ok){
   document.getElementById('colloc-rating-bar').classList.remove('hidden');
+  updateRatingIntervals('colloc-rating-bar',w); // ★ 동적 interval 표시
   collocState.autoNextTimer=setTimeout(()=>{
     skipCollocRating(); // Good(2) FSRS 적용
   },2000);
@@ -4125,6 +4152,7 @@ function showListeningRating(){
 listeningState.gradeFinalized=false;
 const bar=document.getElementById('listening-rating-bar');
 bar.classList.remove('hidden');
+updateRatingIntervals('listening-rating-bar',listeningState.currentWord); // ★ 동적 interval 표시
 // ★ 2초 후 자동으로 Hard(1) FSRS 적용 (찍기 가능성 고려)
 if(listeningRatingTimer)clearTimeout(listeningRatingTimer);
 listeningRatingTimer=setTimeout(()=>{
@@ -4414,10 +4442,12 @@ if(catVal!=='all'&&x.Category!==catVal)return false;
 return true;
 });
 if(!filtered.length){showToast('⚠️ 학습할 구동사가 없습니다');return;}
-// ★ 오늘 추가 → 기타 새 단어 → 기존 학습
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
+// ★ 오늘 추가 → 기타 새 단어 → 기존 학습 (미래 복습 제외)
 const todayAdded=shuffle(filtered.filter(x=>x.addedDate&&new Date(x.addedDate).toDateString()===today));
 const otherNew=shuffle(filtered.filter(x=>(!x.addedDate||new Date(x.addedDate).toDateString()!==today)&&(!x.reviewCount||x.reviewCount===0)));
-const oldW=shuffle(filtered.filter(x=>x.reviewCount>0));
+const oldW=shuffle(filtered.filter(x=>x.reviewCount>0&&isAvailable(x))); // ★ 미래 복습 제외
 let sel;
 if(order==='random'){
   sel=[...todayAdded,...otherNew,...oldW].slice(0,count);
@@ -4526,6 +4556,7 @@ const pvEx=getEx(pv);if(pvEx){document.getElementById('pvp-example').textContent
 // ★ 정답: rating bar + 2초 후 Hard(1) FSRS 적용 / 오답: 1.5초 후 자동 넘김
 if(ok){
 document.getElementById('pvp-rating-bar').classList.remove('hidden');
+updateRatingIntervals('pvp-rating-bar',pv); // ★ 동적 interval 표시
 pvState.autoNextTimer=setTimeout(()=>{
   skipPVPRating(); // Good(2) FSRS 적용
 },2000);
@@ -4628,6 +4659,7 @@ const pvqEx=getEx(pv);if(pvqEx){document.getElementById('pvq-example').textConte
 // ★ 정답: rating bar + 2초 후 Hard(1) FSRS 적용 / 오답: 1.5초 후 자동 넘김
 if(ok){
 document.getElementById('pvq-rating-bar').classList.remove('hidden');
+updateRatingIntervals('pvq-rating-bar',pv); // ★ 동적 interval 표시
 pvState.autoNextTimer=setTimeout(()=>{
   skipPVQRating(); // Good(2) FSRS 적용
 },2000);
@@ -5705,6 +5737,7 @@ document.getElementById('expr-quiz-wrong').textContent=exprState.wrong;
 // ★ 정답: rating bar 표시 + 2초 후 Hard(1) FSRS 적용 / 오답: 1.5초 후 자동 넘김
 if(ok){
 document.getElementById('expr-quiz-rating-bar').classList.remove('hidden');
+updateRatingIntervals('expr-quiz-rating-bar',e); // ★ 동적 interval 표시
 exprState.autoNextTimer=setTimeout(()=>{
   skipExprQuizRating(); // Good(2) FSRS 적용
 },2000);
@@ -5973,6 +6006,7 @@ document.getElementById('expr-cloze-wrong').textContent=exprState.wrong;
 // ★ 정답: rating bar + 2초 후 Hard(1) FSRS 적용 / 오답: 1.5초 후 자동 넘김
 if(ok){
   document.getElementById('expr-cloze-rating-bar').classList.remove('hidden');
+  updateRatingIntervals('expr-cloze-rating-bar',e); // ★ 동적 interval 표시
   exprState.autoNextTimer=setTimeout(()=>{
     skipExprClozeRating(); // Good(2) FSRS 적용
   },2000);
@@ -6222,10 +6256,12 @@ let filtered=exprs.filter(x=>{
   return true;
 });
 if(!filtered.length){showToast('⚠️ 학습할 표현이 없습니다');return;}
-// ★ 오늘 추가 → 기타 새 단어 → 기존 학습
+// ★ 복습 필요 없는 단어(미래) 제외 함수
+const isAvailable=x=>!x.nextReview||new Date(x.nextReview)<=now;
+// ★ 오늘 추가 → 기타 새 단어 → 기존 학습 (미래 복습 제외)
 const todayAdded=shuffle(filtered.filter(x=>x.addedDate&&new Date(x.addedDate).toDateString()===today));
 const otherNew=shuffle(filtered.filter(x=>(!x.addedDate||new Date(x.addedDate).toDateString()!==today)&&(!x.reviewCount||x.reviewCount===0)));
-const oldW=shuffle(filtered.filter(x=>x.reviewCount>0));
+const oldW=shuffle(filtered.filter(x=>x.reviewCount>0&&isAvailable(x))); // ★ 미래 복습 제외
 let sel;
 if(isTypingMode){
   const prodW=shuffle(filtered.filter(x=>x.needsProduction));
@@ -7250,6 +7286,7 @@ document.getElementById('add-function').value='';
 document.getElementById('add-formality').value='Neutral';
 document.getElementById('add-currency').value='Current';
 document.getElementById('add-medium').value='Both';
+document.getElementById('add-common-error').value='';
 showModal('add-word-modal');
 }
 function switchAddType(t){
@@ -7279,9 +7316,24 @@ const addBookmark=document.getElementById('add-bookmark').checked;
 const formality=document.getElementById('add-formality').value;
 const currency=document.getElementById('add-currency').value;
 const medium=document.getElementById('add-medium').value;
+const commonError=document.getElementById('add-common-error')?.value?.trim()||'';
 if(addWordType==='expr'){
 const exists=await getExpr(word);
-if(exists){showToast('⚠️ 이미 존재하는 표현입니다');return;}
+if(exists){
+  if(!confirm(`"${word}" 표현이 이미 존재합니다.\n기존 데이터에 새 정보를 병합하시겠습니까?`)){return;}
+  // 기존 데이터 유지하면서 새 데이터 병합
+  exists.Meaning_KO=meaningKo||exists.Meaning_KO;
+  exists.Function=document.getElementById('add-function').value.trim()||exists.Function;
+  exists.Example1=document.getElementById('add-example').value.trim()||exists.Example1;
+  exists.Formality=formality||exists.Formality;
+  exists.Currency=currency||exists.Currency;
+  exists.Medium=medium||exists.Medium;
+  exists.Common_Error=commonError||exists.Common_Error;
+  exists.tags=[...new Set([...(exists.tags||[]),...tags])];
+  if(addBookmark)exists.starred=true;
+  await saveExpr(exists);
+  closeModal('add-word-modal');showToast('✅ 기존 표현 업데이트 완료');updateWordTable();updateHomeStats();return;
+}
 const expr={
 Expression:word,
 Meaning_KO:meaningKo,
@@ -7290,18 +7342,38 @@ Formality:formality,
 Currency:currency,
 Medium:medium,
 Example1:document.getElementById('add-example').value.trim(),
+Common_Error:commonError,
 tags:tags,
 starred:addBookmark,
 // FSRS 필드
 stability:null,difficulty:null,fsrsState:'New',reps:0,lapses:0,
 // 학습 통계
 reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
-nextReview:null,lastReview:null,lastWrongDate:null
+nextReview:null,lastReview:null,lastWrongDate:null,
+addedDate:new Date().toISOString().slice(0,10)
 };
 await saveExpr(expr);
 }else if(addWordType==='phrasal'){
 const exists=await getPV(word);
-if(exists){showToast('⚠️ 이미 존재하는 구동사입니다');return;}
+if(exists){
+  if(!confirm(`"${word}" 구동사가 이미 존재합니다.\n기존 데이터에 새 정보를 병합하시겠습니까?`)){return;}
+  // 기존 데이터 유지하면서 새 데이터 병합
+  exists.Base_Verb=document.getElementById('add-base-verb').value.trim()||exists.Base_Verb;
+  exists.Particle=document.getElementById('add-particle').value.trim()||exists.Particle;
+  exists.Meaning1_KO=meaningKo||exists.Meaning1_KO;
+  exists.Meaning1_EN=document.getElementById('add-meaning-en').value.trim()||exists.Meaning1_EN;
+  exists.Example1=document.getElementById('add-example').value.trim()||exists.Example1;
+  exists.Category=document.getElementById('add-pv-category').value||exists.Category;
+  exists.Formal_Equivalent=document.getElementById('add-formal-equiv').value.trim()||exists.Formal_Equivalent;
+  exists.Formality=formality||exists.Formality;
+  exists.Currency=currency||exists.Currency;
+  exists.Medium=medium||exists.Medium;
+  exists.Common_Error=commonError||exists.Common_Error;
+  exists.tags=[...new Set([...(exists.tags||[]),...tags])];
+  if(addBookmark)exists.starred=true;
+  await savePV(exists);
+  closeModal('add-word-modal');showToast('✅ 기존 구동사 업데이트 완료');updateWordTable();updateHomeStats();return;
+}
 const pv={
 Phrasal_Verb:word,
 Base_Verb:document.getElementById('add-base-verb').value.trim(),
@@ -7314,18 +7386,45 @@ Formal_Equivalent:document.getElementById('add-formal-equiv').value.trim(),
 Formality:formality,
 Currency:currency,
 Medium:medium,
+Common_Error:commonError,
 tags:tags,
 starred:addBookmark,
 // FSRS 필드
 stability:null,difficulty:null,fsrsState:'New',reps:0,lapses:0,
 // 학습 통계
 reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
-nextReview:null,lastReview:null,lastWrongDate:null
+nextReview:null,lastReview:null,lastWrongDate:null,
+addedDate:new Date().toISOString().slice(0,10)
 };
 await savePV(pv);
 }else{
 const exists=await getWord(word);
-if(exists){showToast('⚠️ 이미 존재하는 단어입니다');return;}
+if(exists){
+  if(!confirm(`"${word}" 단어가 이미 존재합니다.\n기존 데이터에 새 정보를 병합하시겠습니까?`)){return;}
+  // 기존 데이터 유지하면서 새 데이터 병합
+  exists.POS=document.getElementById('add-pos').value.trim()||exists.POS;
+  exists.Meaning1_KO=meaningKo||exists.Meaning1_KO;
+  exists.Meaning1_EN=document.getElementById('add-meaning-en').value.trim()||exists.Meaning1_EN;
+  exists.Example1=document.getElementById('add-example').value.trim()||exists.Example1;
+  exists.Key_Collocation=document.getElementById('add-collocation').value.trim()||exists.Key_Collocation;
+  exists.L1=document.getElementById('add-l1').value||exists.L1;
+  exists.L2=document.getElementById('add-l2').value||exists.L2;
+  exists.CEFR=document.getElementById('add-cefr').value||exists.CEFR;
+  exists.Formality=formality||exists.Formality;
+  exists.Currency=currency||exists.Currency;
+  exists.Medium=medium||exists.Medium;
+  exists.Common_Error=commonError||exists.Common_Error;
+  const userExStr=document.getElementById('add-user-examples').value.trim();
+  const newUserEx=userExStr?userExStr.split('\n').map(e=>e.trim()).filter(e=>e):[];
+  exists.userExamples=[...new Set([...(exists.userExamples||[]),...newUserEx])];
+  const userCollStr=document.getElementById('add-user-collocs').value.trim();
+  const newUserColl=userCollStr?userCollStr.split(',').map(c=>c.trim()).filter(c=>c):[];
+  exists.userCollocations=[...new Set([...(exists.userCollocations||[]),...newUserColl])];
+  exists.tags=[...new Set([...(exists.tags||[]),...tags])];
+  if(addBookmark)exists.starred=true;
+  await saveWord(exists);
+  closeModal('add-word-modal');showToast('✅ 기존 단어 업데이트 완료');updateWordTable();updateHomeStats();return;
+}
 const userExStr=document.getElementById('add-user-examples').value.trim();
 const userExamples=userExStr?userExStr.split('\n').map(e=>e.trim()).filter(e=>e):[];
 const userCollStr=document.getElementById('add-user-collocs').value.trim();
@@ -7343,6 +7442,7 @@ CEFR:document.getElementById('add-cefr').value||'B1',
 Formality:formality,
 Currency:currency,
 Medium:medium,
+Common_Error:commonError,
 tags:tags,
 starred:addBookmark,
 userExamples:userExamples,
@@ -7351,7 +7451,8 @@ userCollocations:userCollocations,
 stability:null,difficulty:null,fsrsState:'New',reps:0,lapses:0,
 // 학습 통계
 reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
-nextReview:null,lastReview:null,lastWrongDate:null
+nextReview:null,lastReview:null,lastWrongDate:null,
+addedDate:new Date().toISOString().slice(0,10)
 };
 await saveWord(w);
 }
@@ -7426,7 +7527,9 @@ ease:gN(r,'ease')||ex?.ease||2.5,
 leitnerBox:gI(r,'leitnerbox')||ex?.leitnerBox||1,
 // 사용자 정의 예문/콜로케이션 - Excel 값 우선 (파이프/쉼표로 구분)
 userExamples:(()=>{const v=gC(r,'userexamples');return v?v.split(' | ').map(s=>s.trim()).filter(s=>s):(ex?.userExamples||[]);})(),
-userCollocations:(()=>{const v=gC(r,'usercollocations');return v?v.split(', ').map(s=>s.trim()).filter(s=>s):(ex?.userCollocations||[]);})()});}
+userCollocations:(()=>{const v=gC(r,'usercollocations');return v?v.split(', ').map(s=>s.trim()).filter(s=>s):(ex?.userCollocations||[]);})(),
+// ★ 신규 단어에만 오늘 날짜 설정
+addedDate:ex?.addedDate||new Date().toISOString().slice(0,10)});}
 // ★ IndexedDB 배치 처리: 하나의 트랜잭션에서 모든 put() 실행 → 성능 최적화
 const tx=db.transaction('words','readwrite');ws.forEach(w=>tx.objectStore('words').put(w));await new Promise(r=>{tx.oncomplete=r;});vR={total:ws.length,new:nC,update:uC,preserved:pC,sheet:vS};}}
 if(pS){const json=XLSX.utils.sheet_to_json(wb.Sheets[pS],{header:1});let hr=0;for(let i=0;i<Math.min(10,json.length);i++){if(json[i]&&json[i].some(c=>c&&normH(c)==='phrasalverb')){hr=i;break;}}const headers=(json[hr]||[]).map(h=>(h||'').toString());const colIdx={};headers.forEach((h,i)=>{colIdx[normH(h)]=i;});const pvIdx=colIdx['phrasalverb'];
@@ -7477,7 +7580,9 @@ lastReview:gC(r,'lastreview')||ex?.lastReview||null,
 lastWrongDate:gC(r,'lastwrongdate')||ex?.lastWrongDate||null,
 // 레거시 (호환성)
 ease:gN(r,'ease')||ex?.ease||2.5,
-leitnerBox:gI(r,'leitnerbox')||ex?.leitnerBox||1});}
+leitnerBox:gI(r,'leitnerbox')||ex?.leitnerBox||1,
+// ★ 신규 단어에만 오늘 날짜 설정
+addedDate:ex?.addedDate||new Date().toISOString().slice(0,10)});}
 const tx=db.transaction('phrasal_verbs','readwrite');ps.forEach(p=>tx.objectStore('phrasal_verbs').put(p));await new Promise(r=>{tx.oncomplete=r;});pR={total:ps.length,new:nC,update:uC,preserved:pC,sheet:pS};}}
 // Expression 시트 처리
 if(eS){const json=XLSX.utils.sheet_to_json(wb.Sheets[eS],{header:1});let hr=0;for(let i=0;i<Math.min(10,json.length);i++){if(json[i]&&json[i].some(c=>c&&normH(c)==='expression')){hr=i;break;}}const headers=(json[hr]||[]).map(h=>(h||'').toString());const colIdx={};headers.forEach((h,i)=>{colIdx[normH(h)]=i;});const exprIdx=colIdx['expression'];
@@ -7520,7 +7625,9 @@ lastReview:gC(r,'lastreview')||ex?.lastReview||null,
 lastWrongDate:gC(r,'lastwrongdate')||ex?.lastWrongDate||null,
 // 레거시 (호환성)
 ease:gN(r,'ease')||ex?.ease||2.5,
-leitnerBox:gI(r,'leitnerbox')||ex?.leitnerBox||1});}
+leitnerBox:gI(r,'leitnerbox')||ex?.leitnerBox||1,
+// ★ 신규 단어에만 오늘 날짜 설정
+addedDate:ex?.addedDate||new Date().toISOString().slice(0,10)});}
 const tx=db.transaction('expressions','readwrite');es.forEach(e=>tx.objectStore('expressions').put(e));await new Promise(r=>{tx.oncomplete=r;});eR={total:es.length,new:nC,update:uC,preserved:pC,sheet:eS};}}
 let rHTML='';if(vR)rHTML+=`<div class="upload-result-item"><span>📖 어휘 (${vR.sheet})</span><span>${vR.total}개 (새 ${vR.new}, 갱신 ${vR.update}, 기록보존 ${vR.preserved})</span></div>`;if(pR)rHTML+=`<div class="upload-result-item"><span>🔗 구동사 (${pR.sheet})</span><span>${pR.total}개 (새 ${pR.new}, 갱신 ${pR.update}, 기록보존 ${pR.preserved})</span></div>`;if(eR)rHTML+=`<div class="upload-result-item"><span>💬 표현 (${eR.sheet})</span><span>${eR.total}개 (새 ${eR.new}, 갱신 ${eR.update}, 기록보존 ${eR.preserved})</span></div>`;if(!vR&&!pR&&!eR)rHTML=`<div class="upload-result-item"><span>⚠️ 인식된 데이터 없음</span><span>시트: ${wb.SheetNames.join(', ')}</span></div>`;
 if(rHTML){document.getElementById('upload-result').innerHTML=rHTML;document.getElementById('upload-result').classList.remove('hidden');}
@@ -8632,7 +8739,7 @@ function selectPasteType(type){
 
 function parsePasteData(text, type){
   let lines=text.trim().split('\n').filter(l=>l.trim());
-  if(lines.length<2){return {error:'데이터가 부족합니다 (헤더+최소 1행 필요)'};}
+  if(lines.length<1){return {error:'데이터가 부족합니다 (최소 1행 필요)'};}
   
   // 마크다운 테이블 형식 감지 (파이프 | 구분)
   const isMarkdown = lines[0].includes('|');
@@ -8647,17 +8754,41 @@ function parsePasteData(text, type){
   // 파싱 함수
   const parseLine = (line) => {
     if(isMarkdown){
-      // 마크다운: 앞뒤 파이프 제거 후 split
       return line.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
     } else {
       return line.split('\t').map(c => c.trim());
     }
   };
   
-  const headers = parseLine(lines[0]);
+  // ★ 헤더 자동 감지: 첫 행에 알려진 헤더 키워드가 있는지 확인
+  const firstRow = parseLine(lines[0]);
+  const knownHeaders = ['word','meaning','meaning1_ko','meaningko','phrasal_verb','phrasalverb','expression','pos','example','cefr','l1','l2','function','particle','base_verb','baseverb','synonyms','antonyms','formality','category'];
+  const firstRowLower = firstRow.map(c => (c||'').toLowerCase().replace(/[\s_\-]/g,''));
+  const hasHeader = firstRowLower.some(c => knownHeaders.includes(c));
+  
+  let headers, dataStartIdx, colMap;
   const normalize=h=>(h||'').toLowerCase().replace(/[\s_\-]/g,'');
-  const colMap={};
-  headers.forEach((h,i)=>colMap[normalize(h)]=i);
+  
+  if(hasHeader){
+    // 헤더 있음: 기존 방식
+    headers = firstRow;
+    dataStartIdx = 1;
+    colMap = {};
+    headers.forEach((h,i)=>colMap[normalize(h)]=i);
+  } else {
+    // ★ 헤더 없음: 타입별 기본 컬럼 순서 적용
+    if(type==='vocab'){
+      headers = ['word','Meaning1_KO','POS','Example1','Key_Collocation','CEFR','L1','L2','Synonyms','Common_Error'];
+    } else if(type==='phrasal'){
+      headers = ['Phrasal_Verb','Meaning1_KO','Base_Verb','Particle','Example1','Category','Formal_Equivalent','CEFR','Common_Error'];
+    } else {
+      headers = ['Expression','Meaning_KO','Function','Example1','Example2','Similar_Expr','CEFR','Common_Error'];
+    }
+    dataStartIdx = 0; // 첫 행부터 데이터
+    colMap = {};
+    headers.forEach((h,i)=>colMap[normalize(h)]=i);
+    console.log('[ParsePaste] 헤더 없음 감지, 기본 순서 적용:', headers.slice(0,5).join(', '));
+  }
   
   // 필수 컬럼 확인
   const keyCol=type==='vocab'?'word':type==='phrasal'?'phrasalverb':'expression';
@@ -8665,28 +8796,32 @@ function parsePasteData(text, type){
   if(keyIdx===undefined){return {error:`필수 컬럼(${keyCol})을 찾을 수 없습니다`};}
   
   const meaningIdx=colMap['meaning1ko']??colMap['meaningko']??colMap['meaning'];
-  if(meaningIdx===undefined){return {error:'뜻 컬럼(Meaning1_KO)을 찾을 수 없습니다'};}
+  // ★ 헤더 없는 경우 meaning은 두 번째 컬럼으로 간주
+  const actualMeaningIdx = meaningIdx !== undefined ? meaningIdx : 1;
   
   const gC=(cols,name)=>{const idx=colMap[normalize(name)];return idx!==undefined&&cols[idx]!=null?cols[idx].toString().trim():'';};
   
   const items=[];
   const now=new Date().toISOString();
   
-  for(let i=1;i<lines.length;i++){
+  for(let i=dataStartIdx;i<lines.length;i++){
     const cols=parseLine(lines[i]);
     const key=cols[keyIdx]?.trim();
     if(!key)continue;
     
-    // ★ Style_Tags와 tags 컬럼을 병합
+    // ★ 헤더 없는 경우 두 번째 컬럼을 뜻으로 사용
+    const meaningValue = hasHeader ? (gC(cols,'Meaning1_KO')||gC(cols,'MeaningKO')||gC(cols,'Meaning_KO')) : (cols[1]?.trim()||'');
+    
+    // Style_Tags와 tags 컬럼을 병합
     const tagsStr=gC(cols,'tags');
     const styleTagsStr=gC(cols,'Style_Tags')||gC(cols,'StyleTags');
     const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
     const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
     const mergedTags=[...new Set([...tagsFromCol,...tagsFromStyle])];
     
-    // ★ 디버그: 첫 3개만 태그 정보 출력
+    // 디버그: 첫 3개만 태그 정보 출력
     if(items.length<3){
-      console.log('[ParsePaste Debug]', JSON.stringify({key, tagsStr, styleTagsStr, mergedTags}));
+      console.log('[ParsePaste Debug]', JSON.stringify({key, meaningValue, hasHeader, tagsStr, styleTagsStr, mergedTags}));
     }
     
     const base={
@@ -8705,8 +8840,8 @@ function parsePasteData(text, type){
     if(type==='vocab'){
       items.push({...base,
         word:key,
-        POS:gC(cols,'POS'),
-        Meaning1_KO:gC(cols,'Meaning1_KO')||gC(cols,'MeaningKO'),
+        POS:hasHeader?gC(cols,'POS'):(cols[2]?.trim()||''),
+        Meaning1_KO:meaningValue,
         Meaning1_EN:gC(cols,'Meaning1_EN')||gC(cols,'MeaningEN'),
         Meaning2_KO:gC(cols,'Meaning2_KO'),
         Meaning2_EN:gC(cols,'Meaning2_EN'),
@@ -8724,19 +8859,19 @@ function parsePasteData(text, type){
         Priority:gC(cols,'Priority')||'P2',
         TOEFL_Rel:gC(cols,'TOEFL_Rel'),
         COCA_Genre:gC(cols,'COCA_Genre'),
-        Example1:gC(cols,'Example1'),
+        Example1:hasHeader?gC(cols,'Example1'):(cols[3]?.trim()||''),
         Example2:gC(cols,'Example2'),
-        Key_Collocation:gC(cols,'Key_Collocation'),
+        Key_Collocation:hasHeader?gC(cols,'Key_Collocation'):(cols[4]?.trim()||''),
         Common_Error:gC(cols,'Common_Error')
       });
     }else if(type==='phrasal'){
       items.push({...base,
         Phrasal_Verb:key,
-        Base_Verb:gC(cols,'Base_Verb'),
-        Particle:gC(cols,'Particle'),
-        Meaning1_KO:gC(cols,'Meaning1_KO')||gC(cols,'MeaningKO'),
+        Base_Verb:hasHeader?gC(cols,'Base_Verb'):(cols[2]?.trim()||''),
+        Particle:hasHeader?gC(cols,'Particle'):(cols[3]?.trim()||''),
+        Meaning1_KO:meaningValue,
         Meaning1_EN:gC(cols,'Meaning1_EN'),
-        Example1:gC(cols,'Example1'),
+        Example1:hasHeader?gC(cols,'Example1'):(cols[4]?.trim()||''),
         Category:gC(cols,'Category')||'General',
         Formality:gC(cols,'Formality')||'Neutral',
         Currency:gC(cols,'Currency')||'Current',
@@ -8745,13 +8880,14 @@ function parsePasteData(text, type){
         CEFR:gC(cols,'CEFR')||'B1',
         Frequency:gC(cols,'Frequency')||'K3',
         Priority:gC(cols,'Priority')||'P2',
-        Formal_Equivalent:gC(cols,'Formal_Equivalent')
+        Formal_Equivalent:gC(cols,'Formal_Equivalent'),
+        Common_Error:gC(cols,'Common_Error')
       });
     }else{
       items.push({...base,
         Expression:key,
-        Meaning_KO:gC(cols,'Meaning_KO')||gC(cols,'MeaningKO'),
-        Function:gC(cols,'Function'),
+        Meaning_KO:meaningValue,
+        Function:hasHeader?gC(cols,'Function'):(cols[2]?.trim()||''),
         Formality:gC(cols,'Formality')||'Neutral',
         Currency:gC(cols,'Currency')||'Current',
         Medium:gC(cols,'Medium')||'Both',
@@ -8759,14 +8895,15 @@ function parsePasteData(text, type){
         CEFR:gC(cols,'CEFR')||'B1',
         Frequency:gC(cols,'Frequency')||'K3',
         Priority:gC(cols,'Priority')||'P2',
-        Example1:gC(cols,'Example1'),
+        Example1:hasHeader?gC(cols,'Example1'):(cols[3]?.trim()||''),
         Example2:gC(cols,'Example2'),
-        Similar_Expr:gC(cols,'Similar_Expr')
+        Similar_Expr:gC(cols,'Similar_Expr'),
+        Common_Error:gC(cols,'Common_Error')
       });
     }
   }
   
-  return {items, headers, type};
+  return {items, headers, type, hasHeader};
 }
 
 function previewPaste(){
@@ -8781,7 +8918,8 @@ function previewPaste(){
   const sample=document.getElementById('paste-preview-sample');
   
   const typeLabel=pasteType==='vocab'?'어휘':pasteType==='phrasal'?'구동사':'표현';
-  info.innerHTML=`<span style="color:var(--success)">✅ ${result.items.length}개 ${typeLabel} 인식</span><br>컬럼: ${result.headers.slice(0,5).join(', ')}${result.headers.length>5?'...':''}`;
+  const headerInfo=result.hasHeader?'':'<span style="color:var(--warning)"> (헤더 없음 → 기본 순서)</span>';
+  info.innerHTML=`<span style="color:var(--success)">✅ ${result.items.length}개 ${typeLabel} 인식</span>${headerInfo}<br>컬럼: ${result.headers.slice(0,5).join(', ')}${result.headers.length>5?'...':''}`;
   
   // 샘플 3개 표시
   const getKey=item=>item.word||item.Phrasal_Verb||item.Expression;
