@@ -1933,17 +1933,12 @@ function checkMasteryFilter(item,mastery){
   const {include,exclude}=mastery;
   const isNew=!item.reviewCount||item.reviewCount===0;
   
-  // ★ 상세 디버그 (첫 5개 아이템만)
-  if(!window._masteryDebugCount)window._masteryDebugCount=0;
-  if(window._masteryDebugCount<5){
-    console.log('[MasteryFilter]', JSON.stringify({
-      word: item.word||item.Phrasal_Verb||item.Expression,
-      reviewCount: item.reviewCount,
-      isNew: isNew,
-      include: include,
-      exclude: exclude
-    }));
-    window._masteryDebugCount++;
+  // ★ 새단어 필터 디버그 (처음 한번만)
+  if(!window._newFilterDebugDone){
+    window._newFilterDebugDone=true;
+    console.log('[NewFilter Debug] 필터 상태:', JSON.stringify({include, exclude}));
+    console.log('[NewFilter Debug] 새단어 포함?:', include.includes('new'));
+    console.log('[NewFilter Debug] 새단어 제외?:', exclude.includes('new'));
   }
   
   // include가 비어있거나 'all'이 포함되어 있으면 제외 조건만 체크
@@ -2413,31 +2408,56 @@ function initChipMultiEvents(g){
   
   g.addEventListener('click',e=>{
     if(!e.target.classList.contains('chip'))return;
-    const chip=e.target;
-    const val=chip.dataset.value;
-    const allChip=g.querySelector('.chip[data-value="all"]');
-    if(val==='all'){
-      g.querySelectorAll('.chip').forEach(c=>{c.classList.remove('checked','excluded');});
-      chip.classList.add('checked');
-      return;
-    }
-    if(allChip)allChip.classList.remove('checked','excluded');
-    if(chip.classList.contains('excluded')){chip.classList.remove('excluded');}
-    else if(chip.classList.contains('checked')){chip.classList.remove('checked');chip.classList.add('excluded');}
-    else{chip.classList.add('checked');}
-    const anySelected=g.querySelector('.chip.checked,.chip.excluded');
-    if(!anySelected&&allChip)allChip.classList.add('checked');
+    e.stopImmediatePropagation(); // ★ 다른 핸들러 실행 방지
+    handleChipClick(g, e.target);
   });
   g.addEventListener('dblclick',e=>{
     if(!e.target.classList.contains('chip'))return;
-    const chip=e.target;
-    if(chip.dataset.value==='all')return;
-    const allChip=g.querySelector('.chip[data-value="all"]');
-    if(allChip)allChip.classList.remove('checked','excluded');
-    chip.classList.remove('checked');
-    chip.classList.add('excluded');
+    e.stopImmediatePropagation();
+    handleChipDblClick(g, e.target);
   });
 }
+
+// ★ 칩 클릭 통합 핸들러
+function handleChipClick(container, chip){
+  const val=chip.dataset.value;
+  const allChip=container.querySelector('.chip[data-value="all"]');
+  const beforeState={checked:chip.classList.contains('checked'),excluded:chip.classList.contains('excluded')};
+  
+  if(val==='all'){
+    container.querySelectorAll('.chip').forEach(c=>{c.classList.remove('checked','excluded');});
+    chip.classList.add('checked');
+  }else{
+    if(allChip)allChip.classList.remove('checked','excluded');
+    // 토글: 해제 → checked → excluded → 해제
+    if(beforeState.excluded){
+      chip.classList.remove('excluded');
+    }else if(beforeState.checked){
+      chip.classList.remove('checked');
+      chip.classList.add('excluded');
+    }else{
+      chip.classList.add('checked');
+    }
+    // 아무것도 선택 안되면 'all' 선택
+    const anySelected=container.querySelector('.chip.checked,.chip.excluded');
+    if(!anySelected&&allChip)allChip.classList.add('checked');
+  }
+  
+  const afterState={checked:chip.classList.contains('checked'),excluded:chip.classList.contains('excluded')};
+  console.log(`[Chip] ${container.id} "${val}": ${beforeState.checked?'checked':beforeState.excluded?'excluded':'none'} → ${afterState.checked?'checked':afterState.excluded?'excluded':'none'}`);
+}
+
+// ★ 칩 더블클릭 핸들러
+function handleChipDblClick(container, chip){
+  const val=chip.dataset.value;
+  if(val==='all')return;
+  const allChip=container.querySelector('.chip[data-value="all"]');
+  if(allChip)allChip.classList.remove('checked','excluded');
+  chip.classList.remove('checked');
+  chip.classList.add('excluded');
+  console.log(`[Chip DblClick] ${container.id} "${val}" → excluded`);
+}
+
 document.querySelectorAll('.chip-multi').forEach(g=>{
   // 추천 태그는 단순 토글 (add-suggested-tags, edit-suggested-tags)
   if(g.id&&g.id.includes('suggested-tags')){
@@ -2447,66 +2467,8 @@ document.querySelectorAll('.chip-multi').forEach(g=>{
     });
     return;
   }
-  // ★ 이미 이벤트가 등록되어 있으면 스킵
-  if(g._chipEventsInitialized)return;
-  g._chipEventsInitialized=true;
-  
-  g.addEventListener('click',e=>{
-    if(!e.target.classList.contains('chip'))return;
-    const chip=e.target;
-    const val=chip.dataset.value;
-    const allChip=g.querySelector('.chip[data-value="all"]');
-    
-    // ★ 디버그 로그
-    console.log('[ChipClick] 클릭 전:', JSON.stringify({
-      containerId: g.id,
-      value: val,
-      wasChecked: chip.classList.contains('checked'),
-      wasExcluded: chip.classList.contains('excluded')
-    }));
-    
-    // 'all' 클릭 시 다른 것 모두 해제
-    if(val==='all'){
-      g.querySelectorAll('.chip').forEach(c=>{
-        c.classList.remove('checked','excluded');
-      });
-      chip.classList.add('checked');
-      return;
-    }
-    // 다른 칩 클릭 시 'all' 해제
-    if(allChip)allChip.classList.remove('checked','excluded');
-    // 토글 (해제 → checked → excluded → 해제)
-    if(chip.classList.contains('excluded')){
-      chip.classList.remove('excluded');
-    }else if(chip.classList.contains('checked')){
-      chip.classList.remove('checked');
-      chip.classList.add('excluded');
-    }else{
-      chip.classList.add('checked');
-    }
-    
-    // ★ 디버그 로그
-    console.log('[ChipClick] 클릭 후:', JSON.stringify({
-      value: val,
-      isChecked: chip.classList.contains('checked'),
-      isExcluded: chip.classList.contains('excluded')
-    }));
-    
-    // 아무것도 선택 안되면 'all' 선택
-    const anySelected=g.querySelector('.chip.checked,.chip.excluded');
-    if(!anySelected&&allChip)allChip.classList.add('checked');
-  });
-  // 더블클릭으로 바로 제외
-  g.addEventListener('dblclick',e=>{
-    if(!e.target.classList.contains('chip'))return;
-    const chip=e.target;
-    const val=chip.dataset.value;
-    if(val==='all')return;
-    const allChip=g.querySelector('.chip[data-value="all"]');
-    if(allChip)allChip.classList.remove('checked','excluded');
-    chip.classList.remove('checked');
-    chip.classList.add('excluded');
-  });
+  // ★ 통합 핸들러 사용
+  initChipMultiEvents(g);
 });
 // 필터 설정 로드
 setTimeout(()=>{loadFilters('vocab');loadFilters('phrasal');loadFilters('expr');},500);
