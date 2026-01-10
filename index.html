@@ -3361,7 +3361,7 @@ if(wrongAutoEnabled&&mode!=='typing'){
 const wrongLimit=parseInt(localStorage.getItem('wrongLimit')||'5');
 const wrongBonus=Math.min(wrongLimit,Math.floor(count/5));
 if(wrongBonus>0){
-const wrongWords=words.filter(w=>isWrong(w)&&!sel.includes(w));
+const wrongWords=words.filter(w=>isWrong(w)&&isAvailable(w)&&!sel.includes(w));
 const wrongToAdd=shuffle(wrongWords).slice(0,wrongBonus);
 if(wrongToAdd.length>0){
 // Interleaving: 오답을 랜덤 위치에 삽입
@@ -3415,7 +3415,7 @@ if(t==='phrasal'){
   const wrongLimit=parseInt(localStorage.getItem('wrongLimit')||'5');
   const wrongBonus=Math.min(wrongLimit,Math.floor(count/5));
   if(wrongBonus>0){
-  const wrongPVs=p.filter(x=>isWrong(x)&&!selected.includes(x));
+  const wrongPVs=p.filter(x=>isWrong(x)&&isAvailable(x)&&!selected.includes(x));
   const wrongToAdd=shuffle(wrongPVs).slice(0,wrongBonus);
   if(wrongToAdd.length>0){wrongToAdd.forEach(item=>{const insertIdx=Math.floor(Math.random()*(selected.length+1));selected.splice(insertIdx,0,item);});showToast(`📝 오답 ${wrongToAdd.length}개 포함`);}
   }
@@ -3457,7 +3457,7 @@ if(wrongAutoEnabledV){
 const wrongLimitV=parseInt(localStorage.getItem('wrongLimit')||'5');
 const wrongBonusV=Math.min(wrongLimitV,Math.floor(count/5));
 if(wrongBonusV>0){
-const wrongWords=w.filter(x=>isWrong(x)&&!selected.includes(x));
+const wrongWords=w.filter(x=>isWrong(x)&&isAvailable(x)&&!selected.includes(x));
 const wrongToAddV=shuffle(wrongWords).slice(0,wrongBonusV);
 if(wrongToAddV.length>0){wrongToAddV.forEach(item=>{const insertIdx=Math.floor(Math.random()*(selected.length+1));selected.splice(insertIdx,0,item);});showToast(`📝 오답 ${wrongToAddV.length}개 포함`);}
 }
@@ -3843,7 +3843,8 @@ fcState.words.splice(insertIdx,0,{...item,isRetry:true});
 else if(r===0&&item.isRetry){updateWrong(item,false);fcState.savedToWrong++;}
 // retry phase에서 또 틀리면 오답노트로
 else if(r===0&&fcState.phase==='retry'){updateWrong(item,false);fcState.savedToWrong++;}
-else if(r>=2)updateWrong(item,true);
+// ★ 버그 수정: r>=1 (어려움, 보통, 쉬움) 모두 정답 처리
+else if(r>=1)updateWrong(item,true);
 // DB 업데이트 - 재출제 카드(isRetry)는 FSRS 건너뛰기 (같은 세션 내 중복 업데이트 방지)
 if(!item.isRetry){
 item.reviewCount=(item.reviewCount||0)+1;if(r>=2)item.correctCount=(item.correctCount||0)+1;
@@ -3857,8 +3858,16 @@ try{
   if(item.isLeech)showToast('🐌 Leech 카드! '+((fcState.type==='phrasal')?item.Phrasal_Verb:item.word));
 }catch(calcErr){console.error('calcNext error:',calcErr);item.lastReview=new Date().toISOString();}
 }else{
-// 재출제 카드: reviewCount, correctCount만 업데이트 (FSRS는 건너뜀)
-console.log('[rateCard] isRetry card, skipping FSRS update');
+// ★ 버그 수정: 재출제 카드도 정답이면 nextReview를 미래로 설정
+if(r>=1){
+  const nextDate=new Date();
+  nextDate.setDate(nextDate.getDate()+(item.interval||1));
+  item.nextReview=nextDate.toISOString();
+  item.lastReview=new Date().toISOString();
+  console.log('[rateCard] isRetry card, nextReview 업데이트:',{word:item.word||item.Phrasal_Verb,nextReview:item.nextReview});
+}else{
+  console.log('[rateCard] isRetry card wrong again, nextReview 유지');
+}
 }
 // ★ safeSave 사용 (재시도 + 에러 복구)
 if(fcState.type==='phrasal') await safeSavePV(item);
@@ -5164,7 +5173,7 @@ if(wrongAutoEnabled&&mode==='pv-flashcard'){
 const wrongLimit=parseInt(localStorage.getItem('wrongLimit')||'5');
 const wrongBonus=Math.min(wrongLimit,Math.floor(count/5));
 if(wrongBonus>0){
-const wrongPVs=p.filter(x=>isWrong(x)&&!sel.includes(x));
+const wrongPVs=p.filter(x=>isWrong(x)&&isAvailable(x)&&!sel.includes(x));
 const wrongToAdd=shuffle(wrongPVs).slice(0,wrongBonus);
 if(wrongToAdd.length>0){
 wrongToAdd.forEach(w=>{
@@ -6050,7 +6059,7 @@ if(wrongAutoEnabled){
 const wrongLimit=parseInt(localStorage.getItem('wrongLimit')||'5');
 const wrongBonus=Math.min(wrongLimit,Math.floor(count/5));
 if(wrongBonus>0){
-const wrongExprs=exprs.filter(x=>isWrong(x)&&!selected.includes(x));
+const wrongExprs=exprs.filter(x=>isWrong(x)&&isAvailable(x)&&!selected.includes(x));
 const wrongToAdd=shuffle(wrongExprs).slice(0,wrongBonus);
 if(wrongToAdd.length>0){
 wrongToAdd.forEach(w=>{const insertIdx=Math.floor(Math.random()*(selected.length+1));selected.splice(insertIdx,0,w);});
@@ -6356,7 +6365,8 @@ exprState.words.splice(insertIdx,0,{...e,isRetry:true});
 }
 else if(r===0&&e.isRetry){updateWrong(e,false);exprState.savedToWrong++;} // isRetry가 또 틀리면 오답노트로
 else if(r===0&&exprState.phase==='retry'){updateWrong(e,false);exprState.savedToWrong++;}
-else if(r>=2)updateWrong(e,true);
+// ★ 버그 수정: r>=1 (어려움, 보통, 쉬움) 모두 정답 처리
+else if(r>=1)updateWrong(e,true);
 // DB 업데이트 - 재출제 카드(isRetry)는 FSRS 건너뛰기
 if(!e.isRetry){
 const fresh=await getExpr(e.Expression);
@@ -6372,7 +6382,17 @@ await safeSaveExpr(fresh);
 Object.assign(e,fresh);
 }
 }else{
-console.log('[rateExprCard] isRetry card, skipping FSRS update');
+// ★ 버그 수정: 재출제 카드도 정답이면 nextReview를 미래로 설정
+if(r>=1){
+  const nextDate=new Date();
+  nextDate.setDate(nextDate.getDate()+(e.interval||1));
+  e.nextReview=nextDate.toISOString();
+  e.lastReview=new Date().toISOString();
+  await safeSaveExpr(e);
+  console.log('[rateExprCard] isRetry card, nextReview 업데이트:',{expr:e.Expression,nextReview:e.nextReview});
+}else{
+  console.log('[rateExprCard] isRetry card wrong again, nextReview 유지');
+}
 }
 vibrate(r>=2?10:[50,30,50]);exprState.idx++;
 setTimeout(()=>{try{showExprCard();}catch(e){console.error('showExprCard error:',e);}},200);
@@ -7121,7 +7141,7 @@ if(wrongAutoEnabled&&!isTypingMode){
 const wrongLimit=parseInt(localStorage.getItem('wrongLimit')||'5');
 const wrongBonus=Math.min(wrongLimit,Math.floor(count/5));
 if(wrongBonus>0){
-const wrongExprs=exprs.filter(x=>isWrong(x)&&!sel.some(f=>f.Expression===x.Expression));
+const wrongExprs=exprs.filter(x=>isWrong(x)&&isAvailable(x)&&!sel.some(f=>f.Expression===x.Expression));
 const wrongToAdd=shuffle(wrongExprs).slice(0,wrongBonus);
 wrongAdded=wrongToAdd.length;
 wrongToAdd.forEach(w=>{
