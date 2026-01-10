@@ -825,6 +825,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <button class="btn btn-secondary" onclick="closeModal('paste-modal')" style="margin-top:16px;width:100%">취소</button>
 </div></div>
+
+<!-- 중복 처리 모달 -->
+<div class="modal-overlay" id="duplicate-modal"><div class="modal" style="max-width:500px;max-height:85vh;overflow-y:auto">
+<div class="modal-header"><h3 id="dup-modal-title">⚠️ 중복 항목 발견</h3><button class="modal-close" onclick="closeDuplicateModal()">✕</button></div>
+<div style="margin-bottom:12px;display:flex;align-items:center;gap:8px">
+<span style="font-size:13px;color:var(--muted)">일괄 적용:</span>
+<select class="form-select" id="dup-bulk-action" onchange="applyBulkDupAction()" style="flex:1">
+<option value="">선택...</option>
+<option value="new">새 항목 (번호 부여)</option>
+<option value="replace">대체</option>
+<option value="merge">병합</option>
+<option value="skip">스킵</option>
+</select>
+</div>
+<div id="dup-list" style="max-height:400px;overflow-y:auto"></div>
+<div style="display:flex;gap:10px;margin-top:16px">
+<button class="btn btn-secondary" onclick="closeDuplicateModal()" style="flex:1">취소</button>
+<button class="btn btn-primary" onclick="confirmDuplicateAction()" style="flex:1">✅ 확인</button>
+</div>
+</div></div>
 <script>
 
 const DB_NAME='CEMS_VocabDB_v4',DB_VER=2,LEITNER=[1,3,7,14,30],PARTICLES=['up','down','out','in','on','off','away','back','over','through','around','about','along','apart'];
@@ -858,6 +878,354 @@ function safeSkipInvalid(state, renderFn, endFn, maxSkips = 5) {
     return endFn();
   }
   return renderFn();
+}
+
+// ========== 중복 처리 모듈 ==========
+let dupState = { items: [], type: '', callback: null, source: '' };
+
+// 키 추출
+function getItemKey(item) {
+  return item.word || item.Phrasal_Verb || item.Expression;
+}
+
+// 의미 추출
+function getItemMeaning(item) {
+  return item.Meaning1_KO || item.Meaning_KO || item.Meaning1_EN || '';
+}
+
+// 베이스와 번호 분리
+function getBaseAndNum(key) {
+  const match = key.match(/^(.+?)(\d+)$/);
+  if (match) return { base: match[1], num: parseInt(match[2]) };
+  return { base: key, num: 0 };
+}
+
+// 중복 감지
+async function detectDuplicates(items, type) {
+  let allItems = [];
+  if (type === 'vocab') allItems = await getAllWords();
+  else if (type === 'phrasal') allItems = await getAllPV();
+  else allItems = await getAllExpr();
+  
+  const existingMap = new Map();
+  allItems.forEach(item => {
+    existingMap.set(getItemKey(item), item);
+  });
+  
+  // 베이스별 최대 번호
+  const maxNums = {};
+  allItems.forEach(item => {
+    const key = getItemKey(item);
+    const { base, num } = getBaseAndNum(key);
+    maxNums[base] = Math.max(maxNums[base] || 0, num);
+  });
+  
+  const result = [];
+  const seenKeys = new Set();
+  
+  for (const item of items) {
+    const key = getItemKey(item);
+    const { base } = getBaseAndNum(key);
+    const existing = existingMap.get(key);
+    
+    // 같은 배치 내 중복도 체크
+    if (seenKeys.has(key)) {
+      result.push({
+        item,
+        existing: null,
+        isDup: true,
+        isBatchDup: true,
+        base,
+        action: 'new' // 배치 내 중복은 기본 새 항목
+      });
+    } else if (existing) {
+      result.push({
+        item,
+        existing,
+        isDup: true,
+        isBatchDup: false,
+        base,
+        action: 'replace' // 기본값
+      });
+    } else {
+      result.push({
+        item,
+        existing: null,
+        isDup: false,
+        base,
+        action: 'add'
+      });
+    }
+    seenKeys.add(key);
+  }
+  
+  return { result, maxNums, existingMap };
+}
+
+// 중복 모달 표시
+function showDuplicateModal(duplicates, type, source, callback) {
+  const dups = duplicates.filter(d => d.isDup);
+  if (dups.length === 0) {
+    // 중복 없으면 바로 처리
+    callback(duplicates);
+    return;
+  }
+  
+  dupState = { items: duplicates, type, callback, source };
+  
+  const typeLabel = type === 'vocab' ? '어휘' : type === 'phrasal' ? '구동사' : '표현';
+  document.getElementById('dup-modal-title').textContent = `⚠️ 중복 ${dups.length}건 발견 (${typeLabel})`;
+  document.getElementById('dup-bulk-action').value = '';
+  
+  const listEl = document.getElementById('dup-list');
+  listEl.innerHTML = dups.map((d, i) => {
+    const key = getItemKey(d.item);
+    const newMeaning = getItemMeaning(d.item);
+    const oldMeaning = d.existing ? getItemMeaning(d.existing) : '(배치 내 중복)';
+    const dataIdx = duplicates.indexOf(d);
+    
+    return `
+      <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:8px">
+        <div style="font-weight:600;margin-bottom:6px">${key}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+          <div>DB: ${oldMeaning || '(없음)'}</div>
+          <div>신규: ${newMeaning || '(없음)'}</div>
+        </div>
+        <select class="form-select" data-dup-idx="${dataIdx}" style="font-size:13px" onchange="updateDupAction(this)">
+          <option value="new" ${d.action==='new'?'selected':''}>새 항목 (번호 부여)</option>
+          <option value="replace" ${d.action==='replace'?'selected':''}>대체</option>
+          <option value="merge" ${d.action==='merge'?'selected':''}>병합</option>
+          <option value="skip" ${d.action==='skip'?'selected':''}>스킵</option>
+        </select>
+      </div>
+    `;
+  }).join('');
+  
+  document.getElementById('duplicate-modal').classList.add('show');
+}
+
+// 일괄 적용
+function applyBulkDupAction() {
+  const action = document.getElementById('dup-bulk-action').value;
+  if (!action) return;
+  
+  document.querySelectorAll('#dup-list select[data-dup-idx]').forEach(sel => {
+    sel.value = action;
+    const idx = parseInt(sel.dataset.dupIdx);
+    if (dupState.items[idx]) dupState.items[idx].action = action;
+  });
+}
+
+// 개별 select 변경 시 즉시 반영
+function updateDupAction(sel) {
+  const idx = parseInt(sel.dataset.dupIdx);
+  if (dupState.items[idx]) dupState.items[idx].action = sel.value;
+}
+
+// 모달 닫기 (취소 - 현재 타입 전체 스킵 후 다음 타입 진행)
+function closeDuplicateModal() {
+  document.getElementById('duplicate-modal').classList.remove('show');
+  
+  // 취소 시: 중복 항목 모두 스킵, 비중복 항목은 추가
+  if (dupState.callback && dupState.items.length > 0) {
+    dupState.items.forEach(d => {
+      if (d.isDup) d.action = 'skip';
+    });
+    dupState.callback(dupState.items);
+  }
+  
+  dupState = { items: [], type: '', callback: null, source: '' };
+}
+
+// 확인 버튼
+async function confirmDuplicateAction() {
+  // 각 select에서 action 수집
+  document.querySelectorAll('#dup-list select[data-dup-idx]').forEach(sel => {
+    const idx = parseInt(sel.dataset.dupIdx);
+    if (dupState.items[idx]) dupState.items[idx].action = sel.value;
+  });
+  
+  document.getElementById('duplicate-modal').classList.remove('show');
+  
+  if (dupState.callback) {
+    await dupState.callback(dupState.items);
+  }
+  
+  dupState = { items: [], type: '', callback: null, source: '' };
+}
+
+// 필드 병합 (세미콜론 구분)
+function mergeField(oldVal, newVal) {
+  // 배열 처리
+  if (Array.isArray(oldVal) || Array.isArray(newVal)) {
+    const oldArr = Array.isArray(oldVal) ? oldVal : (oldVal ? [oldVal] : []);
+    const newArr = Array.isArray(newVal) ? newVal : (newVal ? [newVal] : []);
+    return [...new Set([...oldArr, ...newArr])];
+  }
+  // 문자열 처리
+  if (!oldVal) return newVal || '';
+  if (!newVal) return oldVal;
+  if (oldVal === newVal) return oldVal;
+  // 이미 포함되어 있으면 추가 안함
+  if (oldVal.includes(newVal)) return oldVal;
+  return oldVal + '; ' + newVal;
+}
+
+// 아이템 병합
+function mergeItems(existing, newItem, type) {
+  const merged = { ...existing };
+  
+  if (type === 'vocab') {
+    merged.Meaning1_KO = mergeField(existing.Meaning1_KO, newItem.Meaning1_KO);
+    merged.Meaning1_EN = mergeField(existing.Meaning1_EN, newItem.Meaning1_EN);
+    merged.Meaning2_KO = mergeField(existing.Meaning2_KO, newItem.Meaning2_KO);
+    merged.Meaning2_EN = mergeField(existing.Meaning2_EN, newItem.Meaning2_EN);
+    merged.Example1 = newItem.Example1 || existing.Example1;
+    merged.Example2 = newItem.Example2 || existing.Example2;
+    merged.Common_Error = mergeField(existing.Common_Error, newItem.Common_Error);
+    merged.Key_Collocation = mergeField(existing.Key_Collocation, newItem.Key_Collocation);
+    merged.Synonyms = mergeField(existing.Synonyms, newItem.Synonyms);
+    merged.Antonyms = mergeField(existing.Antonyms, newItem.Antonyms);
+  } else if (type === 'phrasal') {
+    merged.Meaning1_KO = mergeField(existing.Meaning1_KO, newItem.Meaning1_KO);
+    merged.Meaning1_EN = mergeField(existing.Meaning1_EN, newItem.Meaning1_EN);
+    merged.Meaning2_KO = mergeField(existing.Meaning2_KO, newItem.Meaning2_KO);
+    merged.Meaning2_EN = mergeField(existing.Meaning2_EN, newItem.Meaning2_EN);
+    merged.Example1 = newItem.Example1 || existing.Example1;
+    merged.Example2 = newItem.Example2 || existing.Example2;
+    merged.Common_Error = mergeField(existing.Common_Error, newItem.Common_Error);
+    merged.Formal_Equivalent = mergeField(existing.Formal_Equivalent, newItem.Formal_Equivalent);
+  } else {
+    merged.Meaning_KO = mergeField(existing.Meaning_KO, newItem.Meaning_KO);
+    merged.Function = mergeField(existing.Function, newItem.Function);
+    merged.Example1 = newItem.Example1 || existing.Example1;
+    merged.Example2 = newItem.Example2 || existing.Example2;
+    merged.Similar_Expr = mergeField(existing.Similar_Expr, newItem.Similar_Expr);
+    merged.Common_Error = mergeField(existing.Common_Error, newItem.Common_Error);
+  }
+  
+  // 태그 병합
+  const oldTags = existing.tags || [];
+  const newTags = newItem.tags || [];
+  merged.tags = [...new Set([...oldTags, ...newTags])];
+  
+  return merged;
+}
+
+// 아이템 대체 (엑셀 값으로, 빈 값은 기존 유지)
+function replaceItem(existing, newItem, type) {
+  const replaced = { ...existing };
+  
+  // 모든 필드에 대해: 신규 값 있으면 대체, 없으면 기존 유지
+  for (const key of Object.keys(newItem)) {
+    const val = newItem[key];
+    // 빈 값 체크 (undefined, null, '', 빈 배열)
+    const isEmpty = val === undefined || val === null || val === '' || 
+                    (Array.isArray(val) && val.length === 0);
+    if (!isEmpty) {
+      // 학습 통계 필드는 제외
+      if (!['reviewCount', 'correctCount', 'wrongCount', 'mastery', 'stability', 'difficulty', 
+           'interval', 'fsrsState', 'reps', 'lapses', 'nextReview', 'lastReview', 'addedDate',
+           'consecutiveWrong', 'lastWrongDate', 'leitnerBox', 'ease'].includes(key)) {
+        replaced[key] = val;
+      }
+    }
+  }
+  
+  // 태그는 병합
+  const oldTags = existing.tags || [];
+  const newTags = newItem.tags || [];
+  replaced.tags = [...new Set([...oldTags, ...newTags])];
+  
+  return replaced;
+}
+
+// 중복 처리 실행
+async function processDuplicateItems(items, type, maxNums, existingMap) {
+  const store = type === 'vocab' ? 'words' : type === 'phrasal' ? 'phrasal_verbs' : 'expressions';
+  const keyField = type === 'vocab' ? 'word' : type === 'phrasal' ? 'Phrasal_Verb' : 'Expression';
+  
+  const toSave = [];
+  const toDelete = [];
+  let addedCount = 0, replacedCount = 0, mergedCount = 0, skippedCount = 0, newItemCount = 0;
+  
+  for (const d of items) {
+    const key = getItemKey(d.item);
+    const { base } = getBaseAndNum(key);
+    
+    if (d.action === 'skip') {
+      skippedCount++;
+      continue;
+    }
+    
+    if (d.action === 'add' || !d.isDup) {
+      // 새 항목 (중복 아님)
+      toSave.push(d.item);
+      addedCount++;
+      continue;
+    }
+    
+    if (d.action === 'new') {
+      // 새 항목으로 번호 부여
+      // 기존에 번호 없으면 기존 항목에 1 붙이기
+      if (d.existing && !/\d+$/.test(key)) {
+        const oldKey = key;
+        const newKey = key + '1';
+        d.existing[keyField] = newKey;
+        toDelete.push(oldKey);
+        toSave.push(d.existing);
+        maxNums[base] = 1;
+      }
+      
+      // 새 항목에 다음 번호
+      const nextNum = (maxNums[base] || 0) + 1;
+      const newKey = base + nextNum;
+      d.item[keyField] = newKey;
+      maxNums[base] = nextNum;
+      toSave.push(d.item);
+      newItemCount++;
+      
+    } else if (d.action === 'replace') {
+      // 대체
+      if (d.existing) {
+        const replaced = replaceItem(d.existing, d.item, type);
+        toSave.push(replaced);
+        replacedCount++;
+      } else {
+        toSave.push(d.item);
+        addedCount++;
+      }
+      
+    } else if (d.action === 'merge') {
+      // 병합
+      if (d.existing) {
+        const merged = mergeItems(d.existing, d.item, type);
+        toSave.push(merged);
+        mergedCount++;
+      } else {
+        toSave.push(d.item);
+        addedCount++;
+      }
+    }
+  }
+  
+  // DB 저장
+  const tx = db.transaction(store, 'readwrite');
+  const os = tx.objectStore(store);
+  
+  // 삭제 (이름 변경된 기존 항목)
+  for (const key of toDelete) {
+    os.delete(key);
+  }
+  
+  // 저장
+  for (const item of toSave) {
+    os.put(item);
+  }
+  
+  await new Promise(r => { tx.oncomplete = r; });
+  
+  return { addedCount, replacedCount, mergedCount, skippedCount, newItemCount };
 }
 
 // ========== FSRS-4.5 Algorithm ==========
@@ -1663,6 +2031,8 @@ async function getSessions(){return new Promise(r=>{const req=db.transaction('se
 async function getWord(w){return new Promise(r=>{try{const req=db.transaction('words','readonly').objectStore('words').get(w);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);}catch(e){r(null);}})}
 async function getPV(p){return new Promise(r=>{try{const req=db.transaction('phrasal_verbs','readonly').objectStore('phrasal_verbs').get(p);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);}catch(e){r(null);}})}
 async function getExpr(k){return new Promise(r=>{try{const req=db.transaction('expressions','readonly').objectStore('expressions').get(k);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);}catch(e){r(null);}})}
+async function deleteWord(k){return new Promise(r=>{const tx=db.transaction('words','readwrite');tx.objectStore('words').delete(k);tx.oncomplete=r;})}
+async function deletePV(k){return new Promise(r=>{const tx=db.transaction('phrasal_verbs','readwrite');tx.objectStore('phrasal_verbs').delete(k);tx.oncomplete=r;})}
 async function deleteExpr(k){return new Promise(r=>{const tx=db.transaction('expressions','readwrite');tx.objectStore('expressions').delete(k);tx.oncomplete=r;})}
 
 // === 헬퍼 ===
@@ -2174,18 +2544,11 @@ function checkMasteryFilter(item,mastery){
   const {include,exclude}=mastery;
   const isNew=!item.reviewCount||item.reviewCount===0;
   
-  // ★ 새단어 필터 디버그 (처음 한번만)
-  if(!window._newFilterDebugDone){
-    window._newFilterDebugDone=true;
-    console.log('[NewFilter Debug] 필터 상태:', JSON.stringify({include, exclude}));
-    console.log('[NewFilter Debug] 새단어 포함?:', include.includes('new'));
-    console.log('[NewFilter Debug] 새단어 제외?:', exclude.includes('new'));
-  }
-  
   // include가 비어있거나 'all'이 포함되어 있으면 제외 조건만 체크
   if(include.length===0 || include.includes('all')){
     // 제외 조건 체크
     for(const ex of exclude){
+      // ★ 새단어 제외: isNew가 true면 제외
       if(ex==='new'&&isNew){
         return false;
       }
@@ -2199,6 +2562,7 @@ function checkMasteryFilter(item,mastery){
   // 포함 조건 체크 (OR 연산)
   let pass=false;
   for(const inc of include){
+    // ★ 새단어 포함: isNew가 true면 통과
     if(inc==='new'&&isNew){pass=true;break;}
     if(inc==='weak'&&isWeak(item)){pass=true;break;}
     if(inc==='wrong'&&isWrong(item)){pass=true;break;}
@@ -2208,6 +2572,7 @@ function checkMasteryFilter(item,mastery){
   if(!pass)return false;
   // 제외 조건 체크
   for(const ex of exclude){
+    // ★ 새단어 제외: isNew가 true면 제외
     if(ex==='new'&&isNew)return false;
     if(ex==='weak'&&isWeak(item))return false;
     if(ex==='wrong'&&isWrong(item))return false;
@@ -5350,7 +5715,73 @@ const meaning=document.getElementById('qs-new-meaning').value.trim();
 if(!word){showToast('❌ 단어를 입력하세요');return;}
 if(!meaning){showToast('❌ 뜻을 입력하세요');return;}
 const addBookmark=document.getElementById('qs-add-bookmark').checked;
-const newWord={word:word,Meaning1_KO:meaning,L1:'General',CEFR:'B1',starred:addBookmark,reviewCount:0,correctCount:0,mastery:0,leitnerBox:1,ease:2.5};
+
+// 중복 체크
+const existing=await getWord(word);
+if(existing){
+  const choice=confirm(`"${word}"가 이미 DB에 있습니다.\n\n[확인] → 새 항목으로 추가 (${word}2)\n[취소] → 추가 안 함`);
+  if(!choice){
+    showToast('ℹ️ 추가 취소됨');
+    return;
+  }
+  // 번호 부여
+  const allWords=await getAllWords();
+  const {base}=getBaseAndNum(word);
+  let maxNum=0;
+  allWords.forEach(w=>{
+    const{base:b,num}=getBaseAndNum(w.word);
+    if(b===base)maxNum=Math.max(maxNum,num);
+  });
+  // 기존 단어에 번호 없으면 1 붙이기
+  if(!/\d+$/.test(word)){
+    // ★ 기존 키 삭제 후 새 키로 저장
+    const tx=db.transaction('words','readwrite');
+    tx.objectStore('words').delete(word);
+    existing.word=word+'1';
+    tx.objectStore('words').put(existing);
+    await new Promise(r=>{tx.oncomplete=r;});
+    maxNum=1;
+  }
+  // 새 단어에 다음 번호
+  const newKey=base+(maxNum+1);
+  const newWord={
+    word:newKey,
+    Meaning1_KO:meaning,
+    L0:'Academic',L1:'General',CEFR:'B1',Priority:'P2',Frequency:'K3',
+    Formality:'Neutral',Currency:'Current',Medium:'Both',
+    starred:addBookmark,tags:[],addedDate:new Date().toISOString(),
+    stability:null,difficulty:null,fsrsState:'New',interval:1,reps:0,lapses:0,
+    reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
+    nextReview:null,lastReview:null,lastWrongDate:null,leitnerBox:1,ease:2.5,
+    inputReviewCount:0,inputCorrectCount:0,outputReviewCount:0,outputCorrectCount:0
+  };
+  await safeSaveWord(newWord);
+  document.getElementById('quick-search-result').style.display='none';
+  document.getElementById('quick-search-input').value='';
+  showToast(`✅ "${newKey}" 추가됨 (기존: ${word}→${word}1)`);
+  updateHomeStats();updateWordTable();
+  return;
+}
+
+const newWord={
+  word:word,
+  Meaning1_KO:meaning,
+  L0:'Academic',
+  L1:'General',
+  CEFR:'B1',
+  Priority:'P2',
+  Frequency:'K3',
+  Formality:'Neutral',
+  Currency:'Current',
+  Medium:'Both',
+  starred:addBookmark,
+  tags:[],
+  addedDate:new Date().toISOString(),
+  stability:null,difficulty:null,fsrsState:'New',interval:1,reps:0,lapses:0,
+  reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
+  nextReview:null,lastReview:null,lastWrongDate:null,leitnerBox:1,ease:2.5,
+  inputReviewCount:0,inputCorrectCount:0,outputReviewCount:0,outputCorrectCount:0
+};
 await safeSaveWord(newWord);
 document.getElementById('quick-search-result').style.display='none';
 document.getElementById('quick-search-input').value='';
@@ -5527,41 +5958,51 @@ const meaning=document.getElementById('pv-qs-new-meaning').value.trim();
 if(!pv){showToast('❌ 구동사를 입력하세요');return;}
 if(!meaning){showToast('❌ 뜻을 입력하세요');return;}
 const addBookmark=document.getElementById('pv-qs-add-bookmark').checked;
-// Base verb, particle 자동 추출
 const parts=pv.split(' ');
 const baseVerb=parts[0]||'';
 const particle=parts.slice(1).join(' ')||'';
-// ★ 수정: FSRS 및 통계 필드 추가 (saveNewWord와 동일하게)
-const newPV={
-  Phrasal_Verb:pv,
-  Base_Verb:baseVerb,
-  Particle:particle,
-  Meaning1_KO:meaning,
-  Category:'General',
-  starred:addBookmark,
-  tags:[],
-  addedDate:new Date().toISOString(),
-  // FSRS 필드
-  stability:null,
-  difficulty:null,
-  fsrsState:'New',
-  reps:0,
-  lapses:0,
-  // 학습 통계
-  reviewCount:0,
-  correctCount:0,
-  mastery:0,
-  consecutiveWrong:0,
-  wrongCount:0,
-  nextReview:null,
-  lastReview:null,
-  lastWrongDate:null,
-  // 인풋/아웃풋 통계
-  inputReviewCount:0,
-  inputCorrectCount:0,
-  outputReviewCount:0,
-  outputCorrectCount:0
-};
+
+// 중복 체크
+const existing=await getPV(pv);
+if(existing){
+  const choice=confirm(`"${pv}"가 이미 DB에 있습니다.\n\n[확인] → 새 항목으로 추가 (${pv}2)\n[취소] → 추가 안 함`);
+  if(!choice){showToast('ℹ️ 추가 취소됨');return;}
+  const allPVs=await getAllPV();
+  const {base}=getBaseAndNum(pv);
+  let maxNum=0;
+  allPVs.forEach(p=>{const{base:b,num}=getBaseAndNum(p.Phrasal_Verb);if(b===base)maxNum=Math.max(maxNum,num);});
+  // ★ 기존 키 삭제 후 새 키로 저장
+  if(!/\d+$/.test(pv)){
+    const tx=db.transaction('phrasal_verbs','readwrite');
+    tx.objectStore('phrasal_verbs').delete(pv);
+    existing.Phrasal_Verb=pv+'1';
+    tx.objectStore('phrasal_verbs').put(existing);
+    await new Promise(r=>{tx.oncomplete=r;});
+    maxNum=1;
+  }
+  const newKey=base+(maxNum+1);
+  const newPV={Phrasal_Verb:newKey,Base_Verb:baseVerb,Particle:particle,Meaning1_KO:meaning,
+    Category:'General',CEFR:'B1',Priority:'P2',Frequency:'K3',Formality:'Neutral',Currency:'Current',Medium:'Both',
+    starred:addBookmark,tags:[],addedDate:new Date().toISOString(),
+    stability:null,difficulty:null,fsrsState:'New',interval:1,reps:0,lapses:0,
+    reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
+    nextReview:null,lastReview:null,lastWrongDate:null,leitnerBox:1,ease:2.5,
+    inputReviewCount:0,inputCorrectCount:0,outputReviewCount:0,outputCorrectCount:0};
+  await safeSavePV(newPV);
+  document.getElementById('pv-quick-search-result').style.display='none';
+  document.getElementById('pv-quick-search-input').value='';
+  showToast(`✅ "${newKey}" 추가됨`);
+  updateHomeStats();updateWordTable();
+  return;
+}
+
+const newPV={Phrasal_Verb:pv,Base_Verb:baseVerb,Particle:particle,Meaning1_KO:meaning,
+  Category:'General',CEFR:'B1',Priority:'P2',Frequency:'K3',Formality:'Neutral',Currency:'Current',Medium:'Both',
+  starred:addBookmark,tags:[],addedDate:new Date().toISOString(),
+  stability:null,difficulty:null,fsrsState:'New',interval:1,reps:0,lapses:0,
+  reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
+  nextReview:null,lastReview:null,lastWrongDate:null,leitnerBox:1,ease:2.5,
+  inputReviewCount:0,inputCorrectCount:0,outputReviewCount:0,outputCorrectCount:0};
 await safeSavePV(newPV);
 document.getElementById('pv-quick-search-result').style.display='none';
 document.getElementById('pv-quick-search-input').value='';
@@ -6237,35 +6678,48 @@ const meaning=document.getElementById('expr-qs-new-meaning').value.trim();
 if(!expr){showToast('❌ 표현을 입력하세요');return;}
 if(!meaning){showToast('❌ 뜻을 입력하세요');return;}
 const addBookmark=document.getElementById('expr-qs-add-bookmark').checked;
-// ★ 수정: FSRS 및 통계 필드 추가 (saveNewWord와 동일하게)
-const newExpr={
-  Expression:expr,
-  Meaning_KO:meaning,
-  Register:'Neutral',
-  starred:addBookmark,
-  tags:[],
-  addedDate:new Date().toISOString(),
-  // FSRS 필드
-  stability:null,
-  difficulty:null,
-  fsrsState:'New',
-  reps:0,
-  lapses:0,
-  // 학습 통계
-  reviewCount:0,
-  correctCount:0,
-  mastery:0,
-  consecutiveWrong:0,
-  wrongCount:0,
-  nextReview:null,
-  lastReview:null,
-  lastWrongDate:null,
-  // 인풋/아웃풋 통계
-  inputReviewCount:0,
-  inputCorrectCount:0,
-  outputReviewCount:0,
-  outputCorrectCount:0
-};
+
+// 중복 체크
+const existing=await getExpr(expr);
+if(existing){
+  const choice=confirm(`"${expr}"가 이미 DB에 있습니다.\n\n[확인] → 새 항목으로 추가 (${expr}2)\n[취소] → 추가 안 함`);
+  if(!choice){showToast('ℹ️ 추가 취소됨');return;}
+  const allExprs=await getAllExpr();
+  const {base}=getBaseAndNum(expr);
+  let maxNum=0;
+  allExprs.forEach(e=>{const{base:b,num}=getBaseAndNum(e.Expression);if(b===base)maxNum=Math.max(maxNum,num);});
+  // ★ 기존 키 삭제 후 새 키로 저장
+  if(!/\d+$/.test(expr)){
+    const tx=db.transaction('expressions','readwrite');
+    tx.objectStore('expressions').delete(expr);
+    existing.Expression=expr+'1';
+    tx.objectStore('expressions').put(existing);
+    await new Promise(r=>{tx.oncomplete=r;});
+    maxNum=1;
+  }
+  const newKey=base+(maxNum+1);
+  const newExpr={Expression:newKey,Meaning_KO:meaning,L1:'',L2:'',L3:'',Function:'',
+    CEFR:'B1',Priority:'P2',Frequency:'K3',Register:'Neutral',Formality:'Neutral',Currency:'Current',Medium:'Both',
+    starred:addBookmark,tags:[],addedDate:new Date().toISOString(),
+    stability:null,difficulty:null,fsrsState:'New',interval:1,reps:0,lapses:0,
+    reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
+    nextReview:null,lastReview:null,lastWrongDate:null,leitnerBox:1,ease:2.5,
+    inputReviewCount:0,inputCorrectCount:0,outputReviewCount:0,outputCorrectCount:0};
+  await safeSaveExpr(newExpr);
+  document.getElementById('expr-search-result').style.display='none';
+  document.getElementById('expr-search-input').value='';
+  showToast(`✅ "${newKey}" 추가됨`);
+  updateHomeStats();
+  return;
+}
+
+const newExpr={Expression:expr,Meaning_KO:meaning,L1:'',L2:'',L3:'',Function:'',
+  CEFR:'B1',Priority:'P2',Frequency:'K3',Register:'Neutral',Formality:'Neutral',Currency:'Current',Medium:'Both',
+  starred:addBookmark,tags:[],addedDate:new Date().toISOString(),
+  stability:null,difficulty:null,fsrsState:'New',interval:1,reps:0,lapses:0,
+  reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
+  nextReview:null,lastReview:null,lastWrongDate:null,leitnerBox:1,ease:2.5,
+  inputReviewCount:0,inputCorrectCount:0,outputReviewCount:0,outputCorrectCount:0};
 await safeSaveExpr(newExpr);
 document.getElementById('expr-search-result').style.display='none';
 document.getElementById('expr-search-input').value='';
@@ -7750,7 +8204,37 @@ const commonError=document.getElementById('add-common-error')?.value?.trim()||''
 if(addWordType==='expr'){
 const exists=await getExpr(word);
 if(exists){
-  if(!confirm(`"${word}" 표현이 이미 존재합니다.\n기존 데이터에 새 정보를 병합하시겠습니까?`)){return;}
+  const choice=confirm(`"${word}" 표현이 이미 존재합니다.\n\n[확인] → 기존 데이터에 병합\n[취소] → 새 항목으로 추가 또는 취소`);
+  if(!choice){
+    const addNew=confirm(`새 항목으로 추가하시겠습니까?\n(${word}2 로 저장)\n\n[확인] → 새 항목 추가\n[취소] → 취소`);
+    if(!addNew){showToast('ℹ️ 취소됨');return;}
+    // 새 항목으로 추가
+    const allExprs=await getAllExpr();
+    const {base}=getBaseAndNum(word);
+    let maxNum=0;
+    allExprs.forEach(e=>{const{base:b,num}=getBaseAndNum(e.Expression);if(b===base)maxNum=Math.max(maxNum,num);});
+    // ★ 기존 키 삭제 후 새 키로 저장
+    if(!/\d+$/.test(word)){
+      const tx=db.transaction('expressions','readwrite');
+      tx.objectStore('expressions').delete(word);
+      exists.Expression=word+'1';
+      tx.objectStore('expressions').put(exists);
+      await new Promise(r=>{tx.oncomplete=r;});
+      maxNum=1;
+    }
+    const newKey=base+(maxNum+1);
+    const expr={Expression:newKey,Meaning_KO:meaningKo,
+      Function:document.getElementById('add-function').value.trim(),
+      Formality:formality,Currency:currency,Medium:medium,
+      Example1:document.getElementById('add-example').value.trim(),
+      Common_Error:commonError,tags:tags,starred:addBookmark,
+      stability:null,difficulty:null,fsrsState:'New',reps:0,lapses:0,
+      reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
+      nextReview:null,lastReview:null,lastWrongDate:null,
+      addedDate:new Date().toISOString().slice(0,10)};
+    await safeSaveExpr(expr);
+    closeModal('add-word-modal');showToast(`✅ "${newKey}" 추가됨`);updateWordTable();updateHomeStats();return;
+  }
   // 기존 데이터 유지하면서 새 데이터 병합
   exists.Meaning_KO=meaningKo||exists.Meaning_KO;
   exists.Function=document.getElementById('add-function').value.trim()||exists.Function;
@@ -7786,7 +8270,40 @@ await safeSaveExpr(expr);
 }else if(addWordType==='phrasal'){
 const exists=await getPV(word);
 if(exists){
-  if(!confirm(`"${word}" 구동사가 이미 존재합니다.\n기존 데이터에 새 정보를 병합하시겠습니까?`)){return;}
+  const choice=confirm(`"${word}" 구동사가 이미 존재합니다.\n\n[확인] → 기존 데이터에 병합\n[취소] → 새 항목으로 추가 또는 취소`);
+  if(!choice){
+    const addNew=confirm(`새 항목으로 추가하시겠습니까?\n(${word}2 로 저장)\n\n[확인] → 새 항목 추가\n[취소] → 취소`);
+    if(!addNew){showToast('ℹ️ 취소됨');return;}
+    const allPVs=await getAllPV();
+    const {base}=getBaseAndNum(word);
+    let maxNum=0;
+    allPVs.forEach(p=>{const{base:b,num}=getBaseAndNum(p.Phrasal_Verb);if(b===base)maxNum=Math.max(maxNum,num);});
+    // ★ 기존 키 삭제 후 새 키로 저장
+    if(!/\d+$/.test(word)){
+      const tx=db.transaction('phrasal_verbs','readwrite');
+      tx.objectStore('phrasal_verbs').delete(word);
+      exists.Phrasal_Verb=word+'1';
+      tx.objectStore('phrasal_verbs').put(exists);
+      await new Promise(r=>{tx.oncomplete=r;});
+      maxNum=1;
+    }
+    const newKey=base+(maxNum+1);
+    const pv={Phrasal_Verb:newKey,
+      Base_Verb:document.getElementById('add-base-verb').value.trim(),
+      Particle:document.getElementById('add-particle').value.trim(),
+      Meaning1_KO:meaningKo,Meaning1_EN:document.getElementById('add-meaning-en').value.trim(),
+      Example1:document.getElementById('add-example').value.trim(),
+      Category:document.getElementById('add-pv-category').value,
+      Formal_Equivalent:document.getElementById('add-formal-equiv').value.trim(),
+      Formality:formality,Currency:currency,Medium:medium,Common_Error:commonError,
+      tags:tags,starred:addBookmark,
+      stability:null,difficulty:null,fsrsState:'New',reps:0,lapses:0,
+      reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
+      nextReview:null,lastReview:null,lastWrongDate:null,
+      addedDate:new Date().toISOString().slice(0,10)};
+    await safeSavePV(pv);
+    closeModal('add-word-modal');showToast(`✅ "${newKey}" 추가됨`);updateWordTable();updateHomeStats();return;
+  }
   // 기존 데이터 유지하면서 새 데이터 병합
   exists.Base_Verb=document.getElementById('add-base-verb').value.trim()||exists.Base_Verb;
   exists.Particle=document.getElementById('add-particle').value.trim()||exists.Particle;
@@ -7830,7 +8347,45 @@ await safeSavePV(pv);
 }else{
 const exists=await getWord(word);
 if(exists){
-  if(!confirm(`"${word}" 단어가 이미 존재합니다.\n기존 데이터에 새 정보를 병합하시겠습니까?`)){return;}
+  const choice=confirm(`"${word}" 단어가 이미 존재합니다.\n\n[확인] → 기존 데이터에 병합\n[취소] → 새 항목으로 추가 또는 취소`);
+  if(!choice){
+    const addNew=confirm(`새 항목으로 추가하시겠습니까?\n(${word}2 로 저장)\n\n[확인] → 새 항목 추가\n[취소] → 취소`);
+    if(!addNew){showToast('ℹ️ 취소됨');return;}
+    const allWords=await getAllWords();
+    const {base}=getBaseAndNum(word);
+    let maxNum=0;
+    allWords.forEach(w=>{const{base:b,num}=getBaseAndNum(w.word);if(b===base)maxNum=Math.max(maxNum,num);});
+    // ★ 기존 키 삭제 후 새 키로 저장
+    if(!/\d+$/.test(word)){
+      const tx=db.transaction('words','readwrite');
+      tx.objectStore('words').delete(word);
+      exists.word=word+'1';
+      tx.objectStore('words').put(exists);
+      await new Promise(r=>{tx.oncomplete=r;});
+      maxNum=1;
+    }
+    const newKey=base+(maxNum+1);
+    const userExStr=document.getElementById('add-user-examples').value.trim();
+    const userExamples=userExStr?userExStr.split('\n').map(e=>e.trim()).filter(e=>e):[];
+    const userCollStr=document.getElementById('add-user-collocs').value.trim();
+    const userCollocations=userCollStr?userCollStr.split(',').map(c=>c.trim()).filter(c=>c):[];
+    const w={word:newKey,
+      POS:document.getElementById('add-pos').value.trim(),
+      Meaning1_KO:meaningKo,Meaning1_EN:document.getElementById('add-meaning-en').value.trim(),
+      Example1:document.getElementById('add-example').value.trim(),
+      Key_Collocation:document.getElementById('add-collocation').value.trim(),
+      L1:document.getElementById('add-l1').value,L2:document.getElementById('add-l2').value,
+      CEFR:document.getElementById('add-cefr').value||'B1',
+      Formality:formality,Currency:currency,Medium:medium,Common_Error:commonError,
+      userExamples:userExamples,userCollocations:userCollocations,
+      tags:tags,starred:addBookmark,
+      stability:null,difficulty:null,fsrsState:'New',reps:0,lapses:0,
+      reviewCount:0,correctCount:0,mastery:0,consecutiveWrong:0,wrongCount:0,
+      nextReview:null,lastReview:null,lastWrongDate:null,
+      addedDate:new Date().toISOString().slice(0,10)};
+    await safeSaveWord(w);
+    closeModal('add-word-modal');showToast(`✅ "${newKey}" 추가됨`);updateWordTable();updateHomeStats();return;
+  }
   // 기존 데이터 유지하면서 새 데이터 병합
   exists.POS=document.getElementById('add-pos').value.trim()||exists.POS;
   exists.Meaning1_KO=meaningKo||exists.Meaning1_KO;
@@ -8069,7 +8624,14 @@ leitnerBox:gI(r,'leitnerbox')||ex?.leitnerBox||1,
 // ★ 신규 단어에만 오늘 날짜 설정
 addedDate:ex?.addedDate||new Date().toISOString().slice(0,10)});}
 const tx=db.transaction('expressions','readwrite');es.forEach(e=>tx.objectStore('expressions').put(e));await new Promise(r=>{tx.oncomplete=r;});eR={total:es.length,new:nC,update:uC,preserved:pC,sheet:eS};}}
-let rHTML='';if(vR)rHTML+=`<div class="upload-result-item"><span>📖 어휘 (${vR.sheet})</span><span>${vR.total}개 (새 ${vR.new}, 갱신 ${vR.update}, 기록보존 ${vR.preserved})</span></div>`;if(pR)rHTML+=`<div class="upload-result-item"><span>🔗 구동사 (${pR.sheet})</span><span>${pR.total}개 (새 ${pR.new}, 갱신 ${pR.update}, 기록보존 ${pR.preserved})</span></div>`;if(eR)rHTML+=`<div class="upload-result-item"><span>💬 표현 (${eR.sheet})</span><span>${eR.total}개 (새 ${eR.new}, 갱신 ${eR.update}, 기록보존 ${eR.preserved})</span></div>`;if(!vR&&!pR&&!eR)rHTML=`<div class="upload-result-item"><span>⚠️ 인식된 데이터 없음</span><span>시트: ${wb.SheetNames.join(', ')}</span></div>`;
+let rHTML='';
+// ★ 중복 경고 표시
+const totalUpdate=(vR?.update||0)+(pR?.update||0)+(eR?.update||0);
+if(totalUpdate>0){
+  const proceed=confirm(`⚠️ ${totalUpdate}개 기존 항목이 업데이트됩니다.\n\n동형이의어(같은 단어, 다른 의미)가 있다면 취소 후\n엑셀에서 단어 뒤에 숫자를 붙여주세요.\n(예: bank → bank1, bank2)\n\n[확인] → 기존 항목 업데이트\n[취소] → 업로드 취소`);
+  if(!proceed){showToast('ℹ️ 업로드 취소됨');return;}
+}
+if(vR)rHTML+=`<div class="upload-result-item"><span>📖 어휘 (${vR.sheet})</span><span>${vR.total}개 (새 ${vR.new}, 갱신 ${vR.update}, 기록보존 ${vR.preserved})</span></div>`;if(pR)rHTML+=`<div class="upload-result-item"><span>🔗 구동사 (${pR.sheet})</span><span>${pR.total}개 (새 ${pR.new}, 갱신 ${pR.update}, 기록보존 ${pR.preserved})</span></div>`;if(eR)rHTML+=`<div class="upload-result-item"><span>💬 표현 (${eR.sheet})</span><span>${eR.total}개 (새 ${eR.new}, 갱신 ${eR.update}, 기록보존 ${eR.preserved})</span></div>`;if(!vR&&!pR&&!eR)rHTML=`<div class="upload-result-item"><span>⚠️ 인식된 데이터 없음</span><span>시트: ${wb.SheetNames.join(', ')}</span></div>`;
 if(rHTML){document.getElementById('upload-result').innerHTML=rHTML;document.getElementById('upload-result').classList.remove('hidden');}
 showToast('✅ 업로드 완료!');vibrate();updateHomeStats();updateDataPage();
 }catch(e){console.error(e);showToast('❌ 업로드 실패: '+e.message);}}
@@ -9017,14 +9579,13 @@ async function processModalExcel(file){
 }
 
 async function confirmModalExcel(){
-  let added=0;
   const today=new Date().toISOString();
+  
   // 헬퍼: row에서 컬럼 값 가져오기
   const getCol=(row,headers,name)=>{
     const norm=name.toLowerCase().replace(/[^a-z0-9]/g,'');
     const idx=headers.indexOf(norm);
     if(idx===-1){
-      // 부분 매칭 시도
       const partialIdx=headers.findIndex(h=>h.includes(norm)||norm.includes(h));
       if(partialIdx>=0&&row[partialIdx]!=null)return String(row[partialIdx]);
       return '';
@@ -9035,174 +9596,159 @@ async function confirmModalExcel(){
     for(const n of names){const v=getCol(row,headers,n);if(v)return v;}
     return '';
   };
-  let tagUpdated=0,updated=0;
-  // 어휘 추가/업데이트
-  for(const item of modalExcelData.vocab){
-    const existing=await getWord(item.word);
+  
+  // 아이템 빌드 함수들
+  const buildVocabItem=(item)=>{
     const r=item._row||[];
     const h=item._headers||[];
-    // ★ 디버그: 첫 2개 어휘만 헤더와 Common_Error 값 출력
-    if(added<2)console.log('[ModalVocab Debug]',JSON.stringify({word:item.word,headers:h,commonErrorIdx:h.indexOf('commonerror'),commonErrorVal:r[h.indexOf('commonerror')]}));
-    // ★ Style_Tags와 tags 컬럼을 병합
     const tagsStr=getCol(r,h,'tags');
     const styleTagsStr=getColMulti(r,h,'Style_Tags','StyleTags');
     const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
     const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
-    const mergedTags=[...new Set([...tagsFromCol,...tagsFromStyle,...(existing?.tags||[])])];
-    
-    // ★ 기존 데이터도 업데이트 (학습기록 보존)
-    await safeSaveWord({
+    return {
       word:item.word,
-      POS:getCol(r,h,'POS')||existing?.POS||'',
-      Meaning1_KO:item.Meaning1_KO||getColMulti(r,h,'Meaning1_KO','MeaningKO')||existing?.Meaning1_KO||'',
-      Meaning1_EN:getColMulti(r,h,'Meaning1_EN','MeaningEN','Meaning_EN')||existing?.Meaning1_EN||'',
-      Meaning2_KO:getCol(r,h,'Meaning2_KO')||existing?.Meaning2_KO||'',
-      Meaning2_EN:getCol(r,h,'Meaning2_EN')||existing?.Meaning2_EN||'',
-      Example1:getColMulti(r,h,'Example1','Example')||existing?.Example1||'',
-      Example2:getCol(r,h,'Example2')||existing?.Example2||'',
-      Key_Collocation:getCol(r,h,'Key_Collocation')||existing?.Key_Collocation||'',
-      Common_Error:getCol(r,h,'Common_Error')||existing?.Common_Error||'',
-      Synonyms:getColMulti(r,h,'Synonyms','Synonyms_EN')||existing?.Synonyms||'',
-      Antonyms:getColMulti(r,h,'Antonyms','Antonyms_EN')||existing?.Antonyms||'',
-      L0:getCol(r,h,'L0')||existing?.L0||'Academic',
-      L1:getCol(r,h,'L1')||existing?.L1||'General',
-      L2:getCol(r,h,'L2')||existing?.L2||'',
-      CEFR:getCol(r,h,'CEFR')||existing?.CEFR||'B1',
-      Priority:getCol(r,h,'Priority')||existing?.Priority||'P2',
-      Frequency:getCol(r,h,'Frequency')||existing?.Frequency||'K3',
-      Formality:getColMulti(r,h,'Formality','Register')||existing?.Formality||'Neutral',
-      Currency:getCol(r,h,'Currency')||existing?.Currency||'Current',
-      Medium:getCol(r,h,'Medium')||existing?.Medium||'Both',
-      TOEFL_Rel:getCol(r,h,'TOEFL_Rel')||existing?.TOEFL_Rel||'',
-      COCA_Genre:getCol(r,h,'COCA_Genre')||existing?.COCA_Genre||'',
-      tags:mergedTags,
-      // ★ 학습기록 보존
-      addedDate:existing?.addedDate||today,
-      reviewCount:existing?.reviewCount||0,
-      correctCount:existing?.correctCount||0,
-      wrongCount:existing?.wrongCount||0,
-      consecutiveWrong:existing?.consecutiveWrong||0,
-      stability:existing?.stability||null,
-      difficulty:existing?.difficulty||null,
-      interval:existing?.interval||1,
-      fsrsState:existing?.fsrsState||'New',
-      reps:existing?.reps||0,
-      lapses:existing?.lapses||0,
-      nextReview:existing?.nextReview||null,
-      lastReview:existing?.lastReview||null,
-      starred:existing?.starred||false
-    });
-    if(existing)updated++;else added++;
-  }
-  // 구동사 추가/업데이트
-  for(const item of modalExcelData.phrasal){
-    const existing=await getPV(item.Phrasal_Verb);
+      POS:getCol(r,h,'POS'),
+      Meaning1_KO:item.Meaning1_KO||getColMulti(r,h,'Meaning1_KO','MeaningKO'),
+      Meaning1_EN:getColMulti(r,h,'Meaning1_EN','MeaningEN','Meaning_EN'),
+      Meaning2_KO:getCol(r,h,'Meaning2_KO'),
+      Meaning2_EN:getCol(r,h,'Meaning2_EN'),
+      Example1:getColMulti(r,h,'Example1','Example'),
+      Example2:getCol(r,h,'Example2'),
+      Key_Collocation:getCol(r,h,'Key_Collocation'),
+      Common_Error:getCol(r,h,'Common_Error'),
+      Synonyms:getColMulti(r,h,'Synonyms','Synonyms_EN'),
+      Antonyms:getColMulti(r,h,'Antonyms','Antonyms_EN'),
+      Antonyms_EN:getCol(r,h,'Antonyms_EN'),
+      Antonyms_KO:getCol(r,h,'Antonyms_KO'),
+      L0:getCol(r,h,'L0')||'Academic',
+      L1:getCol(r,h,'L1')||'General',
+      L2:getCol(r,h,'L2'),
+      CEFR:getCol(r,h,'CEFR')||'B1',
+      Priority:getCol(r,h,'Priority')||'P2',
+      Frequency:getCol(r,h,'Frequency')||'K3',
+      Formality:getColMulti(r,h,'Formality','Register')||'Neutral',
+      Currency:getCol(r,h,'Currency')||'Current',
+      Medium:getCol(r,h,'Medium')||'Both',
+      TOEFL_Rel:getCol(r,h,'TOEFL_Rel'),
+      COCA_Genre:getCol(r,h,'COCA_Genre'),
+      tags:[...new Set([...tagsFromCol,...tagsFromStyle])],
+      addedDate:today,reviewCount:0,correctCount:0,wrongCount:0,
+      consecutiveWrong:0,stability:null,difficulty:null,interval:1,
+      fsrsState:'New',reps:0,lapses:0,nextReview:null,lastReview:null,starred:false
+    };
+  };
+  
+  const buildPVItem=(item)=>{
     const r=item._row||[];
     const h=item._headers||[];
-    // ★ Style_Tags와 tags 컬럼을 병합
     const tagsStr=getCol(r,h,'tags');
     const styleTagsStr=getColMulti(r,h,'Style_Tags','StyleTags');
     const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
     const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
-    const mergedTags=[...new Set([...tagsFromCol,...tagsFromStyle,...(existing?.tags||[])])];
-    
-    // ★ 기존 데이터도 업데이트 (학습기록 보존)
-    await safeSavePV({
+    return {
       Phrasal_Verb:item.Phrasal_Verb,
-      Base_Verb:getColMulti(r,h,'Base_Verb','BaseVerb')||existing?.Base_Verb||'',
-      Particle:getCol(r,h,'Particle')||existing?.Particle||'',
-      Meaning1_KO:item.Meaning1_KO||getColMulti(r,h,'Meaning1_KO','MeaningKO')||existing?.Meaning1_KO||'',
-      Meaning1_EN:getColMulti(r,h,'Meaning1_EN','MeaningEN')||existing?.Meaning1_EN||'',
-      Example1:getColMulti(r,h,'Example1','Example')||existing?.Example1||'',
-      Example2:getCol(r,h,'Example2')||existing?.Example2||'',
-      Category:getCol(r,h,'Category')||existing?.Category||'General',
-      CEFR:getCol(r,h,'CEFR')||existing?.CEFR||'B1',
-      Priority:getCol(r,h,'Priority')||existing?.Priority||'P2',
-      Frequency:getCol(r,h,'Frequency')||existing?.Frequency||'K3',
-      Formality:getColMulti(r,h,'Formality','Register')||existing?.Formality||'Neutral',
-      Currency:getCol(r,h,'Currency')||existing?.Currency||'Current',
-      Medium:getCol(r,h,'Medium')||existing?.Medium||'Both',
-      TOEFL_Rel:getCol(r,h,'TOEFL_Rel')||existing?.TOEFL_Rel||'',
-      COCA_Genre:getCol(r,h,'COCA_Genre')||existing?.COCA_Genre||'',
-      Common_Error:getCol(r,h,'Common_Error')||existing?.Common_Error||'',
-      Formal_Equivalent:getCol(r,h,'Formal_Equivalent')||existing?.Formal_Equivalent||'',
-      Synonyms:getCol(r,h,'Synonyms')||existing?.Synonyms||'',
-      Antonyms:getCol(r,h,'Antonyms')||existing?.Antonyms||'',
-      tags:mergedTags,
-      // ★ 학습기록 보존
-      addedDate:existing?.addedDate||today,
-      reviewCount:existing?.reviewCount||0,
-      correctCount:existing?.correctCount||0,
-      wrongCount:existing?.wrongCount||0,
-      consecutiveWrong:existing?.consecutiveWrong||0,
-      stability:existing?.stability||null,
-      difficulty:existing?.difficulty||null,
-      interval:existing?.interval||1,
-      fsrsState:existing?.fsrsState||'New',
-      reps:existing?.reps||0,
-      lapses:existing?.lapses||0,
-      nextReview:existing?.nextReview||null,
-      lastReview:existing?.lastReview||null,
-      starred:existing?.starred||false
-    });
-    if(existing)updated++;else added++;
-  }
-  // 표현 추가/업데이트
-  for(const item of modalExcelData.expr){
-    const existing=await getExpr(item.Expression);
+      Base_Verb:getColMulti(r,h,'Base_Verb','BaseVerb'),
+      Particle:getCol(r,h,'Particle'),
+      Meaning1_KO:item.Meaning1_KO||getColMulti(r,h,'Meaning1_KO','MeaningKO'),
+      Meaning1_EN:getColMulti(r,h,'Meaning1_EN','MeaningEN'),
+      Meaning2_KO:getCol(r,h,'Meaning2_KO'),
+      Meaning2_EN:getCol(r,h,'Meaning2_EN'),
+      Example1:getColMulti(r,h,'Example1','Example'),
+      Example2:getCol(r,h,'Example2'),
+      Transparency:getCol(r,h,'Transparency'),
+      Particle_Meaning:getCol(r,h,'Particle_Meaning'),
+      Category:getCol(r,h,'Category')||'General',
+      CEFR:getCol(r,h,'CEFR')||'B1',
+      Priority:getCol(r,h,'Priority')||'P2',
+      Frequency:getCol(r,h,'Frequency')||'K3',
+      Formality:getColMulti(r,h,'Formality','Register')||'Neutral',
+      Currency:getCol(r,h,'Currency')||'Current',
+      Medium:getCol(r,h,'Medium')||'Both',
+      Common_Error:getCol(r,h,'Common_Error'),
+      Formal_Equivalent:getCol(r,h,'Formal_Equivalent'),
+      Separable:getCol(r,h,'Separable'),
+      tags:[...new Set([...tagsFromCol,...tagsFromStyle])],
+      addedDate:today,reviewCount:0,correctCount:0,wrongCount:0,
+      consecutiveWrong:0,stability:null,difficulty:null,interval:1,
+      fsrsState:'New',reps:0,lapses:0,nextReview:null,lastReview:null,starred:false
+    };
+  };
+  
+  const buildExprItem=(item)=>{
     const r=item._row||[];
     const h=item._headers||[];
-    // ★ Style_Tags와 tags 컬럼을 병합
     const tagsStr=getCol(r,h,'tags');
     const styleTagsStr=getColMulti(r,h,'Style_Tags','StyleTags');
     const tagsFromCol=tagsStr?tagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
     const tagsFromStyle=styleTagsStr?styleTagsStr.split(',').map(t=>t.trim()).filter(t=>t):[];
-    const mergedTags=[...new Set([...tagsFromCol,...tagsFromStyle,...(existing?.tags||[])])];
-    
-    // ★ 기존 데이터도 업데이트 (학습기록 보존)
-    await safeSaveExpr({
+    return {
       Expression:item.Expression,
-      L1:getCol(r,h,'L1')||existing?.L1||'',
-      L2:getCol(r,h,'L2')||existing?.L2||'',
-      L3:getCol(r,h,'L3')||existing?.L3||'',
-      Function:getCol(r,h,'Function')||existing?.Function||'',
-      Meaning_KO:item.Meaning_KO||getColMulti(r,h,'Meaning_KO','MeaningKO')||existing?.Meaning_KO||'',
-      Meaning_EN:getColMulti(r,h,'Meaning_EN','MeaningEN')||existing?.Meaning_EN||'',
-      Example1:getColMulti(r,h,'Example1','Example')||existing?.Example1||'',
-      Example2:getCol(r,h,'Example2')||existing?.Example2||'',
-      Similar_Expr:getCol(r,h,'Similar_Expr')||existing?.Similar_Expr||'',
-      Common_Error:getCol(r,h,'Common_Error')||existing?.Common_Error||'',
-      CEFR:getCol(r,h,'CEFR')||existing?.CEFR||'B1',
-      Priority:getCol(r,h,'Priority')||existing?.Priority||'P2',
-      Frequency:getCol(r,h,'Frequency')||existing?.Frequency||'K3',
-      Formality:getColMulti(r,h,'Formality','Register')||existing?.Formality||'Neutral',
-      Currency:getCol(r,h,'Currency')||existing?.Currency||'Current',
-      Medium:getCol(r,h,'Medium')||existing?.Medium||'Both',
-      tags:mergedTags,
-      // ★ 학습기록 보존
-      addedDate:existing?.addedDate||today,
-      reviewCount:existing?.reviewCount||0,
-      correctCount:existing?.correctCount||0,
-      wrongCount:existing?.wrongCount||0,
-      consecutiveWrong:existing?.consecutiveWrong||0,
-      stability:existing?.stability||null,
-      difficulty:existing?.difficulty||null,
-      interval:existing?.interval||1,
-      fsrsState:existing?.fsrsState||'New',
-      reps:existing?.reps||0,
-      lapses:existing?.lapses||0,
-      nextReview:existing?.nextReview||null,
-      lastReview:existing?.lastReview||null,
-      starred:existing?.starred||false
+      L1:getCol(r,h,'L1'),
+      L2:getCol(r,h,'L2'),
+      L3:getCol(r,h,'L3'),
+      Function:getCol(r,h,'Function'),
+      Meaning_KO:item.Meaning_KO||getColMulti(r,h,'Meaning_KO','MeaningKO'),
+      Meaning_EN:getColMulti(r,h,'Meaning_EN','MeaningEN'),
+      Example1:getColMulti(r,h,'Example1','Example'),
+      Example2:getCol(r,h,'Example2'),
+      Similar_Expr:getCol(r,h,'Similar_Expr'),
+      Common_Error:getCol(r,h,'Common_Error'),
+      CEFR:getCol(r,h,'CEFR')||'B1',
+      Priority:getCol(r,h,'Priority')||'P2',
+      Frequency:getCol(r,h,'Frequency')||'K3',
+      Formality:getColMulti(r,h,'Formality','Register')||'Neutral',
+      Currency:getCol(r,h,'Currency')||'Current',
+      Medium:getCol(r,h,'Medium')||'Both',
+      tags:[...new Set([...tagsFromCol,...tagsFromStyle])],
+      addedDate:today,reviewCount:0,correctCount:0,wrongCount:0,
+      consecutiveWrong:0,stability:null,difficulty:null,interval:1,
+      fsrsState:'New',reps:0,lapses:0,nextReview:null,lastReview:null,starred:false
+    };
+  };
+  
+  // 처리할 타입들 수집
+  const types=[];
+  if(modalExcelData.vocab.length)types.push({type:'vocab',items:modalExcelData.vocab.map(buildVocabItem),label:'어휘'});
+  if(modalExcelData.phrasal.length)types.push({type:'phrasal',items:modalExcelData.phrasal.map(buildPVItem),label:'구동사'});
+  if(modalExcelData.expr.length)types.push({type:'expr',items:modalExcelData.expr.map(buildExprItem),label:'표현'});
+  
+  if(!types.length){showToast('⚠️ 추가할 데이터가 없습니다');return;}
+  
+  let totalStats={addedCount:0,replacedCount:0,mergedCount:0,skippedCount:0,newItemCount:0};
+  
+  // 순차적으로 각 타입 처리
+  async function processNextType(idx){
+    if(idx>=types.length){
+      // 모든 처리 완료
+      let msg=[];
+      if(totalStats.addedCount>0)msg.push(`추가 ${totalStats.addedCount}`);
+      if(totalStats.newItemCount>0)msg.push(`새 항목 ${totalStats.newItemCount}`);
+      if(totalStats.replacedCount>0)msg.push(`대체 ${totalStats.replacedCount}`);
+      if(totalStats.mergedCount>0)msg.push(`병합 ${totalStats.mergedCount}`);
+      if(totalStats.skippedCount>0)msg.push(`스킵 ${totalStats.skippedCount}`);
+      showToast(msg.length?`✅ ${msg.join(', ')}`:'⚠️ 변경사항 없음');
+      closeModal('paste-modal');
+      updateHomeStats();updateWordTable();
+      return;
+    }
+    
+    const{type,items,label}=types[idx];
+    const{result,maxNums,existingMap}=await detectDuplicates(items,type);
+    
+    // 중복 모달 표시 (타입별로)
+    showDuplicateModal(result,type,'excel',async(processedItems)=>{
+      const stats=await processDuplicateItems(processedItems,type,maxNums,existingMap);
+      totalStats.addedCount+=stats.addedCount;
+      totalStats.replacedCount+=stats.replacedCount;
+      totalStats.mergedCount+=stats.mergedCount;
+      totalStats.skippedCount+=stats.skippedCount;
+      totalStats.newItemCount+=stats.newItemCount;
+      // 다음 타입 처리
+      processNextType(idx+1);
     });
-    if(existing)updated++;else added++;
   }
-  let msg=added>0?`✅ 새 단어 ${added}개 추가됨`:'';
-  if(updated>0)msg+=(msg?', ':'✅ ')+`기존 ${updated}개 업데이트`;
-  if(!msg)msg='⚠️ 변경사항 없음';
-  showToast(msg);
-  closeModal('paste-modal');
-  updateHomeStats();updateWordTable();
+  
+  processNextType(0);
 }
 
 function openPasteModal(type){
@@ -9442,104 +9988,26 @@ async function confirmPaste(){
   if(!result.items.length){showToast('⚠️ 추가할 항목이 없습니다');return;}
   
   try{
-    // 전체 기존 데이터 조회
-    let allItems=[];
-    if(pasteType==='vocab') allItems=await getAllWords();
-    else if(pasteType==='phrasal') allItems=await getAllPV();
-    else allItems=await getAllExpr();
+    // 중복 감지
+    const { result: dupResult, maxNums, existingMap } = await detectDuplicates(result.items, pasteType);
     
-    const getKey=x=>x.word||x.Phrasal_Verb||x.Expression;
-    const existingKeys=new Set(allItems.map(getKey));
-    
-    // 베이스 단어별 최대 번호 계산
-    const getBaseAndNum=(key)=>{
-      const match=key.match(/^(.+?)(\d+)$/);
-      if(match) return {base:match[1], num:parseInt(match[2])};
-      return {base:key, num:0};
-    };
-    
-    const maxNums={};
-    allItems.forEach(item=>{
-      const key=getKey(item);
-      const {base,num}=getBaseAndNum(key);
-      maxNums[base]=Math.max(maxNums[base]||0, num);
-    });
-    
-    const store=pasteType==='vocab'?'words':pasteType==='phrasal'?'phrasal_verbs':'expressions';
-    let newCount=0, dupCount=0;
-    const itemsToSave=[];
-    const renamedExisting=[]; // 기존 항목 중 이름 변경할 것들
-    
-    for(const item of result.items){
-      let key=getKey(item);
-      const {base}=getBaseAndNum(key);
+    // 중복 모달 표시 (중복 있으면)
+    showDuplicateModal(dupResult, pasteType, 'paste', async (processedItems) => {
+      const stats = await processDuplicateItems(processedItems, pasteType, maxNums, existingMap);
       
-      if(existingKeys.has(key)){
-        // 중복! 기존 단어에 숫자가 없으면 1 붙이기
-        const existingItem=allItems.find(x=>getKey(x)===key);
-        if(existingItem && !/\d+$/.test(key)){
-          // 기존 항목 이름 변경: dash → dash1
-          const oldKey=key;
-          const newKey=key+'1';
-          if(pasteType==='vocab') existingItem.word=newKey;
-          else if(pasteType==='phrasal') existingItem.Phrasal_Verb=newKey;
-          else existingItem.Expression=newKey;
-          renamedExisting.push({oldKey, item:existingItem});
-          existingKeys.delete(oldKey);
-          existingKeys.add(newKey);
-          maxNums[base]=1;
-        }
-        
-        // 새 항목은 다음 번호
-        const nextNum=(maxNums[base]||0)+1;
-        const newKey=base+nextNum;
-        if(pasteType==='vocab') item.word=newKey;
-        else if(pasteType==='phrasal') item.Phrasal_Verb=newKey;
-        else item.Expression=newKey;
-        maxNums[base]=nextNum;
-        existingKeys.add(newKey);
-        dupCount++;
-      }else if(maxNums[base]>0){
-        // ★ 같은 base로 번호 붙은 단어가 이미 있으면 → 번호 부여
-        const nextNum=maxNums[base]+1;
-        const newKey=base+nextNum;
-        if(pasteType==='vocab') item.word=newKey;
-        else if(pasteType==='phrasal') item.Phrasal_Verb=newKey;
-        else item.Expression=newKey;
-        maxNums[base]=nextNum;
-        existingKeys.add(newKey);
-        dupCount++;
-      }else{
-        newCount++;
-      }
-      existingKeys.add(getKey(item));
-      itemsToSave.push(item);
-    }
-    
-    // DB 저장
-    const tx=db.transaction(store,'readwrite');
-    const os=tx.objectStore(store);
-    
-    // 기존 항목 이름 변경 (삭제 후 새 키로 저장)
-    for(const {oldKey, item} of renamedExisting){
-      os.delete(oldKey);
-      os.put(item);
-    }
-    
-    // 새 항목 저장
-    for(const item of itemsToSave){
-      os.put(item);
-    }
-    
-    await new Promise(r=>{tx.oncomplete=r;});
-    
-    const typeLabel=pasteType==='vocab'?'어휘':pasteType==='phrasal'?'구동사':'표현';
-    let msg=`✅ ${typeLabel} ${result.items.length}개 추가`;
-    if(dupCount>0) msg+=` (중복 ${dupCount}개 → 번호 부여)`;
-    showToast(msg);
-    closeModal('paste-modal');
-    updateHomeStats();
-    updateDataPage();
+      const typeLabel = pasteType === 'vocab' ? '어휘' : pasteType === 'phrasal' ? '구동사' : '표현';
+      let msg = [];
+      if (stats.addedCount > 0) msg.push(`추가 ${stats.addedCount}`);
+      if (stats.newItemCount > 0) msg.push(`새 항목 ${stats.newItemCount}`);
+      if (stats.replacedCount > 0) msg.push(`대체 ${stats.replacedCount}`);
+      if (stats.mergedCount > 0) msg.push(`병합 ${stats.mergedCount}`);
+      if (stats.skippedCount > 0) msg.push(`스킵 ${stats.skippedCount}`);
+      
+      showToast(`✅ ${typeLabel}: ${msg.join(', ')}`);
+      closeModal('paste-modal');
+      updateHomeStats();
+      updateDataPage();
+    });
   }catch(e){
     console.error(e);
     showToast('❌ 저장 실패: '+e.message);
