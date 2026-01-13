@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f172a">
 <meta name="description" content="TOEFL & 일상회화 어휘 학습 - FSRS 알고리즘 기반 스마트 복습">
-<title>CEMS v7.2</title>
+<title>CEMS v7.3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
@@ -49,16 +49,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @keyframes flame{0%{transform:scale(1) rotate(-3deg)}100%{transform:scale(1.1) rotate(3deg)}}
 /* 플래시카드 - 핵심 수정 */
 .flashcard-container{perspective:1000px;margin-bottom:20px;min-height:300px}
-.flashcard{position:relative;width:100%;height:300px;cursor:pointer;transform-style:preserve-3d;transition:transform .6s}
+.flashcard{position:relative;width:100%;min-height:300px;cursor:pointer;transform-style:preserve-3d;transition:transform .6s}
 .flashcard.flipped{transform:rotateY(180deg)}
 .flashcard.swipe-left{transform:translateX(-150%) rotate(-20deg);opacity:0;transition:all .4s}
 .flashcard.swipe-right{transform:translateX(150%) rotate(20deg);opacity:0;transition:all .4s}
-.flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border-radius:20px;padding:24px;display:flex;flex-direction:column;border:1px solid var(--border);box-shadow:0 20px 40px -12px rgba(0,0,0,.3)}
-.flashcard-back{transform:rotateY(180deg)}
+.flashcard-face{position:absolute;width:100%;min-height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border-radius:20px;padding:24px;display:flex;flex-direction:column;border:1px solid var(--border);box-shadow:0 20px 40px -12px rgba(0,0,0,.3)}
+.flashcard-back{transform:rotateY(180deg);overflow-y:auto;max-height:400px}
 /* 핵심: 뒷면 내용 숨김 */
-.flashcard-back-inner{opacity:0;transition:opacity .15s;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100%}.flashcard-back-inner.visible{opacity:1}
-.flashcard-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.tag{font-size:10px;padding:4px 8px;border-radius:10px;font-weight:500}.tag-pos{background:rgba(99,102,241,.2);color:#a5b4fc}.tag-level{background:rgba(16,185,129,.2);color:#6ee7b7}.tag-cat{background:rgba(245,158,11,.2);color:#fcd34d}.tag-phrasal{background:rgba(236,72,153,.2);color:#f472b6}
-.flashcard-word{font-size:36px;font-weight:700;text-align:center;margin:auto 0}.flashcard-hint{text-align:center;font-size:13px;color:var(--muted);margin-top:auto}.flashcard-meaning-ko{font-size:26px;font-weight:600;text-align:center;margin-bottom:8px}.flashcard-meaning-en{font-size:14px;text-align:center;color:var(--muted);margin-bottom:16px}.flashcard-example{background:rgba(99,102,241,.1);padding:12px;border-radius:10px;border-left:3px solid var(--primary);font-size:13px;line-height:1.5;margin-bottom:12px}.flashcard-collocation{font-size:13px;color:var(--muted);text-align:center}
+.flashcard-back-inner{opacity:0;transition:opacity .15s;display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%}.flashcard-back-inner.visible{opacity:1}
+.flashcard-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.tag{font-size:10px;padding:4px 8px;border-radius:10px;font-weight:500}.tag-pos{background:rgba(99,102,241,.2);color:#a5b4fc}.tag-level{background:rgba(16,185,129,.2);color:#6ee7b7}.tag-cat{background:rgba(245,158,11,.2);color:#fcd34d}.tag-phrasal{background:rgba(236,72,153,.2);color:#f472b6}.tag-trans{background:rgba(139,92,246,.2);color:#c4b5fd}
+.flashcard-word{font-size:36px;font-weight:700;text-align:center;margin:auto 0}.flashcard-hint{text-align:center;font-size:13px;color:var(--muted);margin-top:auto}.flashcard-meaning-ko{font-size:26px;font-weight:600;text-align:center;margin-bottom:8px}.flashcard-meaning-en{font-size:14px;text-align:center;color:var(--muted);margin-bottom:12px}.flashcard-example{background:rgba(99,102,241,.1);padding:12px;border-radius:10px;border-left:3px solid var(--primary);font-size:13px;line-height:1.5;margin-bottom:12px}.flashcard-collocation{font-size:13px;color:var(--muted);text-align:center}
+.fc-extra{font-size:12px;text-align:center;margin:4px 0;line-height:1.4}.fc-syn{color:#10b981}.fc-ant{color:#ef4444}.fc-sep{color:#8b5cf6}.fc-error{font-size:12px;text-align:center;margin:4px 0;line-height:1.4;color:#f59e0b}
 .similar-expr-box{background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:12px}.similar-expr-box .similar-title{color:var(--expr);font-weight:600;margin-bottom:6px;font-size:11px}.similar-expr-box .similar-item{color:var(--muted);padding:2px 0}
 .swipe-indicator{position:fixed;top:50%;transform:translateY(-50%);font-size:48px;opacity:0;transition:opacity .2s;z-index:50;pointer-events:none}.swipe-indicator.left{left:20px}.swipe-indicator.right{right:20px}.swipe-indicator.show{opacity:1}
 .rating-section{margin-bottom:16px}.rating-section.disabled{opacity:.5;pointer-events:none}.rating-hint{text-align:center;font-size:13px;color:var(--muted);margin-bottom:12px}.rating-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.rating-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 8px;border-radius:12px;font-size:13px;font-weight:600;border:none;cursor:pointer;min-height:70px}.rating-btn:disabled{opacity:.5}.rating-btn.again{background:#fecaca;color:#b91c1c}.rating-btn.hard{background:#fed7aa;color:#c2410c}.rating-btn.good{background:#bbf7d0;color:#15803d}.rating-btn.easy{background:#bfdbfe;color:#1d4ed8}.rating-interval{font-size:10px;opacity:.7;margin-top:4px}
@@ -70,7 +71,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .leitner-container{display:flex;gap:8px}.leitner-box{flex:1;text-align:center;padding:12px 8px;background:var(--bg);border-radius:10px;border:2px solid var(--border)}.leitner-box.box-1{border-color:#ef4444}.leitner-box.box-2{border-color:#f59e0b}.leitner-box.box-3{border-color:#eab308}.leitner-box.box-4{border-color:#22c55e}.leitner-box.box-5{border-color:#10b981}.leitner-count{font-size:20px;font-weight:700}.leitner-label{font-size:10px;color:var(--muted)}
 .chart-container{display:flex;align-items:flex-end;justify-content:space-around;height:150px;padding-top:20px}.chart-bar-wrapper{display:flex;flex-direction:column;align-items:center;gap:4px}.chart-bar{width:28px;background:var(--primary);border-radius:4px 4px 0 0;min-height:4px}.chart-bar.phrasal{background:var(--phrasal)}.chart-bar-label{font-size:10px;color:var(--muted)}.chart-bar-value{font-size:11px;font-weight:600}
 .upload-result{margin-top:16px;padding:16px;background:var(--bg);border-radius:12px}.upload-result-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}.upload-result-item:last-child{border-bottom:none}
-.blank-word{display:inline-block;min-width:80px;border-bottom:2px dashed var(--primary);margin:0 4px;color:var(--primary);font-weight:600}
+.blank-word{display:inline-block;min-width:100px;border-bottom:2px dashed var(--primary);margin:0 4px;vertical-align:baseline}
 .form-input{width:100%;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:18px;text-align:center;font-family:inherit;resize:none}.form-input:focus{border-color:var(--primary);outline:none}.form-input.correct{border-color:var(--success)}.form-input.wrong{border-color:var(--danger)}
 .typing-answer{font-size:20px;font-weight:600;margin-top:16px;padding:16px;background:var(--bg);border-radius:12px;text-align:center}.typing-answer.correct{color:var(--success)}.typing-answer.wrong{color:var(--danger)}
 .weak-word-item{display:flex;align-items:center;padding:12px;background:var(--bg);border-radius:10px;margin-bottom:8px}.weak-word-text{flex:1}.weak-word-text strong{font-size:15px}.weak-word-text span{font-size:12px;color:var(--muted);display:block;margin-top:2px}.weak-word-stats{text-align:right}.weak-word-rate{font-size:14px;font-weight:600}.weak-word-count{font-size:11px;color:var(--muted)}
@@ -84,7 +85,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </style>
 </head>
 <body>
-<div id="splash"><div class="splash-icon">📚</div><div class="splash-title">CEMS Vocab Pro</div><div class="splash-sub">v7.2 - FSRS-6 Algorithm</div><div class="splash-loader"></div></div>
+<div id="splash"><div class="splash-icon">📚</div><div class="splash-title">CEMS Vocab Pro</div><div class="splash-sub">v7.3 - FSRS-6 Algorithm</div><div class="splash-loader"></div></div>
 <div class="app">
 <!-- 홈 -->
 <div id="page-home" class="page active">
@@ -226,10 +227,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="position:sticky;top:0;z-index:10;background:var(--card);padding:12px 0;margin:-16px -16px 16px -16px;padding:12px 16px"><div class="progress-bar"><div class="progress-fill" id="fc-progress"></div></div><div class="progress-text"><span><span id="fc-current">0</span> / <span id="fc-total">0</span></span><span id="fc-timer">0:00</span></div></div>
 <div class="retry-banner hidden" id="fc-retry-banner"><div class="retry-banner-icon">🔄</div><div class="retry-banner-text">틀린 단어 재출제 중</div><div class="retry-banner-count" id="fc-retry-count">0</div></div>
 <div class="swipe-indicator left" id="swipe-left">❌</div><div class="swipe-indicator right" id="swipe-right">✅</div>
-<div class="flashcard-container" id="fc-container"><div class="flashcard" id="flashcard"><div class="flashcard-face flashcard-front"><div class="flashcard-tags" id="fc-tags"></div><div class="flashcard-word" id="fc-word">단어</div><div class="flashcard-hint">👆 탭: 뒤집기 / 다시 탭: 앞면</div></div><div class="flashcard-face flashcard-back"><div class="flashcard-back-inner" id="fc-back-inner"><div class="flashcard-meaning-ko" id="fc-meaning-ko"></div><div class="flashcard-meaning-en" id="fc-meaning-en"></div><div class="flashcard-example" id="fc-example"></div><div class="flashcard-collocation" id="fc-collocation"></div></div></div></div></div>
+<div class="flashcard-container" id="fc-container"><div class="flashcard" id="flashcard"><div class="flashcard-face flashcard-front"><div class="flashcard-tags" id="fc-tags"></div><div class="flashcard-word" id="fc-word">단어</div><div class="flashcard-hint">👆 탭: 뒤집기 / 다시 탭: 앞면</div></div><div class="flashcard-face flashcard-back"><div class="flashcard-back-inner" id="fc-back-inner"><div class="flashcard-meaning-ko" id="fc-meaning-ko"></div><div class="flashcard-meaning-en" id="fc-meaning-en"></div><div class="fc-extra fc-syn" id="fc-synonyms"></div><div class="fc-extra fc-ant" id="fc-antonyms"></div><div class="flashcard-example" id="fc-example"></div><div class="flashcard-collocation" id="fc-collocation"></div><div class="fc-extra fc-sep" id="fc-separable"></div><div class="fc-error" id="fc-error"></div></div></div></div></div>
 <div class="rating-section disabled" id="rating-section"><div class="rating-grid"><button class="rating-btn again" onclick="rateCard(0)" disabled>😫 모름<span class="rating-interval">다시</span></button><button class="rating-btn hard" onclick="rateCard(1)" disabled>😕 어려움<span class="rating-interval">1일</span></button><button class="rating-btn good" onclick="rateCard(2)" disabled>🙂 보통<span class="rating-interval">3일</span></button><button class="rating-btn easy" onclick="rateCard(3)" disabled>😊 쉬움<span class="rating-interval">7일+</span></button></div></div>
-<div style="display:flex;gap:8px;margin-bottom:8px"><button class="btn btn-secondary btn-sm" id="fc-production-btn" onclick="toggleFCProduction()" style="flex:1;font-size:12px">🖊️ 쓰기 연습 필요</button><button class="btn btn-secondary btn-sm" id="fc-tag-btn" onclick="openFCTagMenu()" style="flex:1;font-size:12px">🏷️ 태그</button></div>
-<div style="display:flex;gap:10px"><button class="btn btn-secondary btn-sm" id="fc-prev-btn" onclick="prevCard()" style="flex:0 0 50px" title="이전 카드">←</button><button class="btn btn-secondary btn-sm" onclick="speakWord()" style="flex:0 0 50px">🔊</button><button class="btn btn-secondary btn-sm" id="fc-bookmark-btn" onclick="toggleFCBookmark()" style="flex:0 0 50px">☆</button><button class="btn btn-secondary btn-sm" onclick="openFCEdit()" style="flex:0 0 50px">✏️</button><button class="btn btn-secondary btn-sm" onclick="confirmEndFC()" style="flex:1">학습 종료</button></div>
+<div id="fc-already-rated" class="hidden" style="text-align:center;padding:12px;color:var(--muted);font-size:13px">✅ 이미 평가한 카드입니다</div>
+<div style="display:flex;gap:8px;margin-bottom:8px"><button class="btn btn-secondary btn-sm" id="fc-production-btn" onclick="toggleFCProduction()" style="flex:1;font-size:12px">🖊️</button><button class="btn btn-secondary btn-sm" id="fc-bookmark-btn" onclick="toggleFCBookmark()" style="flex:1;font-size:12px">☆</button><button class="btn btn-secondary btn-sm" id="fc-tag-btn" onclick="openFCTagMenu()" style="flex:1;font-size:12px">🏷️</button></div>
+<div style="display:flex;gap:10px"><button class="btn btn-secondary btn-sm" id="fc-prev-btn" onclick="prevCard()" style="flex:0 0 50px" title="이전 카드">←</button><button class="btn btn-secondary btn-sm" id="fc-next-btn" onclick="nextCardNav()" style="flex:0 0 50px" title="다음 카드">→</button><button class="btn btn-secondary btn-sm" onclick="speakWord()" style="flex:0 0 50px">🔊</button><button class="btn btn-secondary btn-sm" onclick="openFCEdit()" style="flex:0 0 50px">✏️</button><button class="btn btn-secondary btn-sm" onclick="confirmEndFC()" style="flex:1">학습 종료</button></div>
 </div>
 <!-- 퀴즈 -->
 <div id="page-quiz" class="page">
@@ -328,6 +330,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="flashcard-meaning-ko" id="expr-fc-meaning">뜻</div>
 <div id="expr-fc-similar" class="similar-expr-box" style="display:none"></div>
 <div id="expr-fc-example" class="flashcard-example" style="background:rgba(249,115,22,.1);border-left:3px solid var(--expr)"></div>
+<div class="fc-error" id="expr-fc-error"></div>
 </div>
 </div>
 </div></div>
@@ -339,8 +342,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <button class="rating-btn easy" onclick="rateExprCard(3)">😊 쉬움<span class="rating-interval">7일+</span></button>
 </div>
 </div>
-<div style="display:flex;gap:8px;margin-bottom:8px"><button class="btn btn-secondary btn-sm" id="expr-fc-production-btn" onclick="toggleExprFCProduction()" style="flex:1;font-size:12px">🖊️ 쓰기 연습 필요</button><button class="btn btn-secondary btn-sm" id="expr-fc-tag-btn" onclick="openExprFCTagMenu()" style="flex:1;font-size:12px">🏷️ 태그</button></div>
-<div style="display:flex;gap:10px"><button class="btn btn-secondary btn-sm" id="expr-fc-prev-btn" onclick="prevExprCard()" style="flex:0 0 50px" title="이전 카드">←</button><button class="btn btn-secondary btn-sm" onclick="speakExpr()" style="flex:0 0 50px">🔊</button><button class="btn btn-secondary btn-sm" id="expr-fc-bookmark-btn" onclick="toggleExprFCBookmark()" style="flex:0 0 50px">☆</button><button class="btn btn-secondary btn-sm" onclick="openExprFCEdit()" style="flex:0 0 50px">✏️</button><button class="btn btn-secondary btn-sm" onclick="confirmEndExprFC()" style="flex:1">학습 종료</button></div>
+<div id="expr-fc-already-rated" class="hidden" style="text-align:center;padding:12px;color:var(--muted);font-size:13px">✅ 이미 평가한 카드입니다</div>
+<div style="display:flex;gap:8px;margin-bottom:8px"><button class="btn btn-secondary btn-sm" id="expr-fc-production-btn" onclick="toggleExprFCProduction()" style="flex:1;font-size:12px">🖊️</button><button class="btn btn-secondary btn-sm" id="expr-fc-bookmark-btn" onclick="toggleExprFCBookmark()" style="flex:1;font-size:12px">☆</button><button class="btn btn-secondary btn-sm" id="expr-fc-tag-btn" onclick="openExprFCTagMenu()" style="flex:1;font-size:12px">🏷️</button></div>
+<div style="display:flex;gap:10px"><button class="btn btn-secondary btn-sm" id="expr-fc-prev-btn" onclick="prevExprCard()" style="flex:0 0 50px" title="이전 카드">←</button><button class="btn btn-secondary btn-sm" id="expr-fc-next-btn" onclick="nextExprCardNav()" style="flex:0 0 50px" title="다음 카드">→</button><button class="btn btn-secondary btn-sm" onclick="speakExpr()" style="flex:0 0 50px">🔊</button><button class="btn btn-secondary btn-sm" onclick="openExprFCEdit()" style="flex:0 0 50px">✏️</button><button class="btn btn-secondary btn-sm" onclick="confirmEndExprFC()" style="flex:1">학습 종료</button></div>
 </div>
 <!-- Expression Cloze -->
 <div id="page-expr-cloze" class="page">
@@ -582,7 +586,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">Learning Steps: 1m→10m | Relearning: 10m</div>
 </div>
-<div class="card"><div class="card-title">ℹ️ 버전 정보</div><p style="font-size:13px;color:var(--muted);line-height:1.8"><strong>CEMS v7.2</strong><br>• 🧠 FSRS-6 알고리즘 (Anki 호환)<br>• 📊 동적 복습 비율 (상황별 자동 조정)<br>• ⏱️ 자동 진행 시간 설정<br>• 🔄 에러 복구 + 자동 재시도<br>• 🐌 Leech 감지 개선<br>• 🧹 전체 모드 메모리 최적화<br>• ✅ 산출 연습 전모드 적용</p></div>
+<div class="card"><div class="card-title">ℹ️ 버전 정보</div><p style="font-size:13px;color:var(--muted);line-height:1.8"><strong>CEMS v7.3</strong><br>• 🧠 FSRS-6 알고리즘 (Anki 호환)<br>• 📊 동적 복습 비율 (상황별 자동 조정)<br>• ⏱️ 자동 진행 시간 설정<br>• 🔄 에러 복구 + 자동 재시도<br>• 🐌 Leech 감지 개선<br>• 🧹 전체 모드 메모리 최적화<br>• ✅ 산출 연습 전모드 적용</p></div>
 </div>
 </div>
 <!-- 네비게이션 -->
@@ -2217,7 +2221,7 @@ const vocabTags=new Set();
 words.forEach(w=>(w.tags||[]).forEach(t=>vocabTags.add(t)));
 const homeTagSelect=document.getElementById('home-tag-select');
 if(homeTagSelect){
-homeTagSelect.innerHTML='<option value="">🏷️ 태그 선택...</option>';
+homeTagSelect.innerHTML='<option value="">🏷️ 태그</option>';
 [...vocabTags].sort().forEach(t=>{
 const count=words.filter(w=>(w.tags||[]).includes(t)).length;
 homeTagSelect.innerHTML+=`<option value="${t}">${t} (${count})</option>`;
@@ -2228,7 +2232,7 @@ const pvTags=new Set();
 pvs.forEach(p=>(p.tags||[]).forEach(t=>pvTags.add(t)));
 const homePvTagSelect=document.getElementById('home-pv-tag-select');
 if(homePvTagSelect){
-homePvTagSelect.innerHTML='<option value="">🏷️ 태그 선택...</option>';
+homePvTagSelect.innerHTML='<option value="">🏷️ 태그</option>';
 [...pvTags].sort().forEach(t=>{
 const count=pvs.filter(p=>(p.tags||[]).includes(t)).length;
 homePvTagSelect.innerHTML+=`<option value="${t}">${t} (${count})</option>`;
@@ -2239,7 +2243,7 @@ const exprTags=new Set();
 (exprs||[]).forEach(e=>(e.tags||[]).forEach(t=>exprTags.add(t)));
 const homeExprTagSelect=document.getElementById('home-expr-tag-select');
 if(homeExprTagSelect){
-homeExprTagSelect.innerHTML='<option value="">🏷️ 태그 선택...</option>';
+homeExprTagSelect.innerHTML='<option value="">🏷️ 태그</option>';
 [...exprTags].sort().forEach(t=>{
 const count=(exprs||[]).filter(e=>(e.tags||[]).includes(t)).length;
 homeExprTagSelect.innerHTML+=`<option value="${t}">${t} (${count})</option>`;
@@ -3668,6 +3672,11 @@ document.getElementById('fc-meaning-en').textContent='';
 document.getElementById('fc-example').textContent='';
 document.getElementById('fc-example').style.display='none';
 document.getElementById('fc-collocation').textContent='';
+document.getElementById('fc-synonyms').textContent='';
+document.getElementById('fc-antonyms').textContent='';
+document.getElementById('fc-separable').textContent='';
+document.getElementById('fc-error').textContent='';
+document.getElementById('fc-error').style.display='none';
 // 2. 카드 리셋
 fcState.flipped=false;fcState.transitioning=false;fcState.intervalsCalculated=false;
 fc.classList.remove('flipped','swipe-left','swipe-right');
@@ -3681,7 +3690,9 @@ if(fcState.phase==='retry')document.getElementById('fc-retry-count').textContent
 // 4. 앞면
 if(fcState.type==='phrasal'){
   document.getElementById('fc-word').innerHTML=displayWord(item.Phrasal_Verb)||item.Phrasal_Verb||'(구동사)';
-  document.getElementById('fc-tags').innerHTML=`<span class="tag tag-phrasal">${item.Particle||''}</span><span class="tag tag-cat">${item.Category||''}</span>`;
+  const trans=item.Transparency||'';
+  const transTag=trans?`<span class="tag tag-trans">${trans}</span>`:'';
+  document.getElementById('fc-tags').innerHTML=`<span class="tag tag-phrasal">${item.Particle||''}</span>${transTag}<span class="tag tag-cat">${item.Category||''}</span>`;
 }else{
   const wordText=displayWord(item.word)||item.word||'(단어 없음)';
   console.log('Displaying word:',wordText); // 디버깅
@@ -3699,6 +3710,18 @@ updateFCBookmarkBtn();
 updateFCProductionBtn();
 updateFCTagBtn();
 updateFCPrevBtn();
+updateFCNextBtn();
+// ★ 이미 평가한 카드면 rating 비활성화
+const alreadyRated=item.ratedThisSession&&!item.isRetry;
+const ratingSection=document.getElementById('rating-section');
+const alreadyMsg=document.getElementById('fc-already-rated');
+if(alreadyRated){
+  ratingSection.classList.add('disabled');
+  document.querySelectorAll('#rating-section .rating-btn').forEach(b=>b.disabled=true);
+  alreadyMsg.classList.remove('hidden');
+}else{
+  alreadyMsg.classList.add('hidden');
+}
 }catch(e){
 console.error('showCard error:',e);
 document.getElementById('fc-word').textContent='[오류]';
@@ -3710,12 +3733,28 @@ if(fcState.idx<=0)return;
 fcState.idx--;
 showCard();
 }
+// ★ 다음 카드로 이동 (이미 평가한 카드에서만)
+function nextCardNav(){
+const item=fcState.words[fcState.idx];
+if(!item||!item.ratedThisSession)return; // 평가 안 한 카드는 넘기기 불가
+fcState.idx++;
+showCard();
+}
 function updateFCPrevBtn(){
 const btn=document.getElementById('fc-prev-btn');
 if(btn){
 btn.disabled=fcState.idx<=0;
 btn.style.opacity=fcState.idx<=0?'0.4':'1';
 }
+}
+function updateFCNextBtn(){
+const btn=document.getElementById('fc-next-btn');
+if(!btn)return;
+const item=fcState.words[fcState.idx];
+// 현재 카드가 이미 평가됐고, 다음 카드가 있을 때만 활성화
+const canNext=item?.ratedThisSession && fcState.idx<fcState.words.length-1;
+btn.disabled=!canNext;
+btn.style.opacity=canNext?'1':'0.4';
 }
 
 // 핵심: 플립 토글 (재플립 가능)
@@ -3732,9 +3771,34 @@ setRating(false);
 // 플립: 뒷면으로
 document.getElementById('fc-meaning-ko').textContent=getMKO(item)||'(뜻 없음)';
 document.getElementById('fc-meaning-en').textContent=getMEN(item)||'';
+// ★ 동의어/반의어 (어휘만) - 색깔로만 구분
+if(fcState.type!=='phrasal'){
+  const syn=Array.isArray(item.Synonyms)?item.Synonyms.join(', '):(item.Synonyms||'');
+  const antEN=item.Antonyms_EN||'';
+  const antKO=item.Antonyms_KO||'';
+  const ant=antEN||(antKO?`(${antKO})`:'');
+  document.getElementById('fc-synonyms').textContent=syn||'';
+  document.getElementById('fc-antonyms').textContent=ant||'';
+}else{
+  document.getElementById('fc-synonyms').textContent='';
+  document.getElementById('fc-antonyms').textContent='';
+}
 const ex=getEx(item);document.getElementById('fc-example').textContent=ex||'';document.getElementById('fc-example').style.display=ex?'block':'none';
-if(fcState.type==='phrasal'){document.getElementById('fc-collocation').innerHTML=item.Formal_Equivalent?`<strong>📌 Formal:</strong> ${item.Formal_Equivalent}`:'';
-}else{document.getElementById('fc-collocation').innerHTML=item.Key_Collocation?`<strong>📌</strong> ${item.Key_Collocation}`:'';}
+if(fcState.type==='phrasal'){
+  document.getElementById('fc-collocation').innerHTML=item.Formal_Equivalent?`→ ${item.Formal_Equivalent}`:'';
+  // ★ Separable (구동사만) - 기호로
+  const sep=item.Separable;
+  const sepText=sep==='Yes'?'✂️ 분리 가능':sep==='No'?'🔗 분리 불가':sep==='Optional'?'⚡ 선택적 분리':'';
+  document.getElementById('fc-separable').textContent=sepText||'';
+}else{
+  document.getElementById('fc-collocation').innerHTML=item.Key_Collocation?`📌 ${item.Key_Collocation}`:'';
+  document.getElementById('fc-separable').textContent='';
+}
+// ★ Common_Error (공통) - 기호로
+const err=item.Common_Error;
+const errEl=document.getElementById('fc-error');
+if(err){errEl.textContent=`⚠️ ${err}`;errEl.style.display='block';}
+else{errEl.style.display='none';}
 document.getElementById('fc-back-inner').classList.add('visible');
 fcState.flipped=true;
 document.getElementById('flashcard').classList.add('flipped');
@@ -3819,6 +3883,9 @@ fcState.transitioning=true;
 try{
 const item=fcState.words[fcState.idx];if(!item)return;
 console.log('[rateCard] 시작:', JSON.stringify({word:item.word||item.Phrasal_Verb,rating:r,isRetry:item.isRetry,completedBefore:fcState.completedKeys?.size}));
+// ★ 이미 평가한 카드는 중복 rating 방지 (isRetry는 허용)
+if(item.ratedThisSession&&!item.isRetry){console.log('[rateCard] 이미 평가한 카드, 스킵');fcState.transitioning=false;return;}
+item.ratedThisSession=true; // 평가 완료 표시
 if(r===0)fcState.stats.again++;else if(r===1)fcState.stats.hard++;else if(r===2)fcState.stats.good++;else fcState.stats.easy++;
 // ★ 첫 시도 정답/오답 카운트 (isRetry가 아닌 경우만)
 if(!item.isRetry){
@@ -4222,7 +4289,7 @@ const regex=new RegExp('\\b'+escapeRegex(wPlain)+'\\b','gi');
 const allEx=[getEx(w),...(w.userExamples||[])].filter(e=>e&&regex.test(e));
 const ex=allEx[Math.floor(Math.random()*allEx.length)];
 // 단어를 빈칸으로 대체
-const blanked=ex.replace(regex,'<span class="blank-word" style="padding:2px 20px;color:var(--primary)">_____</span>');
+const blanked=ex.replace(regex,'<span class="blank-word"></span>');
 document.getElementById('cloze-sentence').innerHTML=blanked;
 document.getElementById('cloze-hint').textContent=getMKO(w)||'';
 // 선택지 생성 (표시용)
@@ -6255,6 +6322,8 @@ document.getElementById('expr-fc-similar').innerHTML='';
 document.getElementById('expr-fc-similar').style.display='none';
 document.getElementById('expr-fc-example').textContent='';
 document.getElementById('expr-fc-example').style.display='none';
+document.getElementById('expr-fc-error').textContent='';
+document.getElementById('expr-fc-error').style.display='none';
 document.getElementById('expr-fc-func').textContent='';
 // 2. 카드 리셋
 exprState.flipped=false;exprState.transitioning=false;exprState.intervalsCalculated=false;
@@ -6276,11 +6345,30 @@ updateExprFCBookmarkBtn();
 updateExprFCTagBtn();
 updateExprFCProductionBtn();
 updateExprFCPrevBtn();
+updateExprFCNextBtn();
+// ★ 이미 평가한 카드면 rating 비활성화
+const alreadyRated=e.ratedThisSession&&!e.isRetry;
+const ratingSection=document.getElementById('expr-rating-section');
+const alreadyMsg=document.getElementById('expr-fc-already-rated');
+if(alreadyRated){
+  ratingSection.classList.add('disabled');
+  document.querySelectorAll('#expr-rating-section .rating-btn').forEach(b=>b.disabled=true);
+  alreadyMsg.classList.remove('hidden');
+}else{
+  alreadyMsg.classList.add('hidden');
+}
 }
 // 이전 표현 카드로 돌아가기
 function prevExprCard(){
 if(exprState.idx<=0)return;
 exprState.idx--;
+showExprCard();
+}
+// ★ 다음 표현 카드로 이동 (이미 평가한 카드에서만)
+function nextExprCardNav(){
+const e=exprState.words[exprState.idx];
+if(!e||!e.ratedThisSession)return;
+exprState.idx++;
 showExprCard();
 }
 function updateExprFCPrevBtn(){
@@ -6289,6 +6377,14 @@ if(btn){
 btn.disabled=exprState.idx<=0;
 btn.style.opacity=exprState.idx<=0?'0.4':'1';
 }
+}
+function updateExprFCNextBtn(){
+const btn=document.getElementById('expr-fc-next-btn');
+if(!btn)return;
+const e=exprState.words[exprState.idx];
+const canNext=e?.ratedThisSession && exprState.idx<exprState.words.length-1;
+btn.disabled=!canNext;
+btn.style.opacity=canNext?'1':'0.4';
 }
 
 function flipExprCard(){
@@ -6309,11 +6405,16 @@ const sim=e.Similar_Expr;
 const simEl=document.getElementById('expr-fc-similar');
 if(sim){
 const items=sim.split(/[,;]/).map(s=>s.trim()).filter(Boolean);
-simEl.innerHTML='<div class="similar-title">💡 유사 표현</div>'+items.map(i=>'<div class="similar-item">• '+i+'</div>').join('');
+simEl.innerHTML='<div class="similar-title">유사 표현</div>'+items.map(i=>'<div class="similar-item">• '+i+'</div>').join('');
 simEl.style.display='block';
 }else{simEl.style.display='none';}
 const ex=getEx(e);
 if(ex){document.getElementById('expr-fc-example').textContent=ex;document.getElementById('expr-fc-example').style.display='block';}
+// ★ Common_Error - 기호로
+const err=e.Common_Error;
+const errEl=document.getElementById('expr-fc-error');
+if(err){errEl.textContent=`⚠️ ${err}`;errEl.style.display='block';}
+else{errEl.style.display='none';}
 document.getElementById('expr-fc-back-inner').classList.add('visible');
 exprState.flipped=true;
 document.getElementById('expr-fc-card').classList.add('flipped');
@@ -6344,6 +6445,9 @@ if(exprState.transitioning)return;
 exprState.transitioning=true;
 try{
 const e=exprState.words[exprState.idx];if(!e)return;
+// ★ 이미 평가한 카드는 중복 rating 방지 (isRetry는 허용)
+if(e.ratedThisSession&&!e.isRetry){console.log('[rateExprCard] 이미 평가한 카드, 스킵');exprState.transitioning=false;return;}
+e.ratedThisSession=true; // 평가 완료 표시
 // 통계
 if(r===0)exprState.stats.again++;else if(r===1)exprState.stats.hard++;else if(r===2)exprState.stats.good++;else exprState.stats.easy++;
 // ★ 첫 시도 정답/오답 카운트 (isRetry가 아닌 경우만)
@@ -6787,7 +6891,7 @@ let ex=getEx(e);
 const expr=e.Expression;
 const firstWord=expr.split(' ')[0].toLowerCase();
 const regex=new RegExp('\\b'+escapeRegex(firstWord)+'\\b[^.]*','gi');
-const blanked=ex.replace(regex,'________');
+const blanked=ex.replace(regex,'<span class="blank-word" style="min-width:120px"></span>');
 document.getElementById('expr-cloze-sentence').innerHTML=blanked;
 document.getElementById('expr-cloze-hint').textContent=getMKO(e)||e.Function||'';
 // 선택지 생성
@@ -6818,6 +6922,8 @@ if(ok){
   else{exprState.savedToWrong++;if(!isRetry&&exprState.completedKeys)exprState.completedKeys.add(e.Expression);} // final에서 틀려도 완료
 }
 document.querySelectorAll('#expr-cloze-options .quiz-option').forEach(o=>{o.disabled=true;if(o.dataset.ans==='true')o.classList.add('correct');else if(o===el&&!ok)o.classList.add('wrong');});
+// 빈칸에 정답 표시
+document.querySelectorAll('#expr-cloze-sentence .blank-word').forEach(b=>{b.textContent=e.Expression;b.style.color=ok?'var(--success)':'var(--danger)';b.style.borderBottom='none';});
 // 재출제 카드가 아닐 때만 처리
 if(!isRetry){
 e.reviewCount=(e.reviewCount||0)+1;if(ok)e.correctCount=(e.correctCount||0)+1;
@@ -8737,11 +8843,12 @@ document.getElementById('edit-currency').value=editingItem.Currency||'Current';
 document.getElementById('edit-medium').value=editingItem.Medium||'Both';
 document.getElementById('edit-collocation').value=editingItem.Key_Collocation||'';
 document.getElementById('edit-error').value=editingItem.Common_Error||'';
-// Synonyms/Antonyms: 배열 또는 문자열 처리
+// Synonyms/Antonyms: 배열 또는 문자열 처리 (Antonyms_EN 호환)
 const syn=editingItem.Synonyms;
 document.getElementById('edit-synonyms').value=Array.isArray(syn)?syn.join(', '):(syn||'');
-const ant=editingItem.Antonyms;
-document.getElementById('edit-antonyms').value=Array.isArray(ant)?ant.join(', '):(ant||'');
+const ant=editingItem.Antonyms||editingItem.Antonyms_EN||'';
+const antKO=editingItem.Antonyms_KO||'';
+document.getElementById('edit-antonyms').value=Array.isArray(ant)?ant.join(', '):(ant+(antKO?` (${antKO})`:''));
 }
 const acc=getAcc(editingItem);
 document.getElementById('edit-review-count').textContent=editingItem.reviewCount||0;
@@ -9085,7 +9192,7 @@ function updateFCProductionBtn(){
 const item=fcState.words?.[fcState.idx];
 const btn=document.getElementById('fc-production-btn');
 if(btn&&item){
-btn.textContent=item.needsProduction?'✅ 산출 연습 해제':'🖊️ 쓰기 연습 필요';
+btn.textContent=item.needsProduction?'✅':'🖊️';
 btn.style.background=item.needsProduction?'rgba(34,197,94,.2)':'';
 btn.style.color=item.needsProduction?'var(--success)':'';
 }
@@ -9167,7 +9274,7 @@ const item=fcState.words?.[fcState.idx];
 const btn=document.getElementById('fc-tag-btn');
 if(btn&&item){
 const count=(item.tags||[]).length;
-btn.textContent=count>0?`🏷️ 태그 (${count})`:'🏷️ 태그';
+btn.textContent=count>0?`🏷️(${count})`:'🏷️';
 btn.style.color=count>0?'var(--primary)':'';
 }
 }
@@ -9196,7 +9303,7 @@ const item=exprState.words?.[exprState.idx];
 const btn=document.getElementById('expr-fc-tag-btn');
 if(btn&&item){
 const count=(item.tags||[]).length;
-btn.textContent=count>0?`🏷️ 태그 (${count})`:'🏷️ 태그';
+btn.textContent=count>0?`🏷️(${count})`:'🏷️';
 btn.style.color=count>0?'var(--primary)':'';
 }
 }
@@ -9211,8 +9318,9 @@ function updateExprFCProductionBtn(){
 const item=exprState.words?.[exprState.idx];
 const btn=document.getElementById('expr-fc-production-btn');
 if(btn&&item){
-btn.textContent=item.needsProduction?'🖊️ 쓰기 연습 중':'🖊️ 쓰기 연습 필요';
-btn.style.color=item.needsProduction?'var(--warning)':'';
+btn.textContent=item.needsProduction?'✅':'🖊️';
+btn.style.background=item.needsProduction?'rgba(34,197,94,.2)':'';
+btn.style.color=item.needsProduction?'var(--success)':'';
 }
 }
 function updateExprQuizTagBtn(){
@@ -9834,13 +9942,13 @@ function parsePasteData(text, type){
     colMap = {};
     headers.forEach((h,i)=>colMap[normalize(h)]=i);
   } else {
-    // ★ 헤더 없음: 사용자 지정 엑셀 헤더 순서 적용
+    // ★ 헤더 없음: 스키마 v2.1 순서 적용
     if(type==='vocab'){
-      // Word,POS,Meaning1_EN,Meaning1_KO,Meaning2_EN,Meaning2_KO,Synonyms,Antonyms_EN,Antonyms_KO,L1,L2,Formality,Currency,Medium,Style_Tags,CEFR,Frequency,Priority,TOEFL_Rel,Example1,Example2,Key_Collocation,Common_Error
-      headers = ['word','POS','Meaning1_EN','Meaning1_KO','Meaning2_EN','Meaning2_KO','Synonyms','Antonyms_EN','Antonyms_KO','L1','L2','Formality','Currency','Medium','Style_Tags','CEFR','Frequency','Priority','TOEFL_Rel','Example1','Example2','Key_Collocation','Common_Error'];
+      // Word,POS,Meaning1_EN,Meaning1_KO,Synonyms,Antonyms_EN,Antonyms_KO,L1,L2,Formality,Currency,Medium,Style_Tags,CEFR,Frequency,Priority,TOEFL_Rel,Example1,Example2,Key_Collocation,Common_Error
+      headers = ['word','POS','Meaning1_EN','Meaning1_KO','Synonyms','Antonyms_EN','Antonyms_KO','L1','L2','Formality','Currency','Medium','Style_Tags','CEFR','Frequency','Priority','TOEFL_Rel','Example1','Example2','Key_Collocation','Common_Error'];
     } else if(type==='phrasal'){
-      // Phrasal_Verb,Base_Verb,Particle,Meaning1_EN,Meaning1_KO,Meaning2_EN,Meaning2_KO,Transparency,Category,Formality,Currency,Medium,Style_Tags,Formal_Equivalent,Separable,CEFR,Frequency,Priority,Example1,Example2,Common_Error
-      headers = ['Phrasal_Verb','Base_Verb','Particle','Meaning1_EN','Meaning1_KO','Meaning2_EN','Meaning2_KO','Transparency','Category','Formality','Currency','Medium','Style_Tags','Formal_Equivalent','Separable','CEFR','Frequency','Priority','Example1','Example2','Common_Error'];
+      // Phrasal_Verb,Base_Verb,Particle,Meaning1_EN,Meaning1_KO,Transparency,Category,Formality,Currency,Medium,Style_Tags,Formal_Equivalent,Separable,CEFR,Frequency,Priority,Example1,Example2,Common_Error
+      headers = ['Phrasal_Verb','Base_Verb','Particle','Meaning1_EN','Meaning1_KO','Transparency','Category','Formality','Currency','Medium','Style_Tags','Formal_Equivalent','Separable','CEFR','Frequency','Priority','Example1','Example2','Common_Error'];
     } else {
       // Expression,L1,L2,L3,Function,Meaning_KO,Formality,Currency,Medium,Style_Tags,Example1,Example2,Similar_Expr,Common_Error,CEFR,Frequency,Priority
       headers = ['Expression','L1','L2','L3','Function','Meaning_KO','Formality','Currency','Medium','Style_Tags','Example1','Example2','Similar_Expr','Common_Error','CEFR','Frequency','Priority'];
@@ -9848,7 +9956,7 @@ function parsePasteData(text, type){
     dataStartIdx = 0; // 첫 행부터 데이터
     colMap = {};
     headers.forEach((h,i)=>colMap[normalize(h)]=i);
-    console.log('[ParsePaste] 헤더 없음 감지, 기본 순서 적용:', headers.slice(0,5).join(', '));
+    console.log('[ParsePaste] 헤더 없음 감지, 스키마 v2.1 순서 적용:', headers.slice(0,5).join(', '));
   }
   
   // 필수 컬럼 확인
@@ -9896,7 +10004,7 @@ function parsePasteData(text, type){
     };
     
     if(type==='vocab'){
-      // 순서: Word(0),POS(1),Meaning1_EN(2),Meaning1_KO(3),Meaning2_EN(4),Meaning2_KO(5),Synonyms(6),Antonyms_EN(7),Antonyms_KO(8),L1(9),L2(10),Formality(11),Currency(12),Medium(13),Style_Tags(14),CEFR(15),Frequency(16),Priority(17),TOEFL_Rel(18),Example1(19),Example2(20),Key_Collocation(21),Common_Error(22)
+      // 스키마 v2.1: Word,POS,Meaning1_EN,Meaning1_KO,Synonyms,Antonyms_EN,Antonyms_KO,L1,L2,Formality,Currency,Medium,Style_Tags,CEFR,Frequency,Priority,TOEFL_Rel,Example1,Example2,Key_Collocation,Common_Error
       items.push({...base,
         word:key,
         POS:gC(cols,'POS'),
@@ -9923,7 +10031,7 @@ function parsePasteData(text, type){
         Common_Error:gC(cols,'Common_Error')
       });
     }else if(type==='phrasal'){
-      // 순서: Phrasal_Verb(0),Base_Verb(1),Particle(2),Meaning1_EN(3),Meaning1_KO(4),Meaning2_EN(5),Meaning2_KO(6),Transparency(7),Category(8),Formality(9),Currency(10),Medium(11),Style_Tags(12),Formal_Equivalent(13),Separable(14),CEFR(15),Frequency(16),Priority(17),Example1(18),Example2(19),Common_Error(20)
+      // 스키마 v2.1: Phrasal_Verb,Base_Verb,Particle,Meaning1_EN,Meaning1_KO,Transparency,Category,Formality,Currency,Medium,Style_Tags,Formal_Equivalent,Separable,CEFR,Frequency,Priority,Example1,Example2,Common_Error
       items.push({...base,
         Phrasal_Verb:key,
         Base_Verb:gC(cols,'Base_Verb'),
@@ -9948,7 +10056,7 @@ function parsePasteData(text, type){
         Common_Error:gC(cols,'Common_Error')
       });
     }else{
-      // 순서: Expression(0),L1(1),L2(2),L3(3),Function(4),Meaning_KO(5),Formality(6),Currency(7),Medium(8),Style_Tags(9),Example1(10),Example2(11),Similar_Expr(12),Common_Error(13),CEFR(14),Frequency(15),Priority(16)
+      // 스키마 v2.1: Expression,L1,L2,L3,Function,Meaning_KO,Formality,Currency,Medium,Style_Tags,Example1,Example2,Similar_Expr,Common_Error,CEFR,Frequency,Priority
       items.push({...base,
         Expression:key,
         L1:gC(cols,'L1'),
