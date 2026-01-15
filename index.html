@@ -765,7 +765,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div style="display:flex;gap:10px"><button class="btn btn-secondary" onclick="closeModal('edit-modal')" style="flex:1">취소</button><button class="btn btn-primary" onclick="saveEditedWord()" style="flex:1">💾 저장</button></div>
 <div style="display:flex;gap:10px;margin-top:10px"><button class="btn btn-secondary" id="edit-bookmark-btn" onclick="toggleBookmark()" style="flex:1">⭐ 북마크</button><button class="btn btn-secondary" onclick="shareWord()" style="flex:1">📤 공유</button></div>
 <div style="display:flex;gap:10px;margin-top:10px"><button class="btn btn-secondary" onclick="copyWord()" style="flex:1">📋 복사</button><button class="btn btn-secondary" onclick="resetWordStats()" style="flex:1;color:var(--warning)">🔄 초기화</button></div>
-<button class="btn btn-secondary" onclick="deleteWord()" style="margin-top:10px;color:var(--danger)">🗑️ 단어 삭제</button>
+<button class="btn btn-secondary" onclick="deleteEditingItem()" style="margin-top:10px;color:var(--danger)">🗑️ 단어 삭제</button>
 </div></div>
 <div class="modal-overlay" id="expr-edit-modal"><div class="modal" style="max-height:90vh;overflow-y:auto"><div class="modal-header"><h3>✏️ 표현 편집</h3><button class="modal-close" onclick="closeModal('expr-edit-modal')">✕</button></div>
 <div class="form-group"><label class="form-label">표현</label><input type="text" class="form-input" id="expr-edit-key" readonly style="background:var(--border)"></div>
@@ -1591,10 +1591,10 @@ function selectStudyItems(filtered, count, type) {
   
   // 키 추출 헬퍼
   const getKey = (item) => {
-    if (type === 'vocab') return item.Headword;
+    if (type === 'vocab') return item.word;
     if (type === 'phrasal') return item.Phrasal_Verb;
     if (type === 'expr') return item.Expression;
-    return item.Headword || item.Phrasal_Verb || item.Expression;
+    return item.word || item.Phrasal_Verb || item.Expression;
   };
   
   // 1. 복습 예정 (항상 최우선) - FSRS 긴급도순
@@ -3747,7 +3747,7 @@ startFC(shuffle(newW).slice(0,count),w,'vocab');
 async function startExprFCWithItems(items,all){
 if(!items.length){showToast('💬 학습할 표현이 없습니다!');return;}
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...items]);
+const shuffled=shuffle([...items]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 exprState={words:shuffled,allWords:all,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=shuffled.length;
 document.getElementById('expr-fc-current').textContent='0';
@@ -3758,7 +3758,7 @@ showPage('expr-fc');startExprTimer();showExprCard();
 function startExprQuiz(items,all){
 if(items.length<5){showToast('⚠️ 학습할 표현이 부족합니다');return;}
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...items]);
+const shuffled=shuffle([...items]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-quiz-total').textContent=shuffled.length;
 document.getElementById('expr-quiz-retry-banner').classList.add('hidden');
@@ -3769,7 +3769,7 @@ function startExprClozeWithItems(items,all){
 let valid=items.filter(e=>{const ex=getEx(e);const expr=(e.Expression||'').toLowerCase();return ex&&expr&&ex.toLowerCase().includes(expr.split(' ')[0]);});
 if(!valid.length){showToast('✅ 빈칸채우기 가능한 표현이 없습니다!');return;}
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...valid]);
+const shuffled=shuffle([...valid]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 exprState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-cloze-total').textContent=shuffled.length;
 showPage('expr-cloze');showExprClozeQ();
@@ -3781,7 +3781,7 @@ let valid=items.filter(e=>{const ex=getEx(e);const expr=(e.Expression||'').toLow
 if(!valid.length){valid=items;} // fallback: 필터 없이 전부
 if(!valid.length){showToast('✅ 타이핑 가능한 표현이 없습니다!');return;}
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...valid]);
+const shuffled=shuffle([...valid]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 exprTypingState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-typing-total').textContent=shuffled.length;
 document.getElementById('expr-typing-retry-banner').classList.add('hidden');
@@ -3795,8 +3795,8 @@ async function startWeakStudy(){const count=parseInt(localStorage.getItem('defau
 function startFC(items,all,type){
 console.log('startFC called:', {itemsCount: items.length, type, firstItem: items[0]});
 if(fcState.timer)clearInterval(fcState.timer);
-// ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...items]);
+// ★ 매번 셔플 + 세션 플래그 초기화 (ratedThisSession, isRetry 제거)
+const shuffled=shuffle([...items]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 fcState={words:shuffled,idx:0,flipped:false,start:Date.now(),timer:null,stats:{again:0,hard:0,good:0,easy:0},transitioning:false,retryQueue:[],phase:'normal',type,savedToWrong:0,allWords:all,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 console.log('fcState.words[0]:', fcState.words[0]);
 document.getElementById('fc-total').textContent=shuffled.length;
@@ -3878,6 +3878,8 @@ if(alreadyRated){
   document.querySelectorAll('#rating-section .rating-btn').forEach(b=>b.disabled=true);
   alreadyMsg.classList.remove('hidden');
 }else{
+  ratingSection.classList.remove('disabled');
+  document.querySelectorAll('#rating-section .rating-btn').forEach(b=>b.disabled=false);
   alreadyMsg.classList.add('hidden');
 }
 }catch(e){
@@ -4027,7 +4029,7 @@ async function rateCard(r){
 if(fcState.transitioning)return;
 fcState.transitioning=true;
 try{
-const item=fcState.words[fcState.idx];if(!item)return;
+const item=fcState.words[fcState.idx];if(!item){fcState.transitioning=false;return;}
 const key=fcState.type==='phrasal'?item.Phrasal_Verb:item.word;
 console.log('[rateCard] 시작:', JSON.stringify({word:key,rating:r,isRetry:item.isRetry,completedBefore:fcState.completedKeys?.size}));
 // ★ 이미 평가한 카드는 중복 rating 방지 (isRetry는 허용)
@@ -4052,7 +4054,7 @@ if(prodResult.shouldToast) showToast(prodResult.message);
 // 5. 세션 내 재학습: 오답 시 5~7문제 후 재출제 (phase='normal'이고 첫 시도일 때만)
 if(r===0&&fcState.phase==='normal'&&!item.isRetry){
 const insertIdx=Math.min(fcState.idx+STUDY_CONSTANTS.RETRY_INSERT_MIN+Math.floor(Math.random()*STUDY_CONSTANTS.RETRY_INSERT_RANGE),fcState.words.length);
-fcState.words.splice(insertIdx,0,{...item,isRetry:true});
+fcState.words.splice(insertIdx,0,{...item,isRetry:true,ratedThisSession:false});
 }
 // ★ isRetry 카드가 또 틀리면 오답노트로 저장 + retryCount--
 else if(r===0&&item.isRetry){
@@ -4154,7 +4156,7 @@ clearSessionMemory('fc');
 function startQuiz(words,all,mode,type){
 const m=words.filter(w=>getMKO(w));if(m.length<5){showToast('⚠️ 뜻이 있는 단어가 부족합니다');return;}
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...m]);
+const shuffled=shuffle([...m]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 quizState={words:shuffled,allWords:all||words,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode:mode||'quiz',type:type||'vocab',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('quiz-total').textContent=shuffled.length;
 document.getElementById('quiz-retry-banner').classList.add('hidden');
@@ -4236,8 +4238,8 @@ if(ok){
   // 첫 등장 오답: completedKeys 추가 + retryCount++
   if(!isRetry&&quizState.completedKeys){quizState.completedKeys.add(key);quizState.retryCount++;console.log('[selectQuiz] 첫 등장 오답, retryCount++:', quizState.retryCount);}
   // 재출제 큐에 추가
-  if(quizState.phase==='normal')quizState.retryQueue.push({...w,isRetry:true});
-  else if(quizState.phase==='retry')quizState.finalQueue.push({...w,isRetry:true});
+  if(quizState.phase==='normal')quizState.retryQueue.push({...w,isRetry:true,ratedThisSession:false});
+  else if(quizState.phase==='retry')quizState.finalQueue.push({...w,isRetry:true,ratedThisSession:false});
   else{updateWrong(w,false);quizState.savedToWrong++;quizState.retryCount--;console.log('[selectQuiz] final 포기, retryCount--:', quizState.retryCount);} // final에서 틀리면 포기
 }
 document.querySelectorAll('.quiz-option').forEach(o=>{o.disabled=true;if(o.dataset.ans==='true')o.classList.add('correct');else if(o===el&&!ok)o.classList.add('wrong');});
@@ -4312,7 +4314,7 @@ clearSessionMemory('quiz'); // ★ 메모리 정리
 function startTyping(words){
 const valid=words.filter(w=>getMKO(w));
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...valid]);
+const shuffled=shuffle([...valid]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 typingState={words:shuffled,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('typing-total').textContent=shuffled.length;document.getElementById('typing-retry-banner').classList.add('hidden');
 showPage('typing');showTypingQ();updateStreak();
@@ -4380,8 +4382,8 @@ if(!isRetry){typingState.wrong++;typingState.firstTryWrong++;}
 if(!isRetry&&typingState.completedKeys){typingState.completedKeys.add(w.word);typingState.retryCount++;}
 // ★ 오답 시 산출 연습 상태 업데이트 (공통 함수)
 updateProductionStatus(w, false, 'typing');
-if(typingState.phase==='normal')typingState.retryQueue.push({...w,isRetry:true});
-else if(typingState.phase==='retry')typingState.finalQueue.push({...w,isRetry:true});
+if(typingState.phase==='normal')typingState.retryQueue.push({...w,isRetry:true,ratedThisSession:false});
+else if(typingState.phase==='retry')typingState.finalQueue.push({...w,isRetry:true,ratedThisSession:false});
 else{updateWrong(w,false);typingState.savedToWrong++;typingState.retryCount--;} // final에서 틀리면 포기 + retryCount--
 }
 inp.classList.add(ok?'correct':'wrong');
@@ -4432,7 +4434,7 @@ return allEx.some(e=>regex.test(e));
 });
 if(valid.length<5){showToast('⚠️ 유효한 예문이 있는 단어가 부족합니다 (5개 이상 필요)');return;}
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...valid]);
+const shuffled=shuffle([...valid]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 clozeState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,autoNextTimer:null,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('cloze-total').textContent=shuffled.length;
 document.getElementById('cloze-retry-banner').classList.add('hidden');
@@ -4504,8 +4506,8 @@ if(ok){
   // 첫 등장 오답: completedKeys 추가 + retryCount++
   if(!isRetry&&clozeState.completedKeys){clozeState.completedKeys.add(w.word);clozeState.retryCount++;}
   // 재출제 큐에 추가
-  if(clozeState.phase==='normal')clozeState.retryQueue.push({...w,isRetry:true});
-  else if(clozeState.phase==='retry')clozeState.finalQueue.push({...w,isRetry:true});
+  if(clozeState.phase==='normal')clozeState.retryQueue.push({...w,isRetry:true,ratedThisSession:false});
+  else if(clozeState.phase==='retry')clozeState.finalQueue.push({...w,isRetry:true,ratedThisSession:false});
   else{updateWrong(w,false);clozeState.savedToWrong++;clozeState.retryCount--;} // final에서 틀리면 포기
 }
 document.querySelectorAll('#cloze-options .quiz-option').forEach(o=>{o.disabled=true;if(o.dataset.ans==='true')o.classList.add('correct');else if(o===el&&!ok)o.classList.add('wrong');});
@@ -4594,7 +4596,7 @@ return colls.some(c=>regex.test(c));
 });
 if(valid.length<5){showToast('⚠️ 유효한 Collocation이 있는 단어가 부족합니다 (5개 이상 필요)');return;}
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...valid]);
+const shuffled=shuffle([...valid]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 collocState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('colloc-total').textContent=shuffled.length;
 document.getElementById('colloc-retry-banner').classList.add('hidden');
@@ -4666,8 +4668,8 @@ if(ok){
   // 첫 등장 오답: completedKeys 추가 + retryCount++
   if(!isRetry&&collocState.completedKeys){collocState.completedKeys.add(w.word);collocState.retryCount++;}
   // 재출제 큐에 추가
-  if(collocState.phase==='normal')collocState.retryQueue.push({...w,isRetry:true});
-  else if(collocState.phase==='retry')collocState.finalQueue.push({...w,isRetry:true});
+  if(collocState.phase==='normal')collocState.retryQueue.push({...w,isRetry:true,ratedThisSession:false});
+  else if(collocState.phase==='retry')collocState.finalQueue.push({...w,isRetry:true,ratedThisSession:false});
   else{updateWrong(w,false);collocState.savedToWrong++;collocState.retryCount--;} // final에서 틀리면 포기
 }
 document.querySelectorAll('#colloc-options .quiz-option').forEach(o=>{o.disabled=true;if(o.dataset.ans==='true')o.classList.add('correct');else if(o===el&&!ok)o.classList.add('wrong');});
@@ -4756,7 +4758,7 @@ function startListening(items,all,type){
 type=type||'vocab';
 currentListeningType=type;
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...items]);
+const shuffled=shuffle([...items]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 listeningState={words:shuffled,all:all,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),currentWord:null,type:type,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('listening-total').textContent=shuffled.length;
 document.getElementById('listening-correct').textContent=0;
@@ -5032,8 +5034,8 @@ if(isCorrect){
   // 첫 등장 오답: completedKeys 추가 + retryCount++
   if(!isRetry&&listeningState.completedKeys){listeningState.completedKeys.add(itemKey2);listeningState.retryCount++;}
   // 재출제 큐에 추가
-  if(listeningState.phase==='normal')listeningState.retryQueue.push({...item,isRetry:true});
-  else if(listeningState.phase==='retry')listeningState.finalQueue.push({...item,isRetry:true});
+  if(listeningState.phase==='normal')listeningState.retryQueue.push({...item,isRetry:true,ratedThisSession:false});
+  else if(listeningState.phase==='retry')listeningState.finalQueue.push({...item,isRetry:true,ratedThisSession:false});
   else{listeningState.savedToWrong++;listeningState.retryCount--;} // final에서 틀리면 포기 + retryCount--
 }
 
@@ -5212,7 +5214,7 @@ function startDictation(items,all,type){
 type=type||'vocab';
 currentDictationType=type;
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...items]);
+const shuffled=shuffle([...items]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 dictationState={words:shuffled,allWords:all,idx:0,correct:0,wrong:0,answered:false,hintUsed:false,start:Date.now(),currentWord:null,type:type,originalCount:shuffled.length,retryCount:0,firstTryCorrect:0,firstTryWrong:0,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,completedKeys:new Set(),sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('dictation-total').textContent=shuffled.length;
 document.getElementById('dictation-current').textContent='0';
@@ -5323,8 +5325,8 @@ if(ok){
   // 첫 등장 오답: completedKeys 추가 + retryCount++
   if(!isRetry&&dictationState.completedKeys){dictationState.completedKeys.add(itemKey);dictationState.retryCount++;}
   // ★ 재출제 큐에 추가
-  if(dictationState.phase==='normal')dictationState.retryQueue.push({...item,isRetry:true});
-  else if(dictationState.phase==='retry')dictationState.finalQueue.push({...item,isRetry:true});
+  if(dictationState.phase==='normal')dictationState.retryQueue.push({...item,isRetry:true,ratedThisSession:false});
+  else if(dictationState.phase==='retry')dictationState.finalQueue.push({...item,isRetry:true,ratedThisSession:false});
   else{dictationState.savedToWrong++;dictationState.retryCount--;} // final에서 틀리면 포기 + retryCount--
   document.getElementById('dictation-input').classList.add('wrong');
   ansEl.innerHTML='❌ 오답<br><span style="font-size:20px;font-weight:700">'+correctDisplay+'</span><br><span style="font-size:14px;opacity:0.8">'+getMKO(item)+'</span>';
@@ -5460,8 +5462,8 @@ else if(mode==='pv-dictation')startDictation(sel,p,'phrasal');
 // PV Particle
 function startPVP(items,all){
 const v=items.filter(x=>x.Particle?.trim());if(v.length<5){showToast('⚠️ Particle이 있는 구동사가 부족합니다');return;}
-// ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...v]);
+// ★ 매번 셔플 + 세션 플래그 초기화
+const shuffled=shuffle([...v]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 pvState={words:shuffled,allWords:all||items,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode:'particle',retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('pvp-total').textContent=shuffled.length;document.getElementById('pvp-retry-banner').classList.add('hidden');
 showPage('pv-particle');showPVPQ();updateStreak();
@@ -5511,8 +5513,8 @@ if(ok){
   // 첫 등장 오답: completedKeys 추가 + retryCount++
   if(!isRetry&&pvState.completedKeys){pvState.completedKeys.add(pvKey);pvState.retryCount++;}
   // 재출제 큐에 추가
-  if(pvState.phase==='normal')pvState.retryQueue.push({...pv,isRetry:true});
-  else if(pvState.phase==='retry')pvState.finalQueue.push({...pv,isRetry:true});
+  if(pvState.phase==='normal')pvState.retryQueue.push({...pv,isRetry:true,ratedThisSession:false});
+  else if(pvState.phase==='retry')pvState.finalQueue.push({...pv,isRetry:true,ratedThisSession:false});
   else{updateWrong(pv,false);pvState.savedToWrong++;pvState.retryCount--;} // final에서 틀리면 포기 + retryCount--
 }
 document.querySelectorAll('#pvp-options .quiz-option').forEach(o=>{o.disabled=true;if(o.dataset.ans==='true')o.classList.add('correct');else if(o===el&&!ok)o.classList.add('wrong');});
@@ -5569,7 +5571,7 @@ function nextPVP(){pvState.idx++;showPVPQ();}
 function startPVQ(items,all,mode){
 const m=items.filter(x=>getMKO(x));if(m.length<5){showToast('⚠️ 뜻이 있는 구동사가 부족합니다');return;}
 // ★ 매번 셔플하여 순서 무작위화
-const shuffled=shuffle([...m]);
+const shuffled=shuffle([...m]).map(x=>({...x,ratedThisSession:false,isRetry:false}));
 pvState={words:shuffled,allWords:all||items,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),mode,retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:shuffled.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('pvq-total').textContent=shuffled.length;document.getElementById('pvq-retry-banner').classList.add('hidden');
 showPage('pv-quiz');showPVQQ();updateStreak();
@@ -5626,8 +5628,8 @@ if(ok){
   // 첫 등장 오답: completedKeys 추가 + retryCount++
   if(!isRetry&&pvState.completedKeys){pvState.completedKeys.add(pvKey);pvState.retryCount++;}
   // 재출제 큐에 추가
-  if(pvState.phase==='normal')pvState.retryQueue.push({...pv,isRetry:true});
-  else if(pvState.phase==='retry')pvState.finalQueue.push({...pv,isRetry:true});
+  if(pvState.phase==='normal')pvState.retryQueue.push({...pv,isRetry:true,ratedThisSession:false});
+  else if(pvState.phase==='retry')pvState.finalQueue.push({...pv,isRetry:true,ratedThisSession:false});
   else{updateWrong(pv,false);pvState.savedToWrong++;pvState.retryCount--;} // final에서 틀리면 포기 + retryCount--
 }
 document.querySelectorAll('#pvq-options .quiz-option').forEach(o=>{o.disabled=true;if(o.dataset.ans==='true')o.classList.add('correct');else if(o===el&&!ok)o.classList.add('wrong');});
@@ -6336,7 +6338,7 @@ showToast(`📝 오답 ${wrongToAdd.length}개 포함`);
 }
 }
 if(stats.due>0)showToast(`🔄 복습 ${stats.due}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -6352,7 +6354,7 @@ const {items:selected,stats}=selectStudyItems(valid,count,'expr');
 console.log('[ExprCloze] 선택:',{due:stats.due,recent:stats.recent,old:stats.old,total:selected.length});
 if(selected.length<5){showToast('⚠️ 오늘 학습할 빈칸채우기가 부족합니다');return;}
 if(stats.due>0)showToast(`🔄 복습 ${stats.due}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-cloze-total').textContent=selected.length;
 showPage('expr-cloze');showExprClozeQ();
 }
@@ -6367,7 +6369,7 @@ const {items:selected,stats}=selectStudyItems(filtered,count,'expr');
 console.log('[ExprQuizQuick] 선택:',{due:stats.due,recent:stats.recent,old:stats.old,total:selected.length});
 if(selected.length<5){showToast('⚠️ 오늘 학습할 표현이 부족합니다');return;}
 if(stats.due>0)showToast(`🔄 복습 ${stats.due}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-quiz-total').textContent=selected.length;
 document.getElementById('expr-quiz-retry-banner').classList.add('hidden');
 showPage('expr-quiz');showExprQuizQ();
@@ -6378,7 +6380,7 @@ const wrong=exprs.filter(e=>isWrong(e));
 if(!wrong.length){showToast('✅ 오답노트가 비어있습니다!');return;}
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
 const selected=shuffle(wrong).slice(0,count);
-exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -6391,7 +6393,7 @@ const starred=exprs.filter(e=>e.starred);
 if(!starred.length){showToast('⭐ 북마크가 비어있습니다!');return;}
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
 const selected=shuffle(starred).slice(0,count);
-exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -6406,7 +6408,7 @@ const tagged=exprs.filter(e=>(e.tags||[]).includes(tag));
 if(!tagged.length){showToast('🏷️ "'+tag+'" 태그가 없습니다');sel.value='';return;}
 const count=parseInt(localStorage.getItem('defaultCount')||'20');
 const selected=shuffle(tagged).slice(0,count);
-exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -6424,7 +6426,7 @@ const {items:selected,stats}=selectStudyItems(valid,count,'expr');
 console.log('[ExprClozeQuick] 선택:',{due:stats.due,recent:stats.recent,old:stats.old,total:selected.length});
 if(selected.length<5){showToast('⚠️ 오늘 학습할 빈칸채우기가 부족합니다');return;}
 if(stats.due>0)showToast(`🔄 복습 ${stats.due}개 포함`);
-exprState={words:selected,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-cloze-total').textContent=selected.length;
 showPage('expr-cloze');showExprClozeQ();
 }
@@ -6436,7 +6438,7 @@ const count=parseInt(localStorage.getItem('defaultCount')||'20');
 // ★ FSRS 우선순위 정렬
 const sorted=sortByFSRSPriority([...due],now);
 const selected=sorted.slice(0,count);
-exprState={words:selected,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:selected.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:selected.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=selected.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -6510,6 +6512,8 @@ if(alreadyRated){
   document.querySelectorAll('#expr-rating-section .rating-btn').forEach(b=>b.disabled=true);
   alreadyMsg.classList.remove('hidden');
 }else{
+  ratingSection.classList.remove('disabled');
+  document.querySelectorAll('#expr-rating-section .rating-btn').forEach(b=>b.disabled=false);
   alreadyMsg.classList.add('hidden');
 }
 }
@@ -6597,7 +6601,7 @@ async function rateExprCard(r){
 if(exprState.transitioning)return;
 exprState.transitioning=true;
 try{
-const e=exprState.words[exprState.idx];if(!e)return;
+const e=exprState.words[exprState.idx];if(!e){exprState.transitioning=false;return;}
 const exprKey=e.Expression;
 // ★ 이미 평가한 카드는 중복 rating 방지 (isRetry는 허용)
 if(e.ratedThisSession&&!e.isRetry){console.log('[rateExprCard] 이미 평가한 카드, 스킵');exprState.transitioning=false;return;}
@@ -6620,7 +6624,7 @@ if(prodResultExpr.shouldToast) showToast(prodResultExpr.message);
 // 5. 세션 내 재학습: 오답 시 5~7문제 후 재출제 (첫 시도일 때만)
 if(r===0&&exprState.phase==='normal'&&!e.isRetry){
 const insertIdx=Math.min(exprState.idx+5+Math.floor(Math.random()*3),exprState.words.length);
-exprState.words.splice(insertIdx,0,{...e,isRetry:true});
+exprState.words.splice(insertIdx,0,{...e,isRetry:true,ratedThisSession:false});
 }
 else if(r===0&&e.isRetry){updateWrong(e,false);exprState.savedToWrong++;exprState.retryCount--;} // isRetry가 또 틀리면 포기 + retryCount--
 else if(r===0&&exprState.phase==='retry'){updateWrong(e,false);exprState.savedToWrong++;exprState.retryCount--;} // retry에서 틀리면 포기 + retryCount--
@@ -6796,8 +6800,8 @@ if(ok){
   // 첫 등장 오답: completedKeys 추가 + retryCount++
   if(!isRetry&&exprState.completedKeys){exprState.completedKeys.add(e.Expression);exprState.retryCount++;}
   // 재출제 큐에 추가
-  if(exprState.phase==='normal')exprState.retryQueue.push({...e,isRetry:true});
-  else if(exprState.phase==='retry'){if(!exprState.finalQueue)exprState.finalQueue=[];exprState.finalQueue.push({...e,isRetry:true});}
+  if(exprState.phase==='normal')exprState.retryQueue.push({...e,isRetry:true,ratedThisSession:false});
+  else if(exprState.phase==='retry'){if(!exprState.finalQueue)exprState.finalQueue=[];exprState.finalQueue.push({...e,isRetry:true,ratedThisSession:false});}
   else{updateWrong(e,false);exprState.savedToWrong++;exprState.retryCount--;} // final에서 틀리면 포기 + retryCount--
 }
 if(!isRetry){
@@ -7092,8 +7096,8 @@ if(ok){
   // 첫 등장 오답: completedKeys 추가 + retryCount++
   if(!isRetry&&exprState.completedKeys){exprState.completedKeys.add(e.Expression);exprState.retryCount++;}
   // 재출제 큐에 추가
-  if(exprState.phase==='normal')exprState.retryQueue.push({...e,isRetry:true});
-  else if(exprState.phase==='retry'){if(!exprState.finalQueue)exprState.finalQueue=[];exprState.finalQueue.push({...e,isRetry:true});}
+  if(exprState.phase==='normal')exprState.retryQueue.push({...e,isRetry:true,ratedThisSession:false});
+  else if(exprState.phase==='retry'){if(!exprState.finalQueue)exprState.finalQueue=[];exprState.finalQueue.push({...e,isRetry:true,ratedThisSession:false});}
   else{exprState.savedToWrong++;exprState.retryCount--;} // final에서 틀리면 포기 + retryCount--
 }
 document.querySelectorAll('#expr-cloze-options .quiz-option').forEach(o=>{o.disabled=true;if(o.dataset.ans==='true')o.classList.add('correct');else if(o===el&&!ok)o.classList.add('wrong');});
@@ -7285,8 +7289,8 @@ if(isCorrect){
   // 첫 등장 오답: completedKeys 추가 + retryCount++
   if(!isRetry&&exprTypingState.completedKeys){exprTypingState.completedKeys.add(exprKey);exprTypingState.retryCount++;}
   // 재출제 큐에 추가
-  if(exprTypingState.phase==='normal')exprTypingState.retryQueue.push({...e,isRetry:true});
-  else if(exprTypingState.phase==='retry')exprTypingState.finalQueue.push({...e,isRetry:true});
+  if(exprTypingState.phase==='normal')exprTypingState.retryQueue.push({...e,isRetry:true,ratedThisSession:false});
+  else if(exprTypingState.phase==='retry')exprTypingState.finalQueue.push({...e,isRetry:true,ratedThisSession:false});
   else{exprTypingState.savedToWrong++;exprTypingState.retryCount--;} // final에서 틀리면 포기 + retryCount--
   // 오답 시 대체 표현이 있으면 함께 표시
   let altInfo='';
@@ -7435,19 +7439,19 @@ sel.splice(insertIdx,0,w);
 if(mode==='expr-cloze'){
 const valid=sel.filter(e=>{const ex=getEx(e);return ex&&ex.toLowerCase().includes(e.Expression.toLowerCase().split(' ')[0]);});
 if(!valid.length){showToast('⚠️ 빈칸채우기 가능한 표현이 없습니다');return;}
-exprState={words:valid,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:valid.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 showPage('expr-cloze');showExprClozeQ();
 }else if(mode==='expr-quiz'){
 const valid=sel.filter(e=>getMKO(e));
 if(valid.length<5){showToast('⚠️ 뜻이 있는 표현이 부족합니다');return;}
-exprState={words:valid,allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:valid.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,correct:0,wrong:0,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-quiz-total').textContent=valid.length;
 document.getElementById('expr-quiz-retry-banner').classList.add('hidden');
 showPage('expr-quiz');showExprQuizQ();
 }else if(mode==='expr-typing'){
 const valid=sel.filter(e=>getMKO(e));
 if(!valid.length){showToast('⚠️ 뜻이 있는 표현이 없습니다');return;}
-exprTypingState={words:valid,idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprTypingState={words:valid.map(x=>({...x,ratedThisSession:false,isRetry:false})),idx:0,correct:0,wrong:0,hintUsed:false,answered:false,start:Date.now(),retryQueue:[],finalQueue:[],phase:'normal',savedToWrong:0,originalCount:valid.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-typing-total').textContent=valid.length;
 document.getElementById('expr-typing-retry-banner').classList.add('hidden');
 showPage('expr-typing');showExprTypingQ();
@@ -7460,7 +7464,7 @@ const valid=sel.filter(e=>getMKO(e));
 if(!valid.length){showToast('⚠️ 뜻이 있는 표현이 없습니다');return;}
 startDictation(valid,exprs,'expr');
 }else{
-exprState={words:sel,allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:sel.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
+exprState={words:sel.map(x=>({...x,ratedThisSession:false,isRetry:false})),allWords:exprs,idx:0,flipped:false,transitioning:false,start:Date.now(),stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',savedToWrong:0,timer:null,originalCount:sel.length,retryCount:0,completedKeys:new Set(),firstTryCorrect:0,firstTryWrong:0,sessionId:Date.now()+'-'+Math.random().toString(36).substr(2,9)};
 document.getElementById('expr-fc-total').textContent=sel.length;
 document.getElementById('expr-fc-current').textContent='0';
 document.getElementById('expr-retry-banner').classList.add('hidden');
@@ -9225,7 +9229,7 @@ navigator.clipboard.writeText(text).then(()=>showToast('📋 클립보드에 복
 }
 
 // === 단어 삭제 ===
-async function deleteWord(){
+async function deleteEditingItem(){
 if(!editingItem)return;
 const key=editingType==='phrasal'?editingItem.Phrasal_Verb:editingItem.word;
 showConfirm('단어 삭제',`"${key}"를 삭제할까요? 학습 기록도 함께 삭제됩니다.`,async()=>{
