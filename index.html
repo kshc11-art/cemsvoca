@@ -117,6 +117,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #splash{position:fixed;inset:0;background:linear-gradient(135deg,#6366f1,#ec4899,#8b5cf6);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}#splash.hidden{opacity:0;visibility:hidden}.splash-icon{font-size:80px;animation:bounce 1s ease infinite}.splash-title{font-size:32px;font-weight:700;color:#fff;margin-top:20px}.splash-sub{font-size:14px;color:rgba(255,255,255,.8);margin-top:8px}.splash-loader{width:40px;height:40px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;margin-top:40px}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* AI 프롬프트 생성기 */
+.ai-card .btn{width:auto}
+.ai-info-box{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;line-height:1.6;color:var(--primary)}
+.ai-info-box strong{color:var(--primary-hover,#818cf8)}
+.ai-word-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ai-word-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:16px;font-size:12px;font-weight:500}
+.ai-word-chip.missing{background:rgba(34,197,94,.12);color:var(--success);border:1px solid rgba(34,197,94,.3)}
+.ai-word-chip.exists{background:rgba(113,113,122,.1);color:var(--muted);border:1px solid rgba(113,113,122,.2);text-decoration:line-through}
+.ai-word-chip .chip-x{cursor:pointer;font-size:14px;margin-left:2px;opacity:.6}
+.ai-word-chip .chip-x:hover{opacity:1}
+.ai-pending-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:10px;background:var(--primary);color:#fff;font-size:11px;font-weight:700;padding:0 6px}
+.ai-stat-row{display:flex;gap:12px;margin-bottom:12px}
+.ai-stat-box{flex:1;text-align:center;padding:10px;background:var(--bg);border-radius:10px}
+.ai-stat-num{font-size:20px;font-weight:700}
+.ai-stat-label{font-size:11px;color:var(--muted);margin-top:2px}
+.ai-prompt-preview{background:#111318;border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:12px;max-height:300px;overflow-y:auto;font-family:'SF Mono','Fira Code',monospace;font-size:11px;line-height:1.6;color:#a1a1aa;white-space:pre-wrap;word-break:break-all}
+.ai-prompt-preview .hl{color:var(--success);font-weight:700}
+.ai-divider{height:1px;background:var(--border);margin:16px 0}
 </style>
 </head>
 <body>
@@ -142,7 +160,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <button class="btn btn-secondary" onclick="safeStart(()=>startStarredStudy('vocab'))" style="width:auto;min-width:50px;height:44px;flex:0 0 auto;padding:0 12px;font-size:14px;border-radius:12px" title="⭐ 북마크 학습">⭐ <span id="star-badge-vocab">0</span></button>
 <select class="form-select" id="home-tag-select" onchange="startTagStudy('vocab')" style="width:100px;flex:0 0 auto;height:44px;font-size:14px"><option value="">🏷️ 태그</option></select>
 </div>
-<div style="display:flex;gap:8px;align-items:center"><button class="btn" onclick="openPasteModal('vocab')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(99,102,241,0.25);color:#fff;border:1px solid rgba(99,102,241,0.4)">➕ 추가</button><input type="text" id="quick-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')quickSearch()"><button class="btn btn-secondary" onclick="quickSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
+<div style="display:flex;gap:8px;align-items:center"><button class="btn" onclick="openPasteModal('vocab')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(99,102,241,0.25);color:#fff;border:1px solid rgba(99,102,241,0.4)">➕ 추가</button><button class="btn" onclick="goToAIPrompt('vocab')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3);position:relative" title="AI 프롬프트 생성">🤖<span class="quick-action-badge hidden" id="ai-badge-vocab" style="position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--success);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px">0</span></button><input type="text" id="quick-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')quickSearch()"><button class="btn btn-secondary" onclick="quickSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
 <div id="quick-search-result" style="display:none;background:var(--bg);border-radius:12px;padding:12px;margin-top:12px;position:relative">
 <button onclick="document.getElementById('quick-search-result').style.display='none'" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted)">✕</button>
 <div id="quick-search-found" style="display:none">
@@ -175,7 +193,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <button class="btn btn-secondary" onclick="safeStart(()=>startStarredStudy('phrasal'))" style="width:auto;min-width:50px;height:44px;flex:0 0 auto;padding:0 12px;font-size:14px;border-radius:12px" title="⭐ 북마크 학습">⭐ <span id="star-badge-pv">0</span></button>
 <select class="form-select" id="home-pv-tag-select" onchange="startTagStudy('phrasal')" style="width:100px;flex:0 0 auto;height:44px;font-size:14px"><option value="">🏷️ 태그</option></select>
 </div>
-<div style="display:flex;gap:8px;align-items:center"><button class="btn" onclick="openPasteModal('phrasal')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(236,72,153,0.25);color:#fff;border:1px solid rgba(236,72,153,0.4)">➕ 추가</button><input type="text" id="pv-quick-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')pvQuickSearch()"><button class="btn btn-secondary" onclick="pvQuickSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
+<div style="display:flex;gap:8px;align-items:center"><button class="btn" onclick="openPasteModal('phrasal')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(236,72,153,0.25);color:#fff;border:1px solid rgba(236,72,153,0.4)">➕ 추가</button><button class="btn" onclick="goToAIPrompt('phrasal')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(236,72,153,0.15);color:#f9a8d4;border:1px solid rgba(236,72,153,0.3);position:relative" title="AI 프롬프트 생성">🤖<span class="quick-action-badge hidden" id="ai-badge-phrasal" style="position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--success);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px">0</span></button><input type="text" id="pv-quick-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')pvQuickSearch()"><button class="btn btn-secondary" onclick="pvQuickSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
 <div id="pv-quick-search-result" style="display:none;background:var(--bg);border-radius:12px;padding:12px;margin-top:12px;position:relative">
 <button onclick="document.getElementById('pv-quick-search-result').style.display='none'" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted)">✕</button>
 <div id="pv-qs-found" style="display:none">
@@ -209,7 +227,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <button class="btn btn-secondary" onclick="safeStart(startExprStarred)" style="width:auto;min-width:50px;height:44px;flex:0 0 auto;padding:0 12px;font-size:14px;border-radius:12px" title="⭐ 북마크 학습">⭐ <span id="star-badge-expr">0</span></button>
 <select class="form-select" id="home-expr-tag-select" onchange="safeStart(startExprTagStudy)" style="width:100px;flex:0 0 auto;height:44px;font-size:14px"><option value="">🏷️ 태그</option></select>
 </div>
-<div style="display:flex;gap:8px;align-items:center"><button class="btn" onclick="openPasteModal('expr')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(249,115,22,0.25);color:#fff;border:1px solid rgba(249,115,22,0.4)">➕ 추가</button><input type="text" id="expr-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')exprSearch()"><button class="btn btn-secondary" onclick="exprSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
+<div style="display:flex;gap:8px;align-items:center"><button class="btn" onclick="openPasteModal('expr')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(249,115,22,0.25);color:#fff;border:1px solid rgba(249,115,22,0.4)">➕ 추가</button><button class="btn" onclick="goToAIPrompt('expr')" style="width:auto;height:44px;flex:0 0 auto;padding:0 14px;font-size:14px;border-radius:12px;background:rgba(249,115,22,0.15);color:#fdba74;border:1px solid rgba(249,115,22,0.3);position:relative" title="AI 프롬프트 생성">🤖<span class="quick-action-badge hidden" id="ai-badge-expr" style="position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--success);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px">0</span></button><input type="text" id="expr-search-input" placeholder="검색..." style="flex:1 1 auto;min-width:0;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 14px;font-size:14px;color:var(--text)" onkeyup="if(event.key==='Enter')exprSearch()"><button class="btn btn-secondary" onclick="exprSearch()" style="width:44px;height:44px;flex:0 0 auto;padding:0;font-size:16px;border-radius:12px">🔎</button></div>
 <div id="expr-search-result" style="display:none;background:var(--bg);border-radius:12px;padding:12px;margin-top:12px;position:relative">
 <button onclick="document.getElementById('expr-search-result').style.display='none'" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted)">✕</button>
 <div id="expr-qs-found" style="display:none">
@@ -591,6 +609,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="dist-expr-cefr" style="margin-bottom:12px"></div>
 <div style="font-size:12px;color:var(--muted);margin-bottom:8px">👔 Formality</div>
 <div id="dist-expr-formality"></div>
+</div>
+</div>
+<div class="card ai-card">
+<div class="card-title">🤖 AI 프롬프트 생성기</div>
+<div class="ai-info-box">💡 DB에 없는 단어를 모아두고, <strong>프롬프트 + 단어 목록</strong>을 한 번에 복사하여 AI에게 붙여넣기</div>
+<div class="form-group">
+<label class="form-label">데이터 타입</label>
+<div class="chip-group" id="ai-type-group">
+<span class="chip active" data-value="vocab" onclick="selectAIType('vocab')">📖 어휘</span>
+<span class="chip" data-value="phrasal" onclick="selectAIType('phrasal')">🔗 구동사</span>
+<span class="chip" data-value="expr" onclick="selectAIType('expr')">💬 표현</span>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">단어/표현 입력 (콤마 또는 줄바꿈)</label>
+<textarea class="form-input" id="ai-word-input" rows="3" placeholder="예: ameliorate, elucidate, ubiquitous&#10;또는 한 줄에 하나씩" style="text-align:left;font-family:monospace;font-size:12px"></textarea>
+</div>
+<button class="btn btn-primary" onclick="aiCheckAndAdd()" style="width:100%;margin-bottom:8px">🔍 DB 확인 & 대기 목록에 추가</button>
+<button class="btn btn-secondary" onclick="document.getElementById('ai-word-input').value=''" style="width:100%;margin-bottom:4px">지우기</button>
+<div id="ai-pending-section" style="display:none">
+<div class="ai-divider"></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+<div style="font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px">📝 생성 대기 목록 <span class="ai-pending-count" id="ai-pending-count">0</span></div>
+<button class="btn btn-secondary" onclick="aiClearPending()" style="padding:6px 12px;font-size:12px">🗑️ 비우기</button>
+</div>
+<div class="ai-stat-row">
+<div class="ai-stat-box"><div class="ai-stat-num" id="ai-stat-missing" style="color:var(--success)">0</div><div class="ai-stat-label">미등록 (생성 대기)</div></div>
+<div class="ai-stat-box"><div class="ai-stat-num" id="ai-stat-exists" style="color:var(--muted)">0</div><div class="ai-stat-label">이미 등록됨</div></div>
+</div>
+<div class="ai-word-chips" id="ai-pending-chips"></div>
+<div class="ai-divider"></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+<label class="form-label" style="margin:0">프롬프트 미리보기</label>
+<button class="btn btn-secondary" onclick="aiTogglePreview()" style="padding:4px 10px;font-size:11px" id="ai-preview-toggle">👁️ 보기</button>
+</div>
+<div class="ai-prompt-preview" id="ai-prompt-preview" style="display:none"></div>
+<button class="btn btn-primary" onclick="aiCopyAll()" style="width:100%;margin-top:16px;font-size:15px;padding:12px">📋 프롬프트 + 단어 복사</button>
+<div style="display:flex;gap:10px;margin-top:8px">
+<button class="btn btn-secondary" onclick="aiCopyWords()" style="flex:1">📝 단어만 복사</button>
+<button class="btn btn-secondary" onclick="aiCopyPrompt()" style="flex:1">📄 프롬프트만 복사</button>
+</div>
 </div>
 </div>
 <div class="card"><div class="card-title">📤 엑셀 업로드</div><div class="upload-zone" id="upload-zone"><div class="upload-zone-icon">📄</div><p>탭하거나 파일을 드래그하세요<br><small>Vocabulary / Phrasal_Verbs / Expressions 시트 자동 감지</small></p></div><input type="file" accept=".xlsx,.xls" hidden id="file-input"><div class="upload-result hidden" id="upload-result"></div></div>
@@ -3472,7 +3531,7 @@ if(studyPages.includes(n)){
 }
 // ★ 수정: 모든 타이머 정리 (메모리 누수 방지)
 cleanupAllTimers();
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+n)?.classList.add('active');document.querySelectorAll('.nav-item').forEach(a=>a.classList.toggle('active',a.dataset.page===n));if(n==='home'){updateHomeStats();clearSearchInputs();}if(n==='stats')updateStatsPage();if(n==='data')updateDataPage();if(n==='study')updateStudyPage();}
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+n)?.classList.add('active');document.querySelectorAll('.nav-item').forEach(a=>a.classList.toggle('active',a.dataset.page===n));if(n==='home'){updateHomeStats();clearSearchInputs();}if(n==='stats')updateStatsPage();if(n==='data')updateDataPage();if(n==='data')aiRenderPending();if(n==='study')updateStudyPage();}
 
 // ★ 전역 타이머 레지스트리 (누수 방지)
 const timerRegistry = {
@@ -10515,6 +10574,369 @@ async function openEditFromSheet(){
     await openEditModal(infoSheetItem.word,'vocab');
   }
 }
+
+// ================================================================
+// 🤖 AI 프롬프트 생성기
+// ================================================================
+let aiType='vocab';
+let aiPending=[];// {word,type}[]
+let aiLastCheck={missing:[],exists:[]};
+
+const AI_PROMPTS={
+vocab:`당신은 영어 어휘 데이터베이스 전문가입니다.
+대상: 한국인 토플 학습자
+
+## 입력
+단어 목록 (콤마 또는 줄바꿈 구분)
+
+## 출력
+각 단어에 대해 아래 21개 컬럼을 TSV 형식으로 출력하세요.
+헤더 행을 첫 줄에 포함하세요.
+
+## 컬럼 순서 (헤더 없이 붙여넣기용)
+Word, POS, Meaning1_EN, Meaning1_KO, Synonyms, Antonyms_EN, Antonyms_KO, L1, L2, Formality, Currency, Medium, Style_Tags, CEFR, Frequency, Priority, TOEFL_Rel, Example1, Example2, Key_Collocation, Common_Error
+
+## 필드별 규칙
+
+### 필수 필드
+- Word: 소문자
+- POS: noun/verb/adjective/adverb/preposition/conjunction
+- Meaning1_EN: 영어 정의. 유사 의미는 콤마(,), 다른 의미는 세미콜론(;)
+- Meaning1_KO: 한국어 뜻
+- Synonyms: 유사 뉘앙스는 콤마(,), 다른 축 동의어는 세미콜론(;)
+- L1: Science/Society/Arts/General/Concrete/Activity/Social
+- L2: 분류표 참조
+- Formality: Formal/Neutral/Informal
+- Currency: Current/Dated/Archaic
+- Medium: Written/Spoken/Both
+- CEFR: A1/A2/B1/B2/C1/C2
+- Frequency: K1~K6
+- Priority: P1/P2/P3
+- TOEFL_Rel: High/Medium/Low
+- Example1: Meaning1에 대응하는 예문 (토플 스타일)
+- Key_Collocation: 자주 쓰이는 연어 패턴
+
+### 선택 필드
+- Antonyms_EN/KO: 명확한 반의어가 있을 때
+- Style_Tags: Academic/Literary/Legal/Business/Technical/Medical/BrE/AmE/Idiom/TOEFL (해당시 콤마 구분)
+- Example2: 다른 맥락의 예문
+- Common_Error: 한국인이 자주 하는 실수 (전치사 오용, 자타동사 혼동 등)
+
+### Formality 판단 기준
+- Formal: 학술논문, 비즈니스 문서, 법률에서 주로 사용
+- Neutral: 어떤 상황에서도 자연스러움
+- Informal: 친구 간 대화, SNS, 슬랭
+
+### Currency 판단 기준
+- Current: 2020년대 일상적으로 사용됨
+- Dated: 구식이지만 이해됨, 50대 이상 또는 격식 문어에서 가끔 등장
+- Archaic: 문학/종교/사극에서만 등장
+
+### Medium 판단 기준
+- Written: 글에서만 자연스럽고 말하면 과하게 격식적
+- Spoken: 말에서만 자연스럽고 글에 쓰면 비격식적
+- Both: 양쪽 모두 자연스러움
+
+### Priority 계산 로직
+- P1: (K1~K2) + Current + Both → 반드시 Active 사용
+- P1: TOEFL_Rel=High + Current → 반드시 Active 사용
+- P3: Archaic → 이해만
+- P3: K5~K6 + TOEFL_Rel=Low → 이해만
+- P2: 나머지
+
+### L1-L2 분류표
+L1 유효값: Science, Society, Arts, General, Concrete, Activity, Social
+L2 유효값: Life, Physical, Earth, Applied, Psychology, Culture, Economy, Politics, History, Literature, Visual, Performing, Ideas, Core, Research, Argument, Body, Objects, Nature, Living, Work, Commerce, Travel, Health, Relationships, Leisure
+
+## 출력 예시
+ameliorate\\tverb\\tto make something better, to improve\\t개선하다, 향상시키다\\timprove, enhance; alleviate, mitigate\\tworsen, deteriorate\\t악화시키다\\tGeneral\\tCore\\tFormal\\tCurrent\\tWritten\\tAcademic\\tC1\\tK5\\tP2\\tHigh\\tThe new policies were designed to ameliorate living conditions.\\t\\tameliorate + conditions/situation/problems\\t*ameliorate about (X) - 타동사이므로 전치사 불필요
+
+## 주의사항
+1. TSV 형식: 탭으로 구분, 줄바꿈 없이 한 행에 한 항목
+2. 빈 필드: 해당 없으면 빈칸으로 (탭은 유지)
+3. 예문 스타일: 토플 지문/라이팅 스타일로 작성
+4. 다의어 처리: 완전히 다른 의미는 별도 행으로 분리 (예: run1=달리다, run2=운영하다)
+5. 일관성: 모든 값은 위 참조표에 있는 값만 사용`,
+
+phrasal:`당신은 영어 구동사 데이터베이스 전문가입니다.
+대상: 한국인 토플 학습자
+
+## 입력
+구동사 목록 (콤마 또는 줄바꿈 구분)
+
+## 출력
+각 구동사에 대해 아래 19개 컬럼을 TSV 형식으로 출력하세요.
+헤더 행을 첫 줄에 포함하세요.
+
+## 컬럼 순서
+Phrasal_Verb, Base_Verb, Particle, Meaning1_EN, Meaning1_KO, Transparency, Category, Formality, Currency, Medium, Style_Tags, Formal_Equivalent, Separable, CEFR, Frequency, Priority, Example1, Example2, Common_Error
+
+## 필드별 규칙
+
+### 필수 필드
+- Phrasal_Verb: 소문자 (예: turn off)
+- Base_Verb: 기본 동사 (turn, get, take 등)
+- Particle: 불변화사 (off, up, out, away 등)
+- Meaning1_EN: 영어 정의
+- Meaning1_KO: 한국어 뜻
+- Transparency: Transparent/Semi-transparent/Opaque
+- Category: Movement/Change/Relationship/Communication/Cognition/Action
+- Formality: Formal/Neutral/Informal
+- Currency: Current/Dated/Archaic
+- Medium: Written/Spoken/Both
+- Separable: Yes/No/Optional
+- CEFR: A2/B1/B2/C1/C2
+- Frequency: K1~K6
+- Priority: P1/P2/P3
+- Example1: Meaning1에 대응하는 예문
+
+### 선택 필드
+- Style_Tags: 해당시 콤마 구분
+- Formal_Equivalent: 격식체 대체 단일 동사 (예: extinguish)
+- Example2: 다른 맥락의 예문
+- Common_Error: 한국인 흔한 실수
+
+### Transparency 판단 기준
+- Transparent: 개별 단어에서 전체 의미 추론 가능 (come back = 돌아오다)
+- Semi-transparent: 부분 추론 가능 (break down = 부서지다 → 고장)
+- Opaque: 추론 불가, 암기 필요 (put up with = 참다)
+
+### Category 판단 기준
+- Movement: 물리적 이동 (go out, come in)
+- Change: 상태 변화 (break down, grow up)
+- Relationship: 관계/상호작용 (get along, break up)
+- Communication: 의사소통 (speak up, point out)
+- Cognition: 인지/이해 (figure out, find out)
+- Action: 일반 행위 (carry out, give up)
+
+### Separable 판단 기준
+- Yes: 반드시 분리 가능
+- No: 분리 불가능
+- Optional: 명사는 선택, 대명사는 반드시 분리
+
+## 출력 예시
+break down\\tbreak\\tdown\\tto stop functioning (machine); to lose emotional control\\t고장나다; 감정이 무너지다\\tSemi-transparent\\tChange\\tNeutral\\tCurrent\\tBoth\\t\\tmalfunction\\tOptional\\tB1\\tK2\\tP1\\tMy car broke down on the highway.\\tLet's break down the problem into smaller steps.\\t*break down it (X) → break it down (O) - 대명사는 반드시 분리
+
+## 주의사항
+1. TSV 형식: 탭으로 구분, 줄바꿈 없이 한 행에 한 항목
+2. 빈 필드: 해당 없으면 빈칸으로 (탭은 유지)
+3. 예문 스타일: 토플 지문/라이팅 스타일로 작성
+4. 다의어 처리: 완전히 다른 의미는 별도 행으로 분리
+5. 일관성: 모든 값은 위 참조표에 있는 값만 사용`,
+
+expr:`당신은 영어 표현/청크 데이터베이스 전문가입니다.
+대상: 한국인 토플 학습자
+
+## 입력
+표현 목록 (콤마 또는 줄바꿈 구분)
+
+## 출력
+각 표현에 대해 아래 17개 컬럼을 TSV 형식으로 출력하세요.
+헤더 행을 첫 줄에 포함하세요.
+
+## 컬럼 순서
+Expression, L1, L2, L3, Function, Meaning_KO, Formality, Currency, Medium, Style_Tags, Example1, Example2, Similar_Expr, Common_Error, CEFR, Frequency, Priority
+
+## 필드별 규칙
+
+### 필수 필드
+- Expression: 표현 원형 그대로
+- L1: Transition/Stance/Discourse/Social/Academic
+- L2: 분류표 참조
+- L3: 분류표 참조
+- Function: 기능 설명 (영문, 짧게)
+- Meaning_KO: 한국어 뜻/용법
+- Formality: Formal/Neutral/Informal
+- Currency: Current/Dated/Archaic
+- Medium: Written/Spoken/Both
+- Example1: 예문
+- CEFR: A2/B1/B2/C1/C2
+- Frequency: K1~K6
+- Priority: P1/P2/P3
+
+### 선택 필드
+- Style_Tags: 해당시 콤마 구분
+- Example2: 다른 맥락의 예문
+- Similar_Expr: 유사 표현 (콤마 구분)
+- Common_Error: 한국인 흔한 실수
+
+### L1-L2-L3 분류표
+Transition(L1): Adding(Simple/Emphatic/Alternative), Contrast(Direct/Concessive/Unexpected), Cause(Cause/Effect/Purpose), Sequence(First/Middle/Last), Example(Specific/Clarifying)
+Stance(L1): Certainty(Strong/Moderate/Weak), Opinion(Personal/General/Hedging), Emphasis(Intensifier/Focus)
+Discourse(L1): Topic(Introduce/Shift/Return), Reference(Previous/Following), Summary(Conclude/Restate)
+Social(L1): Greeting/Request/Apology/Thanks/Farewell (L2만, L3 없음)
+Academic(L1): Defining/Citing/Arguing/Evaluating (L2만, L3 없음)
+
+## 출력 예시
+on the other hand\\tTransition\\tContrast\\tDirect\\tIntroduces an alternative or contrasting point\\t반면에, 한편으로는\\tNeutral\\tCurrent\\tBoth\\t\\tThe project has risks. On the other hand, the potential rewards are significant.\\tShe's strict at work. On the other hand, she's very warm with her family.\\thowever, in contrast, conversely\\ton the other hand는 앞에 on one hand 없이도 사용 가능하나, 대조 대상이 명확해야 함\\tB1\\tK2\\tP1
+
+## 주의사항
+1. TSV 형식: 탭으로 구분, 줄바꿈 없이 한 행에 한 항목
+2. 빈 필드: 해당 없으면 빈칸으로 (탭은 유지)
+3. 예문 스타일: 토플 지문/라이팅 스타일로 작성
+4. 일관성: 모든 값은 위 참조표에 있는 값만 사용`
+};
+
+function aiLoadPending(){
+try{const all=[];['vocab','phrasal','expr'].forEach(t=>{const s=localStorage.getItem('ai_pending_'+t);if(s)all.push(...JSON.parse(s));});aiPending=all;}catch(e){aiPending=[];}
+}
+function aiSavePending(){
+['vocab','phrasal','expr'].forEach(t=>{
+const items=aiPending.filter(w=>w.type===t);
+if(items.length)localStorage.setItem('ai_pending_'+t,JSON.stringify(items));
+else localStorage.removeItem('ai_pending_'+t);
+});
+}
+
+function selectAIType(type){
+aiType=type;
+document.querySelectorAll('#ai-type-group .chip').forEach(c=>c.classList.toggle('active',c.dataset.value===type));
+aiRenderPending();
+}
+
+function aiParseInput(text){
+return text.split(/[,\n\r]+/).map(w=>w.trim().toLowerCase()).filter(w=>w.length>0).filter((w,i,a)=>a.indexOf(w)===i);
+}
+
+async function aiCheckAndAdd(){
+const input=document.getElementById('ai-word-input').value.trim();
+if(!input){showToast('⚠️ 단어를 입력하세요');return;}
+const words=aiParseInput(input);
+if(!words.length){showToast('⚠️ 유효한 단어가 없습니다');return;}
+
+const missing=[],exists=[];
+for(const w of words){
+let item;
+if(aiType==='vocab')item=await getWord(w);
+else if(aiType==='phrasal')item=await getPV(w);
+else item=await getExpr(w);
+if(item)exists.push(w);else missing.push(w);
+}
+aiLastCheck={missing,exists};
+
+const currentSet=new Set(aiPending.filter(w=>w.type===aiType).map(w=>w.word));
+const newMissing=missing.filter(w=>!currentSet.has(w));
+const alreadyPending=missing.filter(w=>currentSet.has(w));
+newMissing.forEach(w=>aiPending.push({word:w,type:aiType}));
+aiSavePending();
+
+let msg='';
+if(newMissing.length)msg+=`✅ ${newMissing.length}개 추가`;
+if(exists.length)msg+=(msg?' | ':'')+`⏩ ${exists.length}개 이미 DB`;
+if(alreadyPending.length)msg+=(msg?' | ':'')+`📋 ${alreadyPending.length}개 이미 대기중`;
+showToast(msg||'변경 없음');
+document.getElementById('ai-word-input').value='';
+aiRenderPending();
+}
+
+function aiRenderPending(){
+const section=document.getElementById('ai-pending-section');
+const cur=aiPending.filter(w=>w.type===aiType);
+if(aiPending.length===0){section.style.display='none';aiUpdateBadges();return;}
+section.style.display='block';
+document.getElementById('ai-pending-count').textContent=cur.length;
+document.getElementById('ai-stat-missing').textContent=cur.length;
+document.getElementById('ai-stat-exists').textContent=aiLastCheck.exists.length;
+const chipsEl=document.getElementById('ai-pending-chips');
+let html=cur.map(w=>`<span class="ai-word-chip missing">${w.word}<span class="chip-x" onclick="aiRemoveWord('${w.word.replace(/'/g,"\\'")}','${w.type}')">&times;</span></span>`).join('');
+if(aiLastCheck.exists.length){
+html+=aiLastCheck.exists.map(w=>`<span class="ai-word-chip exists">${w}</span>`).join('');
+}
+chipsEl.innerHTML=html;
+aiUpdatePreview();
+aiUpdateBadges();
+}
+
+function aiUpdateBadges(){
+['vocab','phrasal','expr'].forEach(t=>{
+const count=aiPending.filter(w=>w.type===t).length;
+const badge=document.getElementById('ai-badge-'+t);
+if(badge){
+if(count>0){badge.textContent=count;badge.classList.remove('hidden');}
+else{badge.classList.add('hidden');}
+}
+});
+}
+
+function aiRemoveWord(word,type){
+aiPending=aiPending.filter(w=>!(w.word===word&&w.type===type));
+aiSavePending();aiRenderPending();
+}
+
+function aiClearPending(){
+showConfirm('대기 목록 비우기','현재 타입의 대기 목록을 모두 비울까요?',()=>{
+aiPending=aiPending.filter(w=>w.type!==aiType);
+aiSavePending();aiLastCheck={missing:[],exists:[]};aiRenderPending();
+});
+}
+
+function aiTogglePreview(){
+const el=document.getElementById('ai-prompt-preview');
+const btn=document.getElementById('ai-preview-toggle');
+if(el.style.display==='none'){el.style.display='block';btn.textContent='🙈 숨기기';aiUpdatePreview();}
+else{el.style.display='none';btn.textContent='👁️ 보기';}
+}
+
+function aiUpdatePreview(){
+const el=document.getElementById('ai-prompt-preview');
+if(el.style.display==='none')return;
+const cur=aiPending.filter(w=>w.type===aiType).map(w=>w.word);
+if(!cur.length){el.innerHTML='<span style="color:var(--muted)">대기 목록이 비어있습니다</span>';return;}
+const promptText=AI_PROMPTS[aiType];
+const wordList=cur.join(', ');
+const escH=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+el.innerHTML=escH(promptText)+'\n\n---\n\n<strong>## 생성할 단어 목록</strong>\n<span class="hl">'+escH(wordList)+'</span>';
+}
+
+function aiBuildFull(){
+const cur=aiPending.filter(w=>w.type===aiType).map(w=>w.word);
+if(!cur.length)return null;
+return AI_PROMPTS[aiType]+'\n\n---\n\n## 생성할 단어 목록\n'+cur.join(', ');
+}
+
+async function aiCopyTo(text){
+try{await navigator.clipboard.writeText(text);}catch(e){
+const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;left:-9999px';
+document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+}
+}
+
+async function aiCopyAll(){
+const text=aiBuildFull();
+if(!text){showToast('⚠️ 대기 목록이 비어있습니다');return;}
+await aiCopyTo(text);showToast('✅ 프롬프트 + 단어 복사 완료!');vibrate();
+}
+async function aiCopyWords(){
+const cur=aiPending.filter(w=>w.type===aiType).map(w=>w.word);
+if(!cur.length){showToast('⚠️ 대기 목록이 비어있습니다');return;}
+await aiCopyTo(cur.join(', '));showToast('📝 단어 목록 복사 완료!');vibrate();
+}
+async function aiCopyPrompt(){
+await aiCopyTo(AI_PROMPTS[aiType]);showToast('📄 프롬프트 복사 완료!');vibrate();
+}
+
+// AI 프롬프트 생성기 초기화
+aiLoadPending();
+setTimeout(aiRenderPending,500);
+
+function goToAIPrompt(type){
+selectAIType(type||'vocab');
+const cur=aiPending.filter(w=>w.type===aiType);
+if(cur.length>0){
+// 대기 목록 있으면 즉시 복사
+const text=aiBuildFull();
+if(text){aiCopyTo(text).then(()=>{showToast('✅ 프롬프트 + '+cur.length+'개 단어 복사됨!');vibrate();});}
+}else{
+// 대기 목록 비어있으면 데이터탭 AI 카드로 이동
+switchPage('data');
+setTimeout(()=>{
+const card=document.querySelector('.ai-card');
+if(card)card.scrollIntoView({behavior:'smooth',block:'start'});
+},300);
+showToast('📝 AI 생성 대기 목록이 비어있습니다. 단어를 추가하세요.');
+}
+}
+// ================================================================
 
 init();
 </script>
